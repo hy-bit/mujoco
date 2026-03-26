@@ -21,10 +21,10 @@
 				</Expand>
 			</Synthetic>
 			<Synthetic Name="qvel">
-				<DisplayString>qvel</DisplayString>
+				<DisplayString>qvel[{m->nv}]</DisplayString>
 				<Expand>
 					<ArrayItems>
-						<Size>m->nq</Size>
+						<Size>m->nv</Size>
 						<ValuePointer>qvel</ValuePointer>
 					</ArrayItems>
 				</Expand>
@@ -39,12 +39,42 @@
 				</Expand>
 			</Synthetic>
 
-			<!-- ======== dynamics ======== -->
-			<Synthetic Name="qacc">
-				<DisplayString>qacc</DisplayString>
+			<!-- ======== control ======== -->
+			<Synthetic Name="ctrl">
+				<DisplayString>ctrl</DisplayString>
 				<Expand>
 					<ArrayItems>
 						<Size>m->nq</Size>
+						<ValuePointer>ctrl</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_applied">
+				<DisplayString>qfrc_applied[{m->nv}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_applied</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xfrc_applied">
+				<DisplayString>xfrc_applied[{m->nbody}][3]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nbody * 6</Size>
+						<ValuePointer>xfrc_applied</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+
+			<!-- ======== dynamics ======== -->
+			<Synthetic Name="qacc">
+				<DisplayString>qacc[{m->nv}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nv</Size>
 						<ValuePointer>qacc</ValuePointer>
 					</ArrayItems>
 				</Expand>
@@ -59,21 +89,12 @@
 				</Expand>
 			</Synthetic>
 
-			<Synthetic Name="ctrl">
-				<DisplayString>ctrl</DisplayString>
-				<Expand>
-					<ArrayItems>
-						<Size>m->nq</Size>
-						<ValuePointer>ctrl</ValuePointer>
-					</ArrayItems>
-				</Expand>
-			</Synthetic>
 			<Synthetic Name="contact">
 				<DisplayString>contact[{ncon}]</DisplayString>
 				<Expand>
 					<Item Name="size">ncon</Item>
 					<ArrayItems>
-						<Size>m->nq</Size>
+						<Size>ncon</Size>
 						<ValuePointer>contact</ValuePointer>
 					</ArrayItems>
 				</Expand>

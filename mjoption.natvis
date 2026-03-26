@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!-- MuJoCo mjOption visualization -->
+  <Type Name="mjOption_">
+    <DisplayString>{{timestep={timestep}, integrator={integrator}}}</DisplayString>
+    <Expand>
+      <!-- physical constants: gravity, wind, magnetic -->
+      <Synthetic Name="gravity">
+        <DisplayString>gravity[3]</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>3</Size>
+            <ValuePointer>gravity</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="wind">
+        <DisplayString>wind[3]</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>3</Size>
+            <ValuePointer>wind</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="magnetic">
+        <DisplayString>magnetic[3]</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>3</Size>
+            <ValuePointer>magnetic</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+</AutoVisualizer>

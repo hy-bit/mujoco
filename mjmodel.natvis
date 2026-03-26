@@ -163,7 +163,7 @@
 				<Expand>
 					<Item Name="size">nbody</Item>
 					<ArrayItems>
-						<Size>nbody</Size>
+						<Size>nbody*3</Size>
 						<ValuePointer>body_pos</ValuePointer>
 					</ArrayItems>
 				</Expand>
@@ -318,10 +318,6 @@
 					</ArrayItems>
 				</Expand>
 			</Synthetic>
-			
-			
-			
-			
 			
 			
 			
