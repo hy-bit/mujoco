@@ -753,9 +753,12 @@ struct mjModel_ {
 
   // bodies
   int*      body_parentid;        // id of body's parent                      (nbody x 1)
-  int*      body_rootid;          // id of root above body                    (nbody x 1)  hy; 所属子树的根
-  int*      body_rootid;          // ancestor that is direct child of world   (nbody x 1)
-  int*      body_weldid;          // top ancestor with no dofs to this body   (nbody x 1)
+  int*      body_rootid;          // ancestor that is direct child of world   (nbody x 1)  hy; 所属子树的根
+  // hy: 每个体的weldid是与其一路fix连接过来（无相对自由度）的、最靠内的那个体的id,
+  // 若为0则表示该体与world一路fix连过来，是固定的
+  // 若为其本身id，则表示该体与父体不是fix连接
+  int*      body_weldid;          // top ancestor with no dofs to this body   (nbody x 1)  
+
   int*      body_mocapid;         // id of mocap data; -1: none               (nbody x 1)
   int*      body_jntnum;          // number of joints for this body           (nbody x 1)
   int*      body_jntadr;          // start addr of joints; -1: no joints      (nbody x 1)
@@ -818,7 +821,8 @@ struct mjModel_ {
   // dofs
   int*      dof_bodyid;           // id of dof's body                         (nv x 1)
   int*      dof_jntid;            // id of dof's joint                        (nv x 1)
-  // hy: dof_parentid[i]存储每个DOF i的父DOF的ID，对于单个球关节，3个自由度之间是逐次父子关系
+  // hy: dof_parentid[i]存储每个DOF i的父DOF的ID，对单自由度关节，其父自由度是父体的自由度；对
+  // 多自由度关节（如球关节），多个自由度之间是逐次父子关系，而首自由度的父自由度是父体自由度
   int*      dof_parentid;         // id of dof's parent; -1: none             (nv x 1)          
   int*      dof_treeid;           // id of dof's kinematic tree               (nv x 1)
   int*      dof_Madr;             // dof address in M-diagonal                (nv x 1)
