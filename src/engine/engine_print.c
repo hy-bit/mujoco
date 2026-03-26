@@ -39,7 +39,7 @@
   #include <sanitizer/msan_interface.h>
 #endif
 
-#define FLOAT_FORMAT "% -9.2g"
+#define FLOAT_FORMAT "% -17.10g"
 #define FLOAT_FORMAT_MAX_LEN 20
 #define INT_FORMAT " %d"
 #define SIZE_FORMAT " %" PRId64
