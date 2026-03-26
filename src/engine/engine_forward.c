@@ -45,7 +45,7 @@
 #include "thread/thread_pool.h"
 #include "thread/thread_task.h"
 
-
+#define DBG_FLOAT_FMT  "%.10f"
 
 //--------------------------- check values ---------------------------------------------------------
 
@@ -1291,6 +1291,7 @@ void mj_step(const mjModel* m, mjData* d) {
 
   OutputResultForDebug(m,d);
 
+  //if(d->time>10){mjERROR("end Time.") }
 
   // use selected integrator
   switch ((mjtIntegrator) m->opt.integrator) {
@@ -1418,7 +1419,7 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
             OutputQvelForDebug(fp_clear, m, d, 1);
             OutputQaccForDebug(fp_clear, m, d, 1);
 
-            OutputEfcPosForDebug(fp_clear, m, d, 1);
+            //OutputEfcPosForDebug(fp_clear, m, d, 1);
             //OutputEfcVelForDebug(fp_clear, m, d, 1);
             //OutputEfcArefForDebug(fp_clear, m, d, 1);
             //
@@ -1481,7 +1482,7 @@ void OutputTimeForDebug(FILE* fp, const mjData* d, int header) {
     if (header)
         fprintf(fp, "mj-time\t");
     else
-        fprintf(fp, "%f\t", d->time);
+        fprintf(fp, "%.5f\t", d->time);
 }
 
 void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
@@ -1491,7 +1492,7 @@ void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header)
     }
     else {
         for (int i = 0; i < m->nq; ++i)
-            fprintf(fp, "%f\t", d->qpos[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qpos[i]);
     }
 }
 
@@ -1502,7 +1503,7 @@ void OutputQvelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header)
     }
     else {
         for (int i = 0; i < m->nv; ++i)
-            fprintf(fp, "%f\t", d->qvel[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qvel[i]);
     }
 }
 
@@ -1513,7 +1514,7 @@ void OutputQaccForDebug(FILE* fp, const mjModel* m, const mjData* d, int header)
     }
     else {
         for (int i = 0; i < m->nv; ++i)
-            fprintf(fp, "%f\t", d->qacc[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qacc[i]);
     }
 }
 
