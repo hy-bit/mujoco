@@ -15,6 +15,8 @@
 #ifndef MUJOCO_SRC_ENGINE_ENGINE_FORWARD_H_
 #define MUJOCO_SRC_ENGINE_ENGINE_FORWARD_H_
 
+#include <stdio.h>  // 添加此行以声明FILE类型
+
 #include <mujoco/mjdata.h>
 #include <mujoco/mjexport.h>
 #include <mujoco/mjmodel.h>
@@ -84,6 +86,28 @@ MJAPI void mj_fwdAcceleration(const mjModel* m, mjData* d);
 
 // forward constraint
 MJAPI void mj_fwdConstraint(const mjModel* m, mjData* d);
+
+// debug输出
+void OutputResultForDebug(const mjModel* m, mjData* d);
+
+// debug输出
+void OutputTimeForDebug(FILE* fp, const mjData* d, int header);
+
+// debug输出
+void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputQvelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputQaccForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputQFrcConstraintForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+
+void OutputEfcPosForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputEfcVelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputEfcArefForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
 
 #ifdef __cplusplus
 }

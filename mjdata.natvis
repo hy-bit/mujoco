@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<!-- MuJoCo mjData visualization -->
+	<Type Name="mjData_">
+		<DisplayString>{{time={time}, ncon={ncon}, nefc={nefc}}}</DisplayString>
+		<Expand>
+			<Item Name="time">time</Item>
+			<Item Name="energy[0]">energy[0]</Item>
+			<Item Name="energy[1]">energy[1]</Item>
+			<Item Name="ncon">ncon</Item>
+			<Item Name="nefc">nefc</Item>
+
+			<!-- ======== state ======== -->
+			<Synthetic Name="qpos">
+				<DisplayString>qpos</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>qpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qvel">
+				<DisplayString>qvel</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>qvel</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="act">
+				<DisplayString>act</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>act</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== dynamics ======== -->
+			<Synthetic Name="qacc">
+				<DisplayString>qacc</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>qacc</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="act_dot">
+				<DisplayString>act_dot[{m->na}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->na</Size>
+						<ValuePointer>act_dot</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<Synthetic Name="ctrl">
+				<DisplayString>ctrl</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>ctrl</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="contact">
+				<DisplayString>contact[{ncon}]</DisplayString>
+				<Expand>
+					<Item Name="size">ncon</Item>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>contact</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== sensors ======== -->
+			<Synthetic Name="sensordata">
+				<DisplayString>sensordata[[{m->nsensordata}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nsensordata</Size>
+						<ValuePointer>sensordata</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== computed by mj_fwdPosition/mj_kinematics ======== -->
+			<Synthetic Name="xpos">
+				<DisplayString>xpos[{m->nbody}][3]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nbody*3</Size>
+						<ValuePointer>xpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xquat">
+				<DisplayString>xquat[{m->nbody}][4]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*4</Item>
+					<ArrayItems>
+						<Size>m->nbody*4</Size>
+						<ValuePointer>xquat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xmat">
+				<DisplayString>xmat[{m->nbody}][9]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*9</Item>
+					<ArrayItems>
+						<Size>m->nbody*9</Size>
+						<ValuePointer>xmat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xipos">
+				<DisplayString>xipos[{m->nbody}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*3</Item>
+					<ArrayItems>
+						<Size>m->nbody*3</Size>
+						<ValuePointer>xipos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="ximat">
+				<DisplayString>ximat[{m->nbody}][9]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*9</Item>
+					<ArrayItems>
+						<Size>m->nbody*9</Size>
+						<ValuePointer>ximat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xanchor">
+				<DisplayString>xanchor[{m->njnt}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->njnt*3</Item>
+					<ArrayItems>
+						<Size>m->njnt*3</Size>
+						<ValuePointer>xanchor</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="xaxis">
+				<DisplayString>xaxis[{m->njnt}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->njnt*3</Item>
+					<ArrayItems>
+						<Size>m->njnt*3</Size>
+						<ValuePointer>xaxis</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="geom_xpos">
+				<DisplayString>geom_xpos[{m->ngeom}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->ngeom*3</Item>
+					<ArrayItems>
+						<Size>m->ngeom*3</Size>
+						<ValuePointer>geom_xpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="geom_xmat">
+				<DisplayString>geom_xmat[{m->ngeom}][9]</DisplayString>
+				<Expand>
+					<Item Name="size">m->ngeom*9</Item>
+					<ArrayItems>
+						<Size>m->ngeom*9</Size>
+						<ValuePointer>geom_xmat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="site_xpos">
+				<DisplayString>site_xpos[{m->nsite}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nsite*3</Item>
+					<ArrayItems>
+						<Size>m->nsite*3</Size>
+						<ValuePointer>site_xpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="site_xmat">
+				<DisplayString>site_xmat[{m->nsite}][9]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nsite*9</Item>
+					<ArrayItems>
+						<Size>m->nsite*9</Size>
+						<ValuePointer>site_xmat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="cam_xpos">
+				<DisplayString>cam_xpos[{m->ncam}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->ncam*3</Item>
+					<ArrayItems>
+						<Size>m->ncam*3</Size>
+						<ValuePointer>cam_xpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="cam_xmat">
+				<DisplayString>cam_xmat[{m->ncam}][9]</DisplayString>
+				<Expand>
+					<Item Name="size">m->ncam*9</Item>
+					<ArrayItems>
+						<Size>m->ncam*9</Size>
+						<ValuePointer>cam_xmat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="light_xpos">
+				<DisplayString>light_xpos[{m->nlight}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nlight*3</Item>
+					<ArrayItems>
+						<Size>m->nlight*3</Size>
+						<ValuePointer>light_xpos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="light_xdir">
+				<DisplayString>light_xdir[{m->nlight}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nlight*3</Item>
+					<ArrayItems>
+						<Size>m->nlight*3</Size>
+						<ValuePointer>light_xdir</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			<!-- ======== computed by mj_fwdPosition/mj_comPos ======== -->
+			<Synthetic Name="subtree_com">
+				<DisplayString>subtree_com[{m->nbody}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*3</Item>
+					<ArrayItems>
+						<Size>m->nbody*3</Size>
+						<ValuePointer>subtree_com</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="cdof">
+				<DisplayString>cdof[{m->nv}][6]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv*6</Item>
+					<ArrayItems>
+						<Size>m->nv*6</Size>
+						<ValuePointer>cdof</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="cinert">
+				<DisplayString>cinert[{m->nbody}][10]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*10</Item>
+					<ArrayItems>
+						<Size>m->nbody*10</Size>
+						<ValuePointer>cinert</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== computed by mj_fwdPosition/mj_transmission Inertia and mass arrays ======== -->
+			<Synthetic Name="crb">
+				<DisplayString>crb[{m->nbody}][10]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*10</Item>
+					<ArrayItems>
+						<Size>m->nbody*10</Size>
+						<ValuePointer>crb</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qM">
+				<DisplayString>qM[{m->nM}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nM</Item>
+					<ArrayItems>
+						<Size>m->nM</Size>
+						<ValuePointer>qM</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="M">
+				<DisplayString>M[{m->nC}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nC</Item>
+					<ArrayItems>
+						<Size>m->nC</Size>
+						<ValuePointer>M</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== computed by mj_fwdPosition/mj_factorM ======== -->
+			<Synthetic Name="qLD">
+				<DisplayString>qLD[{m->nC}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nC</Size>
+						<ValuePointer>qLD</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qLDiagInv">
+				<DisplayString>qLDiagInv[{m->nv}]</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qLDiagInv</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== computed by mj_fwdVelocity/mj_comVel ======== -->
+			<Synthetic Name="cvel">
+				<DisplayString>cvel[{m->nbody}][6]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nbody*6</Item>
+					<ArrayItems>
+						<Size>m->nbody*6</Size>
+						<ValuePointer>cvel</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="cdof_dot">
+				<DisplayString>cdof_dot[{m->nv}][6]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv*6</Item>
+					<ArrayItems>
+						<Size>m->nv*6</Size>
+						<ValuePointer>cdof_dot</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+
+			<!-- ========  computed by mj_fwdVelocity/mj_rne (without acceleration) ======== -->
+			<Synthetic Name="qfrc_bias">
+				<DisplayString>qfrc_bias[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_bias</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ========  computed by mj_fwdVelocity/mj_passive ======== -->
+			<Synthetic Name="qfrc_spring">
+				<DisplayString>qfrc_spring[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_spring</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_damper">
+				<DisplayString>qfrc_damper[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_damper</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_gravcomp">
+				<DisplayString>qfrc_gravcomp[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_gravcomp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_fluid">
+				<DisplayString>qfrc_fluid[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_fluid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_passive">
+				<DisplayString>qfrc_passive[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_passive</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ========  computed by mj_fwdAcceleration ======== -->
+			<Synthetic Name="qfrc_smooth">
+				<DisplayString>qfrc_smooth[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qfrc_smooth</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qacc_smooth">
+				<DisplayString>qacc_smooth[{m->nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">m->nv</Item>
+					<ArrayItems>
+						<Size>m->nv</Size>
+						<ValuePointer>qacc_smooth</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+
+			<!-- ======== computed by mj_fwdConstraint/mj_inverse ======== -->
+			<Synthetic Name="qfrc_constraint">
+				<DisplayString>qfrc_constraint</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>qfrc_constraint</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qfrc_actuator">
+				<DisplayString>qfrc_actuator</DisplayString>
+				<Expand>
+					<ArrayItems>
+						<Size>m->nq</Size>
+						<ValuePointer>qfrc_actuator</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			<!-- ======== computed by mj_makeConstraint ======== -->
+			<Synthetic Name="efc_type">
+				<DisplayString>efc_type[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_type</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_id">
+				<DisplayString>efc_id[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_id</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_J_rownnz">
+				<DisplayString>efc_J_rownnz[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_J_rownnz</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_J_rowadr">
+				<DisplayString>efc_J_rowadr[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_J_rowadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_J_rowsuper">
+				<DisplayString>efc_J_rowsuper[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_J_rowsuper</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_J_colind">
+				<DisplayString>efc_J_colind[{nJ}]</DisplayString>
+				<Expand>
+					<Item Name="size">nJ</Item>
+					<ArrayItems>
+						<Size>nJ</Size>
+						<ValuePointer>efc_J_colind</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_J">
+				<DisplayString>efc_J[{nJ}]</DisplayString>
+				<Expand>
+					<Item Name="size">nJ</Item>
+					<ArrayItems>
+						<Size>nJ</Size>
+						<ValuePointer>efc_J</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_pos">
+				<DisplayString>efc_pos[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_pos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_margin">
+				<DisplayString>efc_margin[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_margin</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_frictionloss">
+				<DisplayString>efc_frictionloss[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_frictionloss</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_diagApprox">
+				<DisplayString>efc_diagApprox[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_diagApprox</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_KBIP">
+				<DisplayString>efc_KBIP[{nefc*4}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc*4</Item>
+					<ArrayItems>
+						<Size>nefc*4</Size>
+						<ValuePointer>efc_KBIP</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_D">
+				<DisplayString>efc_D[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_D</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_R">
+				<DisplayString>efc_R[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_R</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			<!-- ======== Constraint (efc) velocity and reference acceleration ======== -->
+			<Synthetic Name="efc_vel">
+				<DisplayString>efc_vel[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_vel</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_aref">
+				<DisplayString>efc_aref[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_aref</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== computed by mj_fwdConstraint/mj_inverse ======== -->
+			<Synthetic Name="efc_b">
+				<DisplayString>efc_b[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_b</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="iefc_aref">
+				<DisplayString>iefc_aref[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>iefc_aref</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="iefc_state">
+				<DisplayString>iefc_state[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>iefc_state</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="iefc_force">
+				<DisplayString>iefc_force[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>iefc_force</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_state">
+				<DisplayString>efc_state[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_state</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="efc_force">
+				<DisplayString>efc_force[{nefc}]</DisplayString>
+				<Expand>
+					<Item Name="size">nefc</Item>
+					<ArrayItems>
+						<Size>nefc</Size>
+						<ValuePointer>efc_force</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="ifrc_constraint">
+				<DisplayString>ifrc_constraint[{nidof}]</DisplayString>
+				<Expand>
+					<Item Name="size">nidof</Item>
+					<ArrayItems>
+						<Size>nidof</Size>
+						<ValuePointer>ifrc_constraint</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			
+		</Expand>
+	</Type>
+</AutoVisualizer>

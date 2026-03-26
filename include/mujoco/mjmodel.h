@@ -1,4 +1,4 @@
-// Copyright 2021 DeepMind Technologies Limited
+﻿// Copyright 2021 DeepMind Technologies Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -641,6 +641,8 @@ typedef struct mjStatistic_ mjStatistic;
 //---------------------------------- mjModel -------------------------------------------------------
 
 struct mjModel_ {
+  char xml_path[512];             // 模型XML文件的完整路径（自定义添加）
+    
   // ------------------------------- sizes
 
   // sizes needed at mjModel construction
@@ -648,7 +650,7 @@ struct mjModel_ {
   int nv;                         // number of degrees of freedom = dim(qvel)
   int nu;                         // number of actuators/controls = dim(ctrl)
   int na;                         // number of activation states = dim(act)
-  int nbody;                      // number of bodies
+  int nbody;                      // number of bodies           hy: 对于父子间无joint（fix连接）的体，仍然按照2个体计算
   int nbvh;                       // number of total bounding volumes in all bodies
   int nbvhstatic;                 // number of static bounding volumes (aabb stored in mjModel)
   int nbvhdynamic;                // number of dynamic bounding volumes (aabb stored in mjData)
@@ -751,6 +753,7 @@ struct mjModel_ {
 
   // bodies
   int*      body_parentid;        // id of body's parent                      (nbody x 1)
+  int*      body_rootid;          // id of root above body                    (nbody x 1)  hy; 所属子树的根
   int*      body_rootid;          // ancestor that is direct child of world   (nbody x 1)
   int*      body_weldid;          // top ancestor with no dofs to this body   (nbody x 1)
   int*      body_mocapid;         // id of mocap data; -1: none               (nbody x 1)
@@ -761,7 +764,8 @@ struct mjModel_ {
   int*      body_treeid;          // id of body's kinematic tree; -1: static  (nbody x 1)
   int*      body_geomnum;         // number of geoms                          (nbody x 1)
   int*      body_geomadr;         // start addr of geoms; -1: no geoms        (nbody x 1)
-  mjtByte*  body_simple;          // 1: diag M; 2: diag M, sliders only       (nbody x 1)
+  // hy: worldbody以及其没有自由度的子体被设置为1类simple
+  mjtByte*  body_simple;          // 1: diag M; 2: diag M, sliders only       (nbody x 1)   
   mjtByte*  body_sameframe;       // same frame as inertia (mjtSameframe)     (nbody x 1)
   mjtNum*   body_pos;             // position offset rel. to parent body      (nbody x 3)
   mjtNum*   body_quat;            // orientation offset rel. to parent body   (nbody x 4)
@@ -814,7 +818,8 @@ struct mjModel_ {
   // dofs
   int*      dof_bodyid;           // id of dof's body                         (nv x 1)
   int*      dof_jntid;            // id of dof's joint                        (nv x 1)
-  int*      dof_parentid;         // id of dof's parent; -1: none             (nv x 1)
+  // hy: dof_parentid[i]存储每个DOF i的父DOF的ID，对于单个球关节，3个自由度之间是逐次父子关系
+  int*      dof_parentid;         // id of dof's parent; -1: none             (nv x 1)          
   int*      dof_treeid;           // id of dof's kinematic tree               (nv x 1)
   int*      dof_Madr;             // dof address in M-diagonal                (nv x 1)
   int*      dof_simplenum;        // number of consecutive simple dofs        (nv x 1)
@@ -1093,7 +1098,16 @@ struct mjModel_ {
   mjtByte*  eq_active0;           // initial enable/disable constraint state  (neq x 1)
   mjtNum*   eq_solref;            // constraint solver reference              (neq x mjNREF)
   mjtNum*   eq_solimp;            // constraint solver impedance              (neq x mjNIMP)
-  mjtNum*   eq_data;              // numeric data for constraint              (neq x mjNEQDATA)
+  
+  // hy：等式约束的一些定义参数，每个约束提供11个数
+  // connect约束: data[0 - 2]: body1上的锚点位置, 体局部坐标系下表示；data[3 - 5]: body2
+  //           上的锚点位置, 体局部坐标系下表示；data[6 - 10]: 未使用
+  // weld约束: data[0 - 2]: body2上的锚点位置, 体局部坐标系下表示；data[3 - 5]: body1
+  //           上的锚点位置, 体局部坐标系下表示；data[6 - 9]: body1到body2的相对旋转
+  //           四元数；data[10]: torquescale 参数, 用于缩放角度残差(旋转约束违反量)
+  // joint约束：eq_data[0-4]: 五次多项式系数 a₀, a₁, a₂, a₃, a₄; data[5 - 10]: 未使用
+  // Note：connect约束与weld约束的body1和body2的锚点存储顺序相反
+  mjtNum*   eq_data;              // numeric data for constraint              (neq x mjNEQDATA) hy:(neq x 11)
 
   // tendons
   int*      tendon_adr;           // address of first object in tendon's path (ntendon x 1)

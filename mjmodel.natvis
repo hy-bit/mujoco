@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<!-- MuJoCo mjModel visualization -->
+	<Type Name="mjModel_">
+		<DisplayString>{{nq={nq}, nv={nv}, nu={nu}, na={na}, nbody={nbody}}}</DisplayString>
+		<Expand>
+
+			<!-- ======== default generalized coordinates ======== -->
+			<Synthetic Name="qpos0">
+				<DisplayString>qpos0[{nq}]</DisplayString>
+				<Expand>
+					<Item Name="size">nq</Item>
+					<ArrayItems>
+						<Size>nq</Size>
+						<ValuePointer>qpos0</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="qpos_spring">
+				<DisplayString>qpos_spring[{nq}]</DisplayString>
+				<Expand>
+					<Item Name="size">nq</Item>
+					<ArrayItems>
+						<Size>nq</Size>
+						<ValuePointer>qpos_spring</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== bodies ======== -->
+			<Synthetic Name="body_parentid">
+				<DisplayString>body_parentid[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_parentid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_rootid">
+				<DisplayString>body_rootid[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_rootid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_weldid">
+				<DisplayString>body_weldid[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_weldid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_mocapid">
+				<DisplayString>body_mocapid[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_mocapid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_jntnum">
+				<DisplayString>body_jntnum[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_jntnum</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_jntadr">
+				<DisplayString>body_jntadr[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_jntadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_dofnum">
+				<DisplayString>body_dofnum[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_dofnum</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_dofadr">
+				<DisplayString>body_dofadr[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_dofadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_treeid">
+				<DisplayString>body_treeid[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_treeid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_geomnum">
+				<DisplayString>body_geomnum[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_geomnum</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_geomadr">
+				<DisplayString>body_geomadr[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_geomadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_simple">
+				<DisplayString>body_simple[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_simple</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_sameframe">
+				<DisplayString>body_sameframe[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_sameframe</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_pos">
+				<DisplayString>body_pos[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_pos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_quat">
+				<DisplayString>body_quat[{nbody}][4]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*4</Item>
+					<ArrayItems>
+						<Size>nbody*4</Size>
+						<ValuePointer>body_quat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_ipos">
+				<DisplayString>body_ipos[{nbody}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*3</Item>
+					<ArrayItems>
+						<Size>nbody*3</Size>
+						<ValuePointer>body_ipos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_iquat">
+				<DisplayString>body_iquat[{nbody}][4]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*4</Item>
+					<ArrayItems>
+						<Size>nbody*4</Size>
+						<ValuePointer>body_iquat</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_mass">
+				<DisplayString>body_mass[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_mass</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_subtreemass">
+				<DisplayString>body_subtreemass[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_subtreemass</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_inertia">
+				<DisplayString>body_inertia[{nbody}][3]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*3</Item>
+					<ArrayItems>
+						<Size>nbody*3</Size>
+						<ValuePointer>body_inertia</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_invweight0">
+				<DisplayString>body_invweight0[{nbody}][2]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*2</Item>
+					<ArrayItems>
+						<Size>nbody*2</Size>
+						<ValuePointer>body_invweight0</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_gravcomp">
+				<DisplayString>body_gravcomp[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_gravcomp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_margin">
+				<DisplayString>body_margin[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_margin</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_user">
+				<DisplayString>body_user[{nbody}][nuser_body]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody*nuser_body</Item>
+					<ArrayItems>
+						<Size>nbody*nuser_body</Size>
+						<ValuePointer>body_user</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_plugin">
+				<DisplayString>body_plugin[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_plugin</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_contype">
+				<DisplayString>body_contype[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_contype</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_conaffinity">
+				<DisplayString>body_conaffinity[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_conaffinity</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_bvhadr">
+				<DisplayString>body_bvhadr[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_bvhadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="body_bvhnum">
+				<DisplayString>body_bvhnum[{nbody}]</DisplayString>
+				<Expand>
+					<Item Name="size">nbody</Item>
+					<ArrayItems>
+						<Size>nbody</Size>
+						<ValuePointer>body_bvhnum</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<!-- ======== joints ======== -->
+			<Synthetic Name="jnt_type">
+				<DisplayString>jnt_type[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_type</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_qposadr">
+				<DisplayString>jnt_qposadr[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_qposadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_dofadr">
+				<DisplayString>jnt_dofadr[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_dofadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_bodyid">
+				<DisplayString>jnt_bodyid[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_bodyid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_group">
+				<DisplayString>jnt_group[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_group</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_limited">
+				<DisplayString>jnt_limited[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_limited</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_actfrclimited">
+				<DisplayString>jnt_actfrclimited[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_actfrclimited</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_actgravcomp">
+				<DisplayString>jnt_actgravcomp[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_actgravcomp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_solref">
+				<DisplayString>jnt_solref[{njnt*2}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt*2</Item>
+					<ArrayItems>
+						<Size>njnt*2</Size>
+						<ValuePointer>jnt_solref</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_solimp">
+				<DisplayString>jnt_solimp[{njnt*5}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt*5</Item>
+					<ArrayItems>
+						<Size>njnt*5</Size>
+						<ValuePointer>jnt_solimp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_pos">
+				<DisplayString>jnt_pos[{njnt*3}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt*3</Item>
+					<ArrayItems>
+						<Size>njnt*3</Size>
+						<ValuePointer>jnt_pos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_axis">
+				<DisplayString>jnt_axis[{njnt*3}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt*3</Item>
+					<ArrayItems>
+						<Size>njnt*3</Size>
+						<ValuePointer>jnt_axis</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_stiffness">
+				<DisplayString>jnt_stiffness[{njnt}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt</Item>
+					<ArrayItems>
+						<Size>njnt</Size>
+						<ValuePointer>jnt_stiffness</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="jnt_range">
+				<DisplayString>jnt_range[{njnt*2}]</DisplayString>
+				<Expand>
+					<Item Name="size">njnt*2</Item>
+					<ArrayItems>
+						<Size>njnt*2</Size>
+						<ValuePointer>jnt_range</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			
+			<Synthetic Name="actuator_gear">
+				<DisplayString>actuator_gear[{nu}]</DisplayString>
+				<Expand>
+					<Item Name="size">nu</Item>
+					<ArrayItems>
+						<Size>nu</Size>
+						<ValuePointer>actuator_gear</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="sensor_type">
+				<DisplayString>sensor_type[{nsensor}]</DisplayString>
+				<Expand>
+					<Item Name="size">nsensor</Item>
+					<ArrayItems>
+						<Size>nsensor</Size>
+						<ValuePointer>sensor_type</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== dofs ======== -->
+			<Synthetic Name="dof_bodyid">
+				<DisplayString>dof_bodyid[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_bodyid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_jntid">
+				<DisplayString>dof_jntid[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_jntid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_parentid">
+				<DisplayString>dof_parentid[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_parentid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_treeid">
+				<DisplayString>dof_treeid[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_treeid</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_Madr">
+				<DisplayString>dof_Madr[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_Madr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_simplenum">
+				<DisplayString>dof_simplenum[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_simplenum</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_solref">
+				<DisplayString>dof_solref[{nv*2}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv*2</Item>
+					<ArrayItems>
+						<Size>nv*2</Size>
+						<ValuePointer>dof_solref</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_solimp">
+				<DisplayString>dof_solimp[{nv*5}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv*5</Item>
+					<ArrayItems>
+						<Size>nv*5</Size>
+						<ValuePointer>dof_solimp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_frictionloss">
+				<DisplayString>dof_frictionloss[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_frictionloss</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_armature">
+				<DisplayString>dof_armature[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_armature</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_damping">
+				<DisplayString>dof_damping[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_damping</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_invweight0">
+				<DisplayString>dof_invweight0[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_invweight0</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="dof_M0">
+				<DisplayString>dof_M0[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>dof_M0</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== geoms ======== -->
+			<Synthetic Name="geom_pos">
+				<DisplayString>geom_pos[{ngeom}]</DisplayString>
+				<Expand>
+					<Item Name="size">ngeom</Item>
+					<ArrayItems>
+						<Size>ngeom</Size>
+						<ValuePointer>geom_pos</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="geom_size">
+				<DisplayString>geom_size[{ngeom}]</DisplayString>
+				<Expand>
+					<Item Name="size">ngeom</Item>
+					<ArrayItems>
+						<Size>ngeom</Size>
+						<ValuePointer>geom_size</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== equality constraints ======== -->
+			<Synthetic Name="eq_type">
+				<DisplayString>eq_type[{neq}]</DisplayString>
+				<Expand>
+					<Item Name="size">neq</Item>
+					<ArrayItems>
+						<Size>neq</Size>
+						<ValuePointer>eq_type</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_obj1id">
+				<DisplayString>eq_obj1id[{neq}]</DisplayString>
+				<Expand>
+					<Item Name="size">neq</Item>
+					<ArrayItems>
+						<Size>neq</Size>
+						<ValuePointer>eq_obj1id</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_obj2id">
+				<DisplayString>eq_obj2id[{neq}]</DisplayString>
+				<Expand>
+					<Item Name="size">neq</Item>
+					<ArrayItems>
+						<Size>neq</Size>
+						<ValuePointer>eq_obj2id</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_objtype">
+				<DisplayString>eq_objtype[{neq}]</DisplayString>
+				<Expand>
+					<Item Name="size">neq</Item>
+					<ArrayItems>
+						<Size>neq</Size>
+						<ValuePointer>eq_objtype</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_active0">
+				<DisplayString>eq_active0[{neq}]</DisplayString>
+				<Expand>
+					<Item Name="size">neq</Item>
+					<ArrayItems>
+						<Size>neq</Size>
+						<ValuePointer>eq_active0</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_solref">
+				<DisplayString>eq_solref[{neq}][2]</DisplayString>
+				<Expand>
+					<Item Name="size">neq*2</Item>
+					<ArrayItems>
+						<Size>neq*2</Size>
+						<ValuePointer>eq_solref</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_solimp">
+				<DisplayString>eq_solimp[{neq}][5]</DisplayString>
+				<Expand>
+					<Item Name="size">neq*5</Item>
+					<ArrayItems>
+						<Size>neq*5</Size>
+						<ValuePointer>eq_solimp</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="eq_data">
+				<DisplayString>eq_data[{neq}][11]</DisplayString>
+				<Expand>
+					<Item Name="size">neq*11</Item>
+					<ArrayItems>
+						<Size>neq*11</Size>
+						<ValuePointer>eq_data</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+			<!-- ======== sparse inertia matrix (M) ======== -->
+			<Synthetic Name="M_rownnz">
+				<DisplayString>M_rownnz[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>M_rownnz</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="M_rowadr">
+				<DisplayString>M_rowadr[{nv}]</DisplayString>
+				<Expand>
+					<Item Name="size">nv</Item>
+					<ArrayItems>
+						<Size>nv</Size>
+						<ValuePointer>M_rowadr</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="M_colind">
+				<DisplayString>M_colind[{nC}]</DisplayString>
+				<Expand>
+					<Item Name="size">nC</Item>
+					<ArrayItems>
+						<Size>nC</Size>
+						<ValuePointer>M_colind</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+
+
+			<Item Name="names">names</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

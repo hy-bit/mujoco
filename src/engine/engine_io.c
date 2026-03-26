@@ -1098,6 +1098,7 @@ void mj_makeRawData(mjData** dest, const mjModel* m) {
   if (allocate) {
     *dest = d;
   }
+  d->m = m;     // 添加model，支持后续debug可视化
 }
 
 

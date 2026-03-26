@@ -189,7 +189,9 @@ typedef struct mjSolverStat_ mjSolverStat;
 //---------------------------------- mjData --------------------------------------------------------
 
 struct mjData_ {
-  // constant sizes
+    mjModel* m;  // 指向m的指针，用于可视化debug
+    
+    // constant sizes
   mjtSize narena;            // size of the arena in bytes (inclusive of the stack)
   mjtSize nbuffer;           // size of main buffer in bytes
   int     nplugin;           // number of plugin instances
@@ -299,6 +301,7 @@ struct mjData_ {
   mjtNum* light_xdir;        // Cartesian light direction                        (nlight x 3)
 
   // computed by mj_fwdPosition/mj_comPos
+  // hy：每个体以自身为root的子树的质心，注意每个体的subtree_com都可能不一样，与cdof的参考点不同
   mjtNum* subtree_com;       // center of mass of each subtree                   (nbody x 3)
   mjtNum* cdof;              // com-based motion axis of each dof (rot:lin)      (nv x 6)
   mjtNum* cinert;            // com-based body inertia and mass                  (nbody x 10)
@@ -334,7 +337,7 @@ struct mjData_ {
   // computed by mj_fwdPosition/mj_makeM
   mjtNum* crb;               // com-based composite inertia and mass             (nbody x 10)
   mjtNum* qM;                // inertia (sparse)                                 (nM x 1)
-  mjtNum* M;                 // reduced inertia (compressed sparse row)          (nC x 1)
+  mjtNum* M;                 // reduced inertia (compressed sparse row)          (nC x 1)   // 无分支时，M存储下三角
 
   // computed by mj_fwdPosition/mj_factorM
   mjtNum* qLD;               // L'*D*L factorization of M (sparse)               (nC x 1)
@@ -358,6 +361,7 @@ struct mjData_ {
   mjtNum* actuator_velocity; // actuator velocities                              (nu x 1)
 
   // computed by mj_fwdVelocity/mj_comVel
+  // hy：每个体的速度，对于线速度,取所在一级子树质心处的速度(即对同一个链上的所有体的线速度，都取同一个位置的)
   mjtNum* cvel;              // com-based velocity (rot:lin)                     (nbody x 6)
   mjtNum* cdof_dot;          // time-derivative of cdof (rot:lin)                (nv x 6)
 

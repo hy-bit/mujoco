@@ -429,7 +429,7 @@ void mj_instantiateEquality(const mjModel* m, mjData* d) {
       if (m->eq_objtype[i] == mjOBJ_BODY) {
         for (int j=0; j < 2; j++) {
           mju_mulMatVec3(pos[j], d->xmat + 9*id[j], data + 3*j);
-          mju_addTo3(pos[j], d->xpos + 3*id[j]);
+          mju_addTo3(pos[j], d->xpos + 3*id[j]);        // pos;2个anchor点的全局位置
           body_id[j] = id[j];
         }
       }
@@ -505,7 +505,7 @@ void mj_instantiateEquality(const mjModel* m, mjData* d) {
         mju_negQuat(quat1, quat_site1);
       }
 
-      mju_mulQuat(quat2, quat1, quat);
+      mju_mulQuat(quat2, quat1, quat);                // hy: quat2 = neg(q1)*q0*relpose
       mju_scl3(cpos+3, quat2+1, torquescale);         // scale axis components by torquescale
 
       // correct rotation Jacobian: 0.5 * neg(q1) * (jac0-jac1) * q0 * relpose
@@ -534,7 +534,7 @@ void mj_instantiateEquality(const mjModel* m, mjData* d) {
     case mjEQ_JOINT:                // couple joint values with cubic
     case mjEQ_TENDON:               // couple tendon lengths with cubic
       // get scalar positions and their Jacobians
-      for (int j=0; j < 1+(id[1] >= 0); j++) {
+      for (int j=0; j < 1+(id[1] >= 0); j++) {              // j < 1 or j < 2，循环一次或两次
         if (m->eq_type[i] == mjEQ_JOINT) {    // joint object
           pos[j][0] = d->qpos[m->jnt_qposadr[id[j]]];
           ref[j] = m->qpos0[m->jnt_qposadr[id[j]]];
@@ -1100,9 +1100,9 @@ void mj_diagApprox(const mjModel* m, mjData* d) {
           b2 = m->site_bodyid[b2];
         }
 
-        // body translation or rotation depending on weldcnt
-        dA[i] = m->body_invweight0[2*b1 + (weldcnt > 2)] +
-                m->body_invweight0[2*b2 + (weldcnt > 2)];
+        // body translation or rotation depending on weldcnt        // weldcnt为0-5循环，
+        dA[i] = m->body_invweight0[2*b1 + (weldcnt > 2)] +          // weldcnt<=2对应平动约束，取body_invweight0[n+0] 
+            m->body_invweight0[2 * b2 + (weldcnt > 2)];             // weldcnt>2对应转动约束，取body_invweight0[n+1] 
         weldcnt = (weldcnt + 1) % 6;
         break;
 
@@ -1957,7 +1957,7 @@ static int mj_nc(const mjModel* m, mjData* d, int* nnz) {
     if (dim == 1) {
       nc++;
       nnzc += NV;
-    } else if (ispyramid) {
+    } else if (ispyramid) {     // 为什么棱锥摩擦锥，添加 2 *（dim -1）个约束？ 
       nc += 2*(dim-1);
       nnzc += 2*(dim-1)*NV;
     } else {
@@ -2351,7 +2351,7 @@ void mj_constraintUpdate_impl(int ne, int nf, int nefc,
 
   // compute unconstrained efc_force
   for (int i=0; i < nefc; i++) {
-    force[i] = -D[i]*jar[i];
+    force[i] = -D[i]*jar[i];            // 对于等式约束：efc_force = - R'(J qacc - aref)  对于关节限位: 负号抵消了Jaref自带的负号
   }
 
   // update constraints
@@ -2401,15 +2401,15 @@ void mj_constraintUpdate_impl(int ne, int nf, int nefc,
 
     // non-negative constraint
     if (type[i] != mjCNSTR_CONTACT_ELLIPTIC) {
-      // constraint is satisfied: no cost
-      if (jar[i] >= 0) {
-        force[i] = 0;
+      // constraint is satisfied: no cost       jar[i] >= 0，即lambda<=0,不满足非负条件
+      if (jar[i] >= 0) {                    // 不满足lambda非负条件：约束力直接置0，无gauss贡献
+          force[i] = 0;                       
 
         state[i] = mjCNSTRSTATE_SATISFIED;
       }
 
       // quadratic
-      else {
+      else {                                // 满足lambda非负条件：累加gauss贡献
         if (cost) {
           s += 0.5*D[i]*jar[i]*jar[i];
         }

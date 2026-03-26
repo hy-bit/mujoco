@@ -370,9 +370,9 @@ static void set0(mjModel* m, mjData* d) {
     else {
       if (nv) {
         // inverse spatial inertia: A = J*inv(M)*J'
-        mj_jacBodyCom(m, d, jac, jac+3*nv, i);
-        mj_solveM(m, d, tmp, jac, 6);
-        mju_mulMatMatT(A, jac, tmp, 6, nv, 6);
+        mj_jacBodyCom(m, d, jac, jac+3*nv, i);      // jac = [ Sp(com) ; Sr ] 
+        mj_solveM(m, d, tmp, jac, 6);               // tmp = inv(M)*jac'
+        mju_mulMatMatT(A, jac, tmp, 6, nv, 6);      // A = jac*inv(M)*jac'
       }
 
       // average diagonal and assign

@@ -670,10 +670,14 @@ static void warmstart(const mjModel* m, mjData* d) {
       mjtNum* Ma = mjSTACKALLOC(d, nv, mjtNum);
       mj_mulM(m, d, Ma, d->qacc_warmstart);
       for (int i=0; i < nv; i++) {
+        // qacc_warmstart的高斯惯性项：
+        // G1(qacc_warmstart) = 0.5*(qacc_warmstart - qacc_smooth)' M (qacc_warmstart - qacc_smooth)
         cost_warmstart += 0.5*(Ma[i]-d->qfrc_smooth[i])*(d->qacc_warmstart[i]-d->qacc_smooth[i]);
       }
 
       // cost(qacc_smooth)
+      // qacc_smooth的高斯惯性项为0：
+      // G1 = 0.5 * (qacc_smooth - qacc_smooth)' M (qacc_smooth - qacc_smooth)
       mjtNum cost_smooth;
       mj_constraintUpdate(m, d, d->efc_b, &cost_smooth, 0);
 
@@ -1272,7 +1276,8 @@ void mj_forward(const mjModel* m, mjData* d) {
 // advance simulation using control callback
 void mj_step(const mjModel* m, mjData* d) {
   TM_START;
-
+  //std::cout << "Simulate time = " << d->time << std::endl;
+  printf("Simulate time = %f\n", d->time);
   // common to all integrators
   mj_checkPos(m, d);
   mj_checkVel(m, d);
@@ -1283,6 +1288,9 @@ void mj_step(const mjModel* m, mjData* d) {
   if (mjENABLED(mjENBL_FWDINV)) {
     mj_compareFwdInv(m, d);
   }
+
+  OutputResultForDebug(m,d);
+
 
   // use selected integrator
   switch ((mjtIntegrator) m->opt.integrator) {
@@ -1359,4 +1367,197 @@ void mj_step2(const mjModel* m, mjData* d) {
 
   d->timer[mjTIMER_STEP].number--;
   TM_END(mjTIMER_STEP);
+}
+
+
+void OutputResultForDebug(const mjModel* m, mjData* d) {
+#if 1
+
+    // 获取 xml 路径
+    const char* xml_path = m->xml_path;
+    const char* last_slash1 = strrchr(xml_path, '/');
+    const char* last_slash2 = strrchr(xml_path, '\\');
+    const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
+    const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
+
+    // 拷贝目录部分
+    char dir[512] = { 0 };
+    if (last_slash) {
+        size_t dirlen = last_slash - xml_path + 1;
+        strncpy(dir, xml_path, dirlen);
+        dir[dirlen] = '\0';
+    }
+
+    // 拷贝文件名并替换后缀为 .txt
+    char txt_filename[512] = { 0 };
+    strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
+    char* dot = strrchr(txt_filename, '.');
+    if (dot) {
+        strcpy(dot, ".txt");
+    }
+    else {
+        // 没有后缀，直接加.txt
+        size_t len = strlen(txt_filename);
+        if (len < sizeof(txt_filename) - 4) {
+            strcat(txt_filename, ".txt");
+        }
+    }
+
+    // 拼接完整路径
+    char filename[1024];
+    snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
+
+
+    // 检查是否为第一次仿真（time为0），如果是则清空文件内容
+    if (d->time == 0.0) {
+        FILE* fp_clear = fopen(filename, "w");
+
+        if (fp_clear) {
+            OutputTimeForDebug(fp_clear, d, 1);
+            OutputQposForDebug(fp_clear, m, d, 1);
+            OutputQvelForDebug(fp_clear, m, d, 1);
+            OutputQaccForDebug(fp_clear, m, d, 1);
+
+            OutputEfcPosForDebug(fp_clear, m, d, 1);
+            //OutputEfcVelForDebug(fp_clear, m, d, 1);
+            //OutputEfcArefForDebug(fp_clear, m, d, 1);
+            //
+            //OutputQFrcConstraintForDebug(fp_clear, m, d, 1);
+
+            fprintf(fp_clear, "\n");
+            fclose(fp_clear);
+        }
+    }
+
+    FILE* fp = fopen(filename, "a");
+    if (!fp) return;
+
+    // 仿真时间
+    OutputTimeForDebug(fp, d, 0);
+
+    // 位置(qpos)
+    OutputQposForDebug(fp, m, d, 0);
+
+    // 速度(qvel)
+    OutputQvelForDebug(fp, m, d, 0);
+
+    // 加速度(qacc)
+    OutputQaccForDebug(fp, m, d, 0);
+
+
+	// 约束空间位置(efc_pos  )
+    OutputEfcPosForDebug(fp, m, d, 0);
+	//// 约束空间速度(efc_vel  )
+	//OutputEfcVelForDebug(fp, m, d, 0);
+ //   // 参考加速度(efc_aref  )
+ //   OutputEfcArefForDebug(fp, m, d, 0);
+
+ //   //// 约束空间约束力(efc_force )
+ //   //OutputQaccForDebug(fp, m, d, 0);
+
+ //   // 广义坐标空间中的约束力(qfrc_constraint  )
+ //   OutputQFrcConstraintForDebug(fp, m, d, 0);
+
+    // 
+    // 
+    // 
+    // impendance相关量
+
+    // R
+    //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_R[i]);
+
+    // D
+    //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_D[i]);
+
+    // 换行
+    fprintf(fp, "\n");
+
+    fclose(fp);
+#endif
+}
+
+
+void OutputTimeForDebug(FILE* fp, const mjData* d, int header) {
+    if (header)
+        fprintf(fp, "mj-time\t");
+    else
+        fprintf(fp, "%f\t", d->time);
+}
+
+void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nq; ++i)
+            fprintf(fp, "mj-qpos[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nq; ++i)
+            fprintf(fp, "%f\t", d->qpos[i]);
+    }
+}
+
+void OutputQvelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qvel[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "%f\t", d->qvel[i]);
+    }
+}
+
+void OutputQaccForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qacc[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "%f\t", d->qacc[i]);
+    }
+}
+
+void OutputQFrcConstraintForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qfrc_constraint[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "%f\t", d->qfrc_constraint[i]);
+    }
+}
+
+
+void OutputEfcPosForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_pos[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_pos[i]);
+    }
+}
+
+void OutputEfcVelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_vel[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_vel[i]);
+    }
+}
+
+void OutputEfcArefForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_aref[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_aref[i]);
+    }
 }

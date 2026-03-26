@@ -1014,6 +1014,7 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
                            &(ctx->cost), flg_HessianCone);
 
   // compute qfrc_constraint (dense or sparse)
+  // 对于等式约束：qfrc_constraint = - J' R'(J qacc - aref)
   if (!ctx->is_sparse) {
     mju_mulMatTVec(ctx->qfrc_constraint, ctx->J, ctx->efc_force, nefc, nv);
   } else {
@@ -1029,7 +1030,7 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
     ctx->ncone += (ctx->efc_state[i] == mjCNSTRSTATE_CONE);
   }
 
-  // add Gauss cost, set in quadratic[0]
+  // add Gauss cost, set in quadratic[0]  高斯惯性项的常数项
   mjtNum Gauss = 0;
   for (int i=0; i < nv; i++) {
     Gauss += 0.5 * (ctx->Ma[i] - ctx->qfrc_smooth[i]) * (ctx->qacc[i] - ctx->qacc_smooth[i]);
@@ -1044,12 +1045,12 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
 static void CGupdateGradient(mjCGContext* ctx, int flg_Newton) {
   int nv = ctx->nv;
 
-  // grad = M*qacc - qfrc_smooth - qfrc_constraint
+  // grad = M*qacc - qfrc_smooth - qfrc_constraint, 显式：grad = F(qacc) = M*qacc - qfrc_smooth + J' D (J qacc - aref)
   for (int i=0; i < nv; i++) {
     ctx->grad[i] = ctx->Ma[i] - ctx->qfrc_smooth[i] - ctx->qfrc_constraint[i];
   }
 
-  // Newton: Mgrad = H \ grad
+  // Newton: Mgrad = H \ grad,    Mgrad = inv(H) * F(qacc)
   if (flg_Newton) {
     if (ctx->is_sparse) {
       mju_cholSolveSparse(ctx->Mgrad, (ctx->ncone ? ctx->Lcone : ctx->L),
@@ -1334,7 +1335,7 @@ static mjtNum CGsearch(mjCGContext* ctx, mjtNum tolerance, mjtNum ls_iterations)
 
   // save search vector length, check
   mjtNum snorm = mju_norm(ctx->search, nv);
-  if (snorm < mjMINVAL) {
+  if (snorm < mjMINVAL) {                         // 约束求解的牛顿迭代增量很小，表明迭代已经收敛
     ctx->LSresult = 1;                          // search vector too small
     return 0;
   }
@@ -1872,7 +1873,7 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
                       ctx.M_rownnz, ctx.M_rowadr, ctx.M_colind);
 
 
-  // compute Jaref = J * qacc - aref  (dense or sparse)
+  // compute Jaref = J * qacc - aref  (dense or sparse)  对于等式约束：Jaref = J * qacc - aref
   if (!ctx.is_sparse) {
     mju_mulMatVec(ctx.Jaref, ctx.J, ctx.qacc, nefc, nv);
   } else {
@@ -1890,7 +1891,7 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
   }
   CGupdateGradient(&ctx, flg_Newton);
 
-  // start both with preconditioned gradient
+  // start both with preconditioned gradient        hy: search = - inv(H) * F(qacc)
   mju_scl(ctx.search, ctx.Mgrad, -1, nv);
 
   // compute and save scaling factor

@@ -266,6 +266,15 @@ mjModel* LoadModel(const char* file, mj::Simulate& sim) {
     return nullptr;
   }
 
+  // hy：设置模型的 xml_path 字段
+  if (file && file[0]) {
+      strncpy(mnew->xml_path, file, sizeof(mnew->xml_path) - 1);
+      mnew->xml_path[sizeof(mnew->xml_path) - 1] = '\0';
+  }
+  else {
+      mnew->xml_path[0] = '\0';
+  }
+
   // compiler warning: print and pause
   if (loadError[0]) {
     // mj_forward() below will print the warning message
