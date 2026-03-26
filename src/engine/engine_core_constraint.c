@@ -429,7 +429,7 @@ void mj_instantiateEquality(const mjModel* m, mjData* d) {
       if (m->eq_objtype[i] == mjOBJ_BODY) {
         for (int j=0; j < 2; j++) {
           mju_mulMatVec3(pos[j], d->xmat + 9*id[j], data + 3*j);
-          mju_addTo3(pos[j], d->xpos + 3*id[j]);        // pos;2¸öanchorµãµÄÈ«¾ÖÎ»ÖÃ
+          mju_addTo3(pos[j], d->xpos + 3*id[j]);        // pos;2ä¸ªanchorç‚¹çš„å…¨å±€ä½ç½®
           body_id[j] = id[j];
         }
       }
@@ -534,7 +534,7 @@ void mj_instantiateEquality(const mjModel* m, mjData* d) {
     case mjEQ_JOINT:                // couple joint values with cubic
     case mjEQ_TENDON:               // couple tendon lengths with cubic
       // get scalar positions and their Jacobians
-      for (int j=0; j < 1+(id[1] >= 0); j++) {              // j < 1 or j < 2£¬Ñ­»·Ò»´Î»òÁ½´Î
+      for (int j=0; j < 1+(id[1] >= 0); j++) {              // j < 1 or j < 2ï¼Œå¾ªç¯ä¸€æ¬¡æˆ–ä¸¤æ¬¡
         if (m->eq_type[i] == mjEQ_JOINT) {    // joint object
           pos[j][0] = d->qpos[m->jnt_qposadr[id[j]]];
           ref[j] = m->qpos0[m->jnt_qposadr[id[j]]];
@@ -1100,9 +1100,9 @@ void mj_diagApprox(const mjModel* m, mjData* d) {
           b2 = m->site_bodyid[b2];
         }
 
-        // body translation or rotation depending on weldcnt        // weldcntÎª0-5Ñ­»·£¬
-        dA[i] = m->body_invweight0[2*b1 + (weldcnt > 2)] +          // weldcnt<=2¶ÔÓ¦Æ½¶¯Ô¼Êø£¬È¡body_invweight0[n+0] 
-            m->body_invweight0[2 * b2 + (weldcnt > 2)];             // weldcnt>2¶ÔÓ¦×ª¶¯Ô¼Êø£¬È¡body_invweight0[n+1] 
+        // body translation or rotation depending on weldcnt        // weldcntä¸º0-5å¾ªç¯ï¼Œ
+        dA[i] = m->body_invweight0[2*b1 + (weldcnt > 2)] +          // weldcnt<=2å¯¹åº”å¹³åŠ¨çº¦æŸï¼Œå–body_invweight0[n+0] 
+            m->body_invweight0[2 * b2 + (weldcnt > 2)];             // weldcnt>2å¯¹åº”è½¬åŠ¨çº¦æŸï¼Œå–body_invweight0[n+1] 
         weldcnt = (weldcnt + 1) % 6;
         break;
 
@@ -1957,7 +1957,7 @@ static int mj_nc(const mjModel* m, mjData* d, int* nnz) {
     if (dim == 1) {
       nc++;
       nnzc += NV;
-    } else if (ispyramid) {     // ÎªÊ²Ã´Àâ×¶Ä¦²Á×¶£¬Ìí¼Ó 2 *£¨dim -1£©¸öÔ¼Êø£¿ 
+    } else if (ispyramid) {     // ä¸ºä»€ä¹ˆæ£±é”¥æ‘©æ“¦é”¥ï¼Œæ·»åŠ  2 *ï¼ˆdim -1ï¼‰ä¸ªçº¦æŸï¼Ÿ 
       nc += 2*(dim-1);
       nnzc += 2*(dim-1)*NV;
     } else {
@@ -2351,7 +2351,7 @@ void mj_constraintUpdate_impl(int ne, int nf, int nefc,
 
   // compute unconstrained efc_force
   for (int i=0; i < nefc; i++) {
-    force[i] = -D[i]*jar[i];            // ¶ÔÓÚµÈÊ½Ô¼Êø£ºefc_force = - R'(J qacc - aref)  ¶ÔÓÚ¹Ø½ÚÏŞÎ»: ¸ººÅµÖÏûÁËJaref×Ô´øµÄ¸ººÅ
+    force[i] = -D[i]*jar[i];            // å¯¹äºç­‰å¼çº¦æŸï¼šefc_force = - R'(J qacc - aref)  å¯¹äºå…³èŠ‚é™ä½: è´Ÿå·æŠµæ¶ˆäº†Jarefè‡ªå¸¦çš„è´Ÿå·
   }
 
   // update constraints
@@ -2401,15 +2401,15 @@ void mj_constraintUpdate_impl(int ne, int nf, int nefc,
 
     // non-negative constraint
     if (type[i] != mjCNSTR_CONTACT_ELLIPTIC) {
-      // constraint is satisfied: no cost       jar[i] >= 0£¬¼´lambda<=0,²»Âú×ã·Ç¸ºÌõ¼ş
-      if (jar[i] >= 0) {                    // ²»Âú×ãlambda·Ç¸ºÌõ¼ş£ºÔ¼ÊøÁ¦Ö±½ÓÖÃ0£¬ÎŞgauss¹±Ï×
+      // constraint is satisfied: no cost       jar[i] >= 0ï¼Œå³lambda<=0,ä¸æ»¡è¶³éè´Ÿæ¡ä»¶
+      if (jar[i] >= 0) {                    // ä¸æ»¡è¶³lambdaéè´Ÿæ¡ä»¶ï¼šçº¦æŸåŠ›ç›´æ¥ç½®0ï¼Œæ— gaussè´¡çŒ®
           force[i] = 0;                       
 
         state[i] = mjCNSTRSTATE_SATISFIED;
       }
 
       // quadratic
-      else {                                // Âú×ãlambda·Ç¸ºÌõ¼ş£ºÀÛ¼Ógauss¹±Ï×
+      else {                                // æ»¡è¶³lambdaéè´Ÿæ¡ä»¶ï¼šç´¯åŠ gaussè´¡çŒ®
         if (cost) {
           s += 0.5*D[i]*jar[i]*jar[i];
         }
