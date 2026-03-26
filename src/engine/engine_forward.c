@@ -607,7 +607,7 @@ void mj_fwdAcceleration(const mjModel* m, mjData* d) {
     mju_addToInd(d->qfrc_smooth, d->qfrc_actuator, index, nv);
   }
 
-  // qfrc_smooth += project(xfrc_applied)
+  // qfrc_smooth += project(xfrc_applied)       // hy: xfrc_applied
   mj_xfrcAccumulate(m, d, d->qfrc_smooth);
 
   // copy for in-place solve: qacc_smooth = qfrc_smooth
