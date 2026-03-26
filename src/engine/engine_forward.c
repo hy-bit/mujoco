@@ -670,13 +670,13 @@ static void warmstart(const mjModel* m, mjData* d) {
       mjtNum* Ma = mjSTACKALLOC(d, nv, mjtNum);
       mj_mulM(m, d, Ma, d->qacc_warmstart);
       for (int i=0; i < nv; i++) {
-        // qacc_warmstartµÄ¸ßË¹¹ßĞÔÏî£º
+        // qacc_warmstartçš„é«˜æ–¯æƒ¯æ€§é¡¹ï¼š
         // G1(qacc_warmstart) = 0.5*(qacc_warmstart - qacc_smooth)' M (qacc_warmstart - qacc_smooth)
         cost_warmstart += 0.5*(Ma[i]-d->qfrc_smooth[i])*(d->qacc_warmstart[i]-d->qacc_smooth[i]);
       }
 
       // cost(qacc_smooth)
-      // qacc_smoothµÄ¸ßË¹¹ßĞÔÏîÎª0£º
+      // qacc_smoothçš„é«˜æ–¯æƒ¯æ€§é¡¹ä¸º0ï¼š
       // G1 = 0.5 * (qacc_smooth - qacc_smooth)' M (qacc_smooth - qacc_smooth)
       mjtNum cost_smooth;
       mj_constraintUpdate(m, d, d->efc_b, &cost_smooth, 0);
@@ -1374,14 +1374,14 @@ void mj_step2(const mjModel* m, mjData* d) {
 void OutputResultForDebug(const mjModel* m, mjData* d) {
 #if 1
 
-    // »ñÈ¡ xml Â·¾¶
+    // è·å– xml è·¯å¾„
     const char* xml_path = m->xml_path;
     const char* last_slash1 = strrchr(xml_path, '/');
     const char* last_slash2 = strrchr(xml_path, '\\');
     const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
     const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
 
-    // ¿½±´Ä¿Â¼²¿·Ö
+    // æ‹·è´ç›®å½•éƒ¨åˆ†
     char dir[512] = { 0 };
     if (last_slash) {
         size_t dirlen = last_slash - xml_path + 1;
@@ -1389,7 +1389,7 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
         dir[dirlen] = '\0';
     }
 
-    // ¿½±´ÎÄ¼şÃû²¢Ìæ»»ºó×ºÎª .txt
+    // æ‹·è´æ–‡ä»¶åå¹¶æ›¿æ¢åç¼€ä¸º .txt
     char txt_filename[512] = { 0 };
     strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
     char* dot = strrchr(txt_filename, '.');
@@ -1397,19 +1397,19 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
         strcpy(dot, "-mj.txt");
     }
     else {
-        // Ã»ÓĞºó×º£¬Ö±½Ó¼Ó.txt
+        // æ²¡æœ‰åç¼€ï¼Œç›´æ¥åŠ .txt
         size_t len = strlen(txt_filename);
         if (len < sizeof(txt_filename) - 4) {
             strcat(txt_filename, "-mj.txt");
         }
     }
 
-    // Æ´½ÓÍêÕûÂ·¾¶
+    // æ‹¼æ¥å®Œæ•´è·¯å¾„
     char filename[1024];
     snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
 
 
-    // ¼ì²éÊÇ·ñÎªµÚÒ»´Î·ÂÕæ£¨timeÎª0£©£¬Èç¹ûÊÇÔòÇå¿ÕÎÄ¼şÄÚÈİ
+    // æ£€æŸ¥æ˜¯å¦ä¸ºç¬¬ä¸€æ¬¡ä»¿çœŸï¼ˆtimeä¸º0ï¼‰ï¼Œå¦‚æœæ˜¯åˆ™æ¸…ç©ºæ–‡ä»¶å†…å®¹
     if (d->time == 0.0) {
         FILE* fp_clear = fopen(filename, "w");
 
@@ -1433,36 +1433,36 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
     FILE* fp = fopen(filename, "a");
     if (!fp) return;
 
-    // ·ÂÕæÊ±¼ä
+    // ä»¿çœŸæ—¶é—´
     OutputTimeForDebug(fp, d, 0);
 
-    // Î»ÖÃ(qpos)
+    // ä½ç½®(qpos)
     OutputQposForDebug(fp, m, d, 0);
 
-    // ËÙ¶È(qvel)
+    // é€Ÿåº¦(qvel)
     OutputQvelForDebug(fp, m, d, 0);
 
-    // ¼ÓËÙ¶È(qacc)
+    // åŠ é€Ÿåº¦(qacc)
     OutputQaccForDebug(fp, m, d, 0);
 
 
-	// Ô¼Êø¿Õ¼äÎ»ÖÃ(efc_pos  )
+	// çº¦æŸç©ºé—´ä½ç½®(efc_pos  )
     OutputEfcPosForDebug(fp, m, d, 0);
-	//// Ô¼Êø¿Õ¼äËÙ¶È(efc_vel  )
+	//// çº¦æŸç©ºé—´é€Ÿåº¦(efc_vel  )
 	//OutputEfcVelForDebug(fp, m, d, 0);
- //   // ²Î¿¼¼ÓËÙ¶È(efc_aref  )
+ //   // å‚è€ƒåŠ é€Ÿåº¦(efc_aref  )
  //   OutputEfcArefForDebug(fp, m, d, 0);
 
- //   //// Ô¼Êø¿Õ¼äÔ¼ÊøÁ¦(efc_force )
+ //   //// çº¦æŸç©ºé—´çº¦æŸåŠ›(efc_force )
  //   //OutputQaccForDebug(fp, m, d, 0);
 
- //   // ¹ãÒå×ø±ê¿Õ¼äÖĞµÄÔ¼ÊøÁ¦(qfrc_constraint  )
+ //   // å¹¿ä¹‰åæ ‡ç©ºé—´ä¸­çš„çº¦æŸåŠ›(qfrc_constraint  )
  //   OutputQFrcConstraintForDebug(fp, m, d, 0);
 
     // 
     // 
     // 
-    // impendanceÏà¹ØÁ¿
+    // impendanceç›¸å…³é‡
 
     // R
     //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_R[i]);
@@ -1470,7 +1470,7 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
     // D
     //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_D[i]);
 
-    // »»ĞĞ
+    // æ¢è¡Œ
     fprintf(fp, "\n");
 
     fclose(fp);
