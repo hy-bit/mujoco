@@ -1394,13 +1394,13 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
     strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
     char* dot = strrchr(txt_filename, '.');
     if (dot) {
-        strcpy(dot, ".txt");
+        strcpy(dot, "-mj.txt");
     }
     else {
         // 没有后缀，直接加.txt
         size_t len = strlen(txt_filename);
         if (len < sizeof(txt_filename) - 4) {
-            strcat(txt_filename, ".txt");
+            strcat(txt_filename, "-mj.txt");
         }
     }
 
