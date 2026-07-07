@@ -2400,7 +2400,7 @@ void mj_constraintUpdate_impl(int ne, int nf, int nefc,
     // ==== contact
 
     // non-negative constraint
-    if (type[i] != mjCNSTR_CONTACT_ELLIPTIC) {
+    if (type[i] != mjCNSTR_CONTACT_ELLIPTIC) {      // 即关节限位，无摩擦接触或棱锥摩擦锥接触，这些约束应该是不等式约束，涉及lambda非负判定？？
       // constraint is satisfied: no cost       jar[i] >= 0，即lambda<=0,不满足非负条件
       if (jar[i] >= 0) {                    // 不满足lambda非负条件：约束力直接置0，无gauss贡献
           force[i] = 0;                       

@@ -24,6 +24,7 @@
 #include "engine/engine_core_constraint.h"
 #include "engine/engine_core_smooth.h"
 #include "engine/engine_core_util.h"
+#include "engine/engine_macro.h"
 #include "engine/engine_memory.h"
 #include "engine/engine_util_blas.h"
 #include "engine/engine_util_errmem.h"
@@ -318,6 +319,7 @@ static int dualState(const mjModel* m, const mjData* d, int* state) {
 
 // TODO: b/295296178 - add island support to Dual solvers
 void mj_solPGS(const mjModel* m, mjData* d, int maxiter) {
+  TM_START;
   int ne = d->ne, nf = d->nf, nefc = d->nefc;
   const mjtNum *floss = d->efc_frictionloss;
   mjtNum *force = d->efc_force;
@@ -532,6 +534,7 @@ void mj_solPGS(const mjModel* m, mjData* d, int maxiter) {
   dualFinish(m, d);
 
   mj_freeStack(d);
+  TM_END(mjTIMER_SOLVER_PGS);
 }
 
 
@@ -1014,7 +1017,7 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
                            &(ctx->cost), flg_HessianCone);
 
   // compute qfrc_constraint (dense or sparse)
-  // 对于等式约束：qfrc_constraint = - J' R'(J qacc - aref)
+  // 瀵逛簬绛夊紡绾︽潫锛歲frc_constraint = - J' R'(J qacc - aref)
   if (!ctx->is_sparse) {
     mju_mulMatTVec(ctx->qfrc_constraint, ctx->J, ctx->efc_force, nefc, nv);
   } else {
@@ -1030,7 +1033,7 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
     ctx->ncone += (ctx->efc_state[i] == mjCNSTRSTATE_CONE);
   }
 
-  // add Gauss cost, set in quadratic[0]  高斯惯性项的常数项
+  // add Gauss cost, set in quadratic[0]  楂樻柉鎯�ч」鐨勫父鏁伴」
   mjtNum Gauss = 0;
   for (int i=0; i < nv; i++) {
     Gauss += 0.5 * (ctx->Ma[i] - ctx->qfrc_smooth[i]) * (ctx->qacc[i] - ctx->qacc_smooth[i]);
@@ -1045,7 +1048,7 @@ static void CGupdateConstraint(mjCGContext* ctx, int flg_HessianCone) {
 static void CGupdateGradient(mjCGContext* ctx, int flg_Newton) {
   int nv = ctx->nv;
 
-  // grad = M*qacc - qfrc_smooth - qfrc_constraint, 显式：grad = F(qacc) = M*qacc - qfrc_smooth + J' D (J qacc - aref)
+  // grad = M*qacc - qfrc_smooth - qfrc_constraint, 鏄惧紡锛歡rad = F(qacc) = M*qacc - qfrc_smooth + J' D (J qacc - aref)
   for (int i=0; i < nv; i++) {
     ctx->grad[i] = ctx->Ma[i] - ctx->qfrc_smooth[i] - ctx->qfrc_constraint[i];
   }
@@ -1335,7 +1338,7 @@ static mjtNum CGsearch(mjCGContext* ctx, mjtNum tolerance, mjtNum ls_iterations)
 
   // save search vector length, check
   mjtNum snorm = mju_norm(ctx->search, nv);
-  if (snorm < mjMINVAL) {                         // 约束求解的牛顿迭代增量很小，表明迭代已经收敛
+  if (snorm < mjMINVAL) {                         // 绾︽潫姹傝В鐨勭墰椤胯凯浠ｅ閲忓緢灏忥紝琛ㄦ槑杩唬宸茬粡鏀舵暃
     ctx->LSresult = 1;                          // search vector too small
     return 0;
   }
@@ -1846,6 +1849,7 @@ static void HessianIncremental(mjData* d, mjCGContext* ctx, const int* oldstate)
 
 // driver
 static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter, int flg_Newton) {
+  TM_START;
   int iter = 0;
   mjtNum alpha, beta;
   mjtNum *gradold = NULL, *Mgradold = NULL, *Mgraddif = NULL;
@@ -1873,7 +1877,7 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
                       ctx.M_rownnz, ctx.M_rowadr, ctx.M_colind);
 
 
-  // compute Jaref = J * qacc - aref  (dense or sparse)  对于等式约束：Jaref = J * qacc - aref
+  // compute Jaref = J * qacc - aref  (dense or sparse)  瀵逛簬绛夊紡绾︽潫锛欽aref = J * qacc - aref
   if (!ctx.is_sparse) {
     mju_mulMatVec(ctx.Jaref, ctx.J, ctx.qacc, nefc, nv);
   } else {
@@ -1883,6 +1887,7 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
   mju_subFrom(ctx.Jaref, ctx.efc_aref, nefc);
 
   // first update
+  TM_RESTART;
   CGupdateConstraint(&ctx, flg_Newton & (m->opt.cone == mjCONE_ELLIPTIC));
   if (flg_Newton) {
     // compute and factorize Hessian
@@ -1890,6 +1895,7 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
     FactorizeHessian(d, &ctx, /*flg_recompute=*/0);
   }
   CGupdateGradient(&ctx, flg_Newton);
+  TM_ADD(mjTIMER_SOLVER_CGNEWTON_PREP);
 
   // start both with preconditioned gradient        hy: search = - inv(H) * F(qacc)
   mju_scl(ctx.search, ctx.Mgrad, -1, nv);
@@ -1911,7 +1917,9 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
   // main loop
   while (iter < maxiter) {
     // perform linesearch
+    TM_RESTART;
     alpha = CGsearch(&ctx, m->opt.tolerance * m->opt.ls_tolerance, m->opt.ls_iterations);
+    TM_ADD(mjTIMER_SOLVER_CGNEWTON_LINESEARCH);
 
     // no improvement: done
     if (alpha == 0) {
@@ -1932,11 +1940,13 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
     mjtNum oldcost = ctx.cost;
 
     // update
+    TM_RESTART;
     CGupdateConstraint(&ctx, flg_Newton & (m->opt.cone == mjCONE_ELLIPTIC));
     if (flg_Newton) {
       HessianIncremental(d, &ctx, oldstate);
     }
     CGupdateGradient(&ctx, flg_Newton);
+    TM_ADD(mjTIMER_SOLVER_CGNEWTON_PREP);
 
     // count state changes
     int nchange = 0;
@@ -2001,13 +2011,17 @@ static void mj_solCGNewton(const mjModel* m, mjData* d, int island, int maxiter,
     }
   }
 
+  d->timer[mjTIMER_SOLVER_CGNEWTON_PREP].number++;
+  d->timer[mjTIMER_SOLVER_CGNEWTON_LINESEARCH].number++;
   mj_freeStack(d);
 }
 
 
 // CG entry point
 void mj_solCG(const mjModel* m, mjData* d, int maxiter) {
+  TM_START;
   mj_solCGNewton(m, d, /*island=*/-1, maxiter, /*flg_Newton=*/0);
+  TM_END(mjTIMER_SOLVER_CG);
 }
 
 

@@ -90,6 +90,9 @@ MJAPI void mj_fwdConstraint(const mjModel* m, mjData* d);
 // debug输出
 void OutputResultForDebug(const mjModel* m, mjData* d);
 
+// debug: full mjData text next to XML (*-mjdata-full.txt)
+void OutputDataForDebug(const mjModel* m, mjData* d);
+
 // debug输出
 void OutputTimeForDebug(FILE* fp, const mjData* d, int header);
 

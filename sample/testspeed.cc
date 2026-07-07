@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
   }
 
   // read arguments
-  int nstep = 10000, nthread = 0, npoolthread = 0;
+  int nstep = /*10000*/100, nthread = 0, npoolthread = 0;
   // inject small noise by default, to avoid fixed contact state
   double ctrlnoisestd = 0.01;
   double ctrlnoiserate = 0.1;
@@ -340,6 +340,76 @@ int main(int argc, char** argv) {
         mjtNum jstep = number ? d[0]->timer[j].duration/number : 0.0;
         mjtNum percent = number ? 100*jstep/tstep : 0.0;
         std::printf("       %-11s : %6.1f  (%6.2f %%)\n", mjTIMERSTRING[j]+4, jstep, percent);
+      }
+    }
+  }
+
+  std::printf("\n");
+
+  // constraint breakdown and solver internals
+  int constraint_number = d[0]->timer[mjTIMER_CONSTRAINT].number;
+  mjtNum tconstraint = constraint_number ? d[0]->timer[mjTIMER_CONSTRAINT].duration/constraint_number : 0.0;
+  if (tconstraint > 0) {
+    std::printf("   constraint total : %6.1f  (%6.2f %%)\n", tconstraint, 100*tconstraint/tstep);
+
+    // Keep this layer non-overlapping: only direct children of constraint stage.
+    const int constraint_breakdown[] = {
+      mjTIMER_CONSTRAINT_JAC,
+      mjTIMER_CONSTRAINT_WARMSTART,
+      mjTIMER_CONSTRAINT_ISLAND,
+      mjTIMER_CONSTRAINT_SOLVER_PGS,
+      mjTIMER_CONSTRAINT_SOLVER_CG,
+      mjTIMER_CONSTRAINT_SOLVER_NEWTON
+    };
+
+    mjtNum subtotal = 0;
+    for (int timer_id : constraint_breakdown) {
+      int item_number = d[0]->timer[timer_id].number;
+      if (item_number > 0) {
+        mjtNum avg = d[0]->timer[timer_id].duration / item_number;
+        subtotal += avg;
+        std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
+                    mjTIMERSTRING[timer_id], avg, 100*avg/tstep);
+      }
+    }
+
+    mjtNum other_constraint = tconstraint - subtotal;
+    std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
+                "constraint_other", other_constraint, 100*other_constraint/tstep);
+
+    // Solver internals are shown in a separate layer to avoid double counting.
+    int solver_timer_id = -1;
+    if (d[0]->timer[mjTIMER_SOLVER_NEWTON].number > 0) {
+      solver_timer_id = mjTIMER_SOLVER_NEWTON;
+    } else if (d[0]->timer[mjTIMER_SOLVER_CG].number > 0) {
+      solver_timer_id = mjTIMER_SOLVER_CG;
+    }
+
+    if (solver_timer_id >= 0) {
+      int solver_number = d[0]->timer[solver_timer_id].number;
+      mjtNum tsolver = solver_number ? d[0]->timer[solver_timer_id].duration/solver_number : 0.0;
+      if (tsolver > 0) {
+        std::printf("   %-16s : %6.1f  (%6.2f %%)\n",
+                    mjTIMERSTRING[solver_timer_id], tsolver, 100*tsolver/tstep);
+
+        const int solver_breakdown[] = {
+          mjTIMER_SOLVER_CGNEWTON_PREP,
+          mjTIMER_SOLVER_CGNEWTON_LINESEARCH
+        };
+        mjtNum solver_subtotal = 0;
+        for (int timer_id : solver_breakdown) {
+          int item_number = d[0]->timer[timer_id].number;
+          if (item_number > 0) {
+            mjtNum avg = d[0]->timer[timer_id].duration / item_number;
+            solver_subtotal += avg;
+            std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
+                        mjTIMERSTRING[timer_id], avg, 100*avg/tstep);
+          }
+        }
+
+        mjtNum solver_other = tsolver - solver_subtotal;
+        std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
+                    "solver_other", solver_other, 100*solver_other/tstep);
       }
     }
   }

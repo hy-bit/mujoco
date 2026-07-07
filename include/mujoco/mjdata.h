@@ -110,6 +110,21 @@ typedef enum mjtTimer_ {            // internal timers
   mjTIMER_COL_BROAD,                // broadphase
   mjTIMER_COL_NARROW,               // narrowphase
 
+  // breakdown of fwdConstraint
+  mjTIMER_CONSTRAINT_JAC,           // J*qacc_smooth - aref
+  mjTIMER_CONSTRAINT_WARMSTART,     // warmstart
+  mjTIMER_CONSTRAINT_ISLAND,        // island gather/solve/scatter
+  mjTIMER_CONSTRAINT_SOLVER_PGS,    // monolithic PGS dispatch
+  mjTIMER_CONSTRAINT_SOLVER_CG,     // monolithic CG dispatch
+  mjTIMER_CONSTRAINT_SOLVER_NEWTON, // monolithic Newton dispatch
+
+  // breakdown inside solver functions
+  mjTIMER_SOLVER_PGS,               // mj_solPGS total
+  mjTIMER_SOLVER_CG,                // mj_solCG total
+  mjTIMER_SOLVER_NEWTON,            // mj_solNewton total
+  mjTIMER_SOLVER_CGNEWTON_PREP,     // CG/Newton shared setup + updates
+  mjTIMER_SOLVER_CGNEWTON_LINESEARCH,  // CG/Newton line-search
+
   mjNTIMER                          // number of timers
 } mjtTimer;
 
@@ -129,6 +144,7 @@ struct mjContact_ {                // result of collision detection functions
   mjtNum  pos[3];                  // position of contact point: midpoint between geoms     hy: 参考全局系
 
   // hy: 参考全局系,0-2元（行优先下，矩阵的第一行）表示其x轴,即接触法线轴，这与其他矩阵的一列表示一个轴不一致，表明该矩阵取了转置
+  // 注释中的points from geom[0] to geom[1]是直观的geom到geom的含义，而非指其上某个点
   mjtNum  frame[9];                // normal is in [0-2], points from geom[0] to geom[1]    
 
   // contact parameters set by mj_collideGeoms
@@ -425,9 +441,10 @@ struct mjData_ {
   // computed by mj_makeConstraint
   int*    efc_type;          // constraint type (mjtConstraint)                  (nefc x 1)
   // hy: efc_id是每一行约束方程，对应的源对象的id，具体含义根据约束类型有所不同
-  // 等式约束的efc_id：mjModel 里的 equality 索引（0~neq-1）
+  // 等式约束: efc_id是mjModel 里的 equality 索引（0~neq-1）
   // 摩擦约束的：。。。
-  // 关节限位的：mjModel 里的 joint 索引（0~njnt-1）
+  // 关节限位的：是mjModel 里的 joint 索引（0~njnt-1）
+  // 接触约束：是该行约束对应的约束对Id（在d->contact里面的序号，0~ncon-1）
   int*    efc_id;            // id of object of specified type                   (nefc x 1)
   int*    efc_J_rownnz;      // number of non-zeros in constraint Jacobian row   (nefc x 1)
   int*    efc_J_rowadr;      // row start address in colind array                (nefc x 1)

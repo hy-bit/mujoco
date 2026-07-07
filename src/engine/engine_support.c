@@ -95,7 +95,18 @@ const char* mjTIMERSTRING[mjNTIMER]= {
   "pos_make",
   "pos_project",
   "col_broadphase",
-  "col_narrowphase"
+  "col_narrowphase",
+  "constraint_jac",
+  "constraint_warmstart",
+  "constraint_island",
+  "constraint_solver_pgs",
+  "constraint_solver_cg",
+  "constraint_solver_newton",
+  "solver_pgs",
+  "solver_cg",
+  "solver_newton",
+  "solver_cgnewton_prep",
+  "solver_cgnewton_linesearch"
 };
 
 

@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <mujoco/mjdata.h>
 #include <mujoco/mjmacro.h>
@@ -32,6 +33,7 @@
 #include "engine/engine_macro.h"
 #include "engine/engine_memory.h"
 #include "engine/engine_passive.h"
+#include "engine/engine_print.h"
 #include "engine/engine_plugin.h"
 #include "engine/engine_sensor.h"
 #include "engine/engine_sleep.h"
@@ -607,7 +609,7 @@ void mj_fwdAcceleration(const mjModel* m, mjData* d) {
     mju_addToInd(d->qfrc_smooth, d->qfrc_actuator, index, nv);
   }
 
-  // qfrc_smooth += project(xfrc_applied)       // hy: xfrc_applied
+  // qfrc_smooth += project(xfrc_applied)       // hy: 将xfrc_applied中的外力累加
   mj_xfrcAccumulate(m, d, d->qfrc_smooth);
 
   // copy for in-place solve: qacc_smooth = qfrc_smooth
@@ -772,11 +774,15 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
   }
 
   // compute efc_b = J*qacc_smooth - aref
+  TM_RESTART;
   mj_mulJacVec(m, d, d->efc_b, d->qacc_smooth);
   mju_subFrom(d->efc_b, d->efc_aref, nefc);
+  TM_END(mjTIMER_CONSTRAINT_JAC);
 
   // warmstart solver
+  TM_RESTART;
   warmstart(m, d);
+  TM_END(mjTIMER_CONSTRAINT_WARMSTART);
   mju_zeroInt(d->solver_niter, mjNISLAND);
 
   // check if islands are supported
@@ -787,6 +793,7 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
 
   // run solver over constraint islands
   if (islands_supported) {
+    TM_RESTART;
     int nidof = d->nidof;
 
     // copy inputs to islands (vel+acc deps, pos-dependent already copied in mj_island)
@@ -816,21 +823,28 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
     mju_scatter(d->qacc,            d->iacc,            d->map_idof2dof, nidof);
     mju_scatter(d->qfrc_constraint, d->ifrc_constraint, d->map_idof2dof, nidof);
     mju_gather(d->efc_force, d->iefc_force, d->map_efc2iefc, nefc);
+    TM_END(mjTIMER_CONSTRAINT_ISLAND);
   }
 
   // run solver over all constraints
   else {
     switch ((mjtSolver) m->opt.solver) {
     case mjSOL_PGS:                     // PGS
+      TM_RESTART;
       mj_solPGS(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_PGS);
       break;
 
     case mjSOL_CG:                      // CG
+      TM_RESTART;
       mj_solCG(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_CG);
       break;
 
     case mjSOL_NEWTON:                  // Newton
+      TM_RESTART;
       mj_solNewton(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_NEWTON);
       break;
 
     default:
@@ -970,7 +984,7 @@ void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
       mju_add(qfrc, d->qfrc_smooth, d->qfrc_constraint, nv);
       mju_copy(qacc, qfrc, nv);
     }
-    mj_solveLD(qacc, d->qH, d->qHDiagInv, nv, 1,
+    mj_solveLD(qacc, d->qH, d->qHDiagInv, nv, 1,                // 求解(M +h*diag(B)) * qacc = qfrc
                m->M_rownnz, m->M_rowadr, m->M_colind, dof_awake_ind);
   }
 
@@ -1276,6 +1290,21 @@ void mj_forward(const mjModel* m, mjData* d) {
 // advance simulation using control callback
 void mj_step(const mjModel* m, mjData* d) {
   TM_START;
+
+
+  //mjtNum force[3] = {0, 0, 0};      // 力为 0
+  //mjtNum torque[3] = {0, 0.5, 0};  // 力矩 0.5（绕 z 轴）
+  // 给part17施加力矩
+  d->xfrc_applied[6 * 18 + 0] = 0;              // 力为 0
+  d->xfrc_applied[6 * 18 + 1] = 0;
+  d->xfrc_applied[6 * 18 + 2] = 0;
+  d->xfrc_applied[6 * 19 + 3] = 0;              // 力矩为 0.5（绕 y 轴）
+  d->xfrc_applied[6 * 19 + 4] = 0.5;
+  d->xfrc_applied[6 * 19 + 5] = 0;
+  //mj_applyFT(m, d, force, torque, d->xpos + 3*17, 17, d->qfrc_applied);
+  
+  
+  
   //std::cout << "Simulate time = " << d->time << std::endl;
   printf("Simulate time = %f\n", d->time);
   // common to all integrators
@@ -1290,6 +1319,7 @@ void mj_step(const mjModel* m, mjData* d) {
   }
 
   OutputResultForDebug(m,d);
+  //OutputDataForDebug(m, d);
 
   //if(d->time>10){mjERROR("end Time.") }
 
@@ -1371,6 +1401,40 @@ void mj_step2(const mjModel* m, mjData* d) {
 }
 
 
+void OutputDataForDebug(const mjModel* m, mjData* d) {
+  const char* xml_path = m->xml_path;
+  const char* last_slash1 = strrchr(xml_path, '/');
+  const char* last_slash2 = strrchr(xml_path, '\\');
+  const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
+  const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
+
+  char dir[512] = {0};
+  if (last_slash) {
+    size_t dirlen = last_slash - xml_path + 1;
+    strncpy(dir, xml_path, dirlen);
+    dir[dirlen] = '\0';
+  }
+
+  char txt_filename[512] = {0};
+  strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
+  char* dot = strrchr(txt_filename, '.');
+  if (dot) {
+    strcpy(dot, "-mjdata-full.txt");
+  } else {
+    size_t len = strlen(txt_filename);
+    if (len < sizeof(txt_filename) - 20) {
+      strcat(txt_filename, "-mjdata-full.txt");
+    } else {
+      return;
+    }
+  }
+
+  char filename[1024];
+  snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
+  mj_printData(m, d, filename);
+}
+
+
 void OutputResultForDebug(const mjModel* m, mjData* d) {
 #if 1
 
@@ -1447,7 +1511,7 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
 
 
 	// 约束空间位置(efc_pos  )
-    OutputEfcPosForDebug(fp, m, d, 0);
+    //OutputEfcPosForDebug(fp, m, d, 0);
 	//// 约束空间速度(efc_vel  )
 	//OutputEfcVelForDebug(fp, m, d, 0);
  //   // 参考加速度(efc_aref  )

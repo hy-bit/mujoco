@@ -896,8 +896,8 @@ void mju_sqrMatTD_impl(mjtNum* res, const mjtNum* mat, const mjtNum* diag,
     for (int j=0; j < nr; j++) {
       if (diag[j]) {
         for (int i=0; i < nc; i++) {
-          if ((tmp = mat[j*nc+i])) {
-            mju_addToScl(res+i*nc, mat+j*nc, tmp*diag[j], i+1);
+          if ((tmp = mat[j*nc+i])) {            // 跳过M[j,i]=0的元素
+            mju_addToScl(res+i*nc, mat+j*nc, tmp*diag[j], i+1);   // M的第j行M[j,:] * D_j * M[j,i]，累加到res的第i行
           }
         }
       }
