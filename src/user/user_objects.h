@@ -22,6 +22,7 @@
 #include <array>
 #include <deque>
 #include <functional>
+#include <map>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -31,13 +32,9 @@
 #include <mujoco/mjmodel.h>
 #include <mujoco/mjplugin.h>
 #include <mujoco/mjspec.h>
-#include <mujoco/mjtnum.h>
+#include <mujoco/mjtype.h>
 #include "user/user_cache.h"
 #include "user/user_util.h"
-#include <tiny_obj_loader.h>
-
-using face_vertices_type =
-    decltype(tinyobj::mesh_t::num_face_vertices)::value_type;
 
 // forward declarations of all mjC/X classes
 class mjCError;
@@ -86,7 +83,6 @@ class [[nodiscard]] mjCError {
            int pos2 = 0);
 
   char message[500];              // error message
-  bool warning;                   // is this a warning instead of error
 };
 
 // alternative specifications of frame orientation
@@ -175,7 +171,7 @@ struct mjCBoundingVolumeHierarchy_ {
 class mjCBoundingVolumeHierarchy : public mjCBoundingVolumeHierarchy_ {
  public:
   // make bounding volume hierarchy
-  void CreateBVH();
+  void CreateBVH(mjCModel* model, const mjCBase* owner);
   void Set(double ipos_element[3], double iquat_element[4]);
   void AllocateBoundingVolumes(int nleaf);
   void RemoveInactiveVolumes(int nmax);
@@ -200,6 +196,10 @@ class mjCBoundingVolumeHierarchy : public mjCBoundingVolumeHierarchy_ {
         + sizeof(int) * nodeid_.size() + sizeof(int) * level_.size();
   }
 
+  // query signed distance from point to mesh surface
+  double QuerySignedDistance(const double* point, const double* vert,
+                             const int* face) const;
+
  private:
   // internal class used during BVH construction, for partial sorting of bounding volumes
   struct BVElement {
@@ -209,7 +209,8 @@ class mjCBoundingVolumeHierarchy : public mjCBoundingVolumeHierarchy_ {
   };
   void Make(std::vector<BVElement>& elements);
   int MakeBVH(std::vector<BVElement>::iterator elements_begin,
-              std::vector<BVElement>::iterator elements_end, int lev = 0);
+              std::vector<BVElement>::iterator elements_end, int lev,
+              mjCModel* model, const mjCBase* owner);
 };
 
 
@@ -269,12 +270,14 @@ struct OctreeTask {
 struct mjCOctree_ {
   int nnode_ = 0;
   int nvert_ = 0;
+  int max_depth_ = 6;                   // max octree depth (default 6)
   std::vector<OctNode> node_;
   std::vector<Triangle> face_;          // mesh faces                (nmeshface x 3)
   std::vector<Point> vert_;             // octree vertices           (nvert x 3)
   std::vector<std::vector<int>> hang_;  // hanging nodes status      (nvert x 1)
   double ipos_[3] = {0, 0, 0};
   double iquat_[4] = {1, 0, 0, 0};
+  int smoothing_iterations_ = 0;        // Laplacian smoothing iterations (0 = disabled)
 };
 
 class mjCOctree : public mjCOctree_ {
@@ -297,10 +300,26 @@ class mjCOctree : public mjCOctree_ {
            sizeof(Point) * vert_.size();
   }
   void Clear() {
+    nnode_ = 0;
+    nvert_ = 0;
     node_.clear();
-    face_.clear();
+    vert_.clear();
+    hang_.clear();
   }
   void AddCoeff(int n, int v, double coeff) { node_[n].coeff[v] = coeff; }
+  double Coeff(int n, int v) const { return node_[n].coeff[v]; }
+
+  // Set max octree depth (default 6)
+  void SetMaxDepth(int depth) { max_depth_ = depth; }
+  int MaxDepth() const { return max_depth_; }
+
+  // Set number of Laplacian smoothing iterations (0 = disabled, default)
+  void SetSmoothingIterations(int iterations) { smoothing_iterations_ = iterations; }
+  int SmoothingIterations() const { return smoothing_iterations_; }
+
+  // compute SDF coefficients via BVH queries, optionally with Laplacian smoothing
+  void ComputeSdfCoeffs(const double* vert, int nvert, const int* face, int nface,
+                        const mjCBoundingVolumeHierarchy& tree);
 
  private:
   void Make(std::vector<Triangle>& elements);
@@ -517,7 +536,7 @@ class mjCBody : public mjCBody_, private mjsBody {
   // API for accessing objects
   int NumObjects(mjtObj type);
   mjCBase* GetObject(mjtObj type, int id);
-  mjCBase* FindObject(mjtObj type, std::string name, bool recursive = true);
+  mjCBase* FindObject(mjtObj type, const std::string& name, bool recursive = true) const;
 
   // Propagate suffix and prefix to the whole tree
   void NameSpace(const mjCModel* m);
@@ -542,7 +561,7 @@ class mjCBody : public mjCBody_, private mjsBody {
   // returns nullptr if the next child is not found or if `child` is the last element, returns
   // the next child after the input `child` otherwise
   mjsElement* NextChild(const mjsElement* child, mjtObj type = mjOBJ_UNKNOWN,
-                        bool recursive = false);
+                        bool recursive = false) const;
 
   // reset keyframe references for allowing self-attach
   void ForgetKeyframes() const;
@@ -969,6 +988,8 @@ class mjCFlex_ : public mjCBase {
   std::vector<int> edgeidx_;              // element edge ids
   std::vector<double> stiffness;          // elasticity stiffness matrix
   std::vector<double> bending;            // bending stiffness matrix
+  bool has_strain_eq = false;             // true if strain constraints reference this flex
+  std::vector<bool> cell_empty;           // true if cell contains no mesh geometry
 
   // variable-size data
   std::vector<std::string> vertbody_;     // vertex body names
@@ -988,6 +1009,9 @@ class mjCFlex_ : public mjCBase {
   std::vector<int> spec_elem_;
   std::vector<float> spec_texcoord_;
   std::vector<int> spec_elemtexcoord_;
+
+  // caching
+  std::vector<double> cached_stiffness_;   // cached stiffness matrix
 };
 
 class mjCFlex: public mjCFlex_, private mjsFlex {
@@ -1025,17 +1049,28 @@ class mjCFlex: public mjCFlex_, private mjsFlex {
 
   static constexpr int kNumEdges[3] = {1, 3, 6};  // number of edges per element indexed by dim
 
-  void SetOrder(int order) { order_ = order; }  // set interpolation order
+
 
  private:
   void Compile(const mjVFS* vfs);         // compiler
   void CreateBVH(void);                   // create flex BVH
   void CreateShellPair(void);             // create shells and evpairs
+  void ComputeCellEmpty(const double* vpos, const int* elems,  // identify cells
+                        int nv, int ne, int fdim,              // with no mesh content
+                        const double* bbox = nullptr);         // optional precomputed bbox
 
   std::vector<double> vert0_;             // vertex positions in [0, 1]^d in the bounding box
   std::vector<double> node0_;             // node Cartesian positions
 
-  int order_ = 0;                         // interpolation order
+  // compute unrotated node positions for stiffness computation
+  // optionally outputs the grid rotation matrix R0 (stored as rows)
+  std::vector<double> ComputeUnrotatedNodePositions(
+      const std::vector<double>& nodexpos, double* R0_out = nullptr) const;
+
+  // stiffness caching
+  std::string ComputeStiffnessCacheKey() const;
+  bool LoadCachedStiffness();
+  void CacheStiffness();
 };
 
 
@@ -1052,7 +1087,7 @@ class mjCMesh_ : public mjCBase {
   std::string content_type_ = "";                // content type of file
   std::string file_;                             // mesh file
   mjResource* resource_ = nullptr;               // resource for mesh file
-  std::vector<double> vert_;                      // vertex data
+  std::vector<float> vert_;                      // vertex data
   std::vector<float> normal_;                    // normal data
   std::vector<float> texcoord_;                  // texcoord data
   std::vector<int> face_;                        // vertex indices
@@ -1098,9 +1133,7 @@ class mjCMesh_ : public mjCBase {
 
   // octree
   mjCOctree octree_;                  // octree of the mesh
-
-  // paths stored during model attachment
-  mujoco::user::FilePath modelfiledir_;
+  double mesh_timer_[mjNCTIMER] = {0};
 };
 
 class mjCMesh: public mjCMesh_, private mjsMesh {
@@ -1137,8 +1170,8 @@ class mjCMesh: public mjCMesh_, private mjsMesh {
   const double* Refquat() const { return refquat; }
   const double* Scale() const { return scale; }
   bool SmoothNormal() const { return smoothnormal; }
-  const std::vector<double>& Vert() const { return vert_; }
-  double Vert(int i) const { return vert_[i]; }
+  const std::vector<float>& Vert() const { return vert_; }
+  float Vert(int i) const { return vert_[i]; }
   const std::vector<float>& UserVert() const { return spec_vert_; }
   const std::vector<float>& UserNormal() const { return spec_normal_; }
   const std::vector<float>& Texcoord() const { return texcoord_; }
@@ -1184,6 +1217,7 @@ class mjCMesh: public mjCMesh_, private mjsMesh {
 
   // octree
   const mjCOctree& octree() { return octree_; }
+  mjCOctree& mutable_octree() { return octree_; }
 
   void Compile(const mjVFS* vfs);                   // compiler
   double* GetPosPtr();                              // get position
@@ -1214,16 +1248,16 @@ class mjCMesh: public mjCMesh_, private mjsMesh {
   void CopyPolygonNormals(mjtNum* arr);
 
   // sets properties of a bounding volume given a face id
-  void SetBoundingVolume(int faceid);
+  void SetBoundingVolume(int faceid, const double* dvert);
 
   // load from OBJ, STL, or MSH file; throws mjCError on failure
   void LoadFromResource(mjResource* resource, bool remove_repeated = false);
 
-  static bool IsObj(std::string_view filename, std::string_view ct = "");
+
   static bool IsSTL(std::string_view filename, std::string_view ct = "");
   static bool IsMSH(std::string_view filename, std::string_view ct = "");
 
-  bool IsObj() const;
+
   bool IsSTL() const;
   bool IsMSH() const;
 
@@ -1240,27 +1274,27 @@ class mjCMesh: public mjCMesh_, private mjsMesh {
   void ProcessVertices(const std::vector<float>& vert, bool remove_repeated = false);
 
 
-  void LoadOBJ(mjResource* resource, bool remove_repeated);  // load mesh in wavefront OBJ format
+  void LoadFromDecoder(mjResource* resource, bool remove_repeated);  // load mesh using decoder plugin
   void LoadSTL(mjResource* resource);                        // load mesh in STL BIN format
   void LoadMSH(mjResource* resource, bool remove_repeated);  // load mesh in MSH BIN format
 
   void LoadSDF();                               // generate mesh using marching cubes
-  void MakeGraph();                             // make graph of convex hull
+  void MakeGraph(const double* dvert);          // make graph of convex hull
   void CopyGraph();                             // copy graph into face data
-  void MakeNormal();                            // compute vertex normals
-  void MakeCenter();                            // compute face circumcircle data
+  void MakeNormal(const double* dvert);         // compute vertex normals
+  void MakeCenter(const double* dvert);         // compute face circumcircle data
   void Process();                               // compute inertial properties
-  void ApplyTransformations();                  // apply user transformations
-  double ComputeFaceCentroid(double[3]) const;  // compute centroid of all faces
+  void ApplyTransformations(double* dvert);      // apply user transformations
+  double ComputeFaceCentroid(double[3], const double* dvert) const;
   void CheckInitialMesh() const;                // check if initial mesh is valid
   void CopyPlugin();
-  void Rotate(double quat[4]);                      // rotate mesh by quaternion
+  void Rotate(double quat[4], double* dvert);       // rotate mesh by quaternion
   void Transform(double pos[3], double quat[4]);    // transform mesh by position and quaternion
-  void MakePolygons();                              // compute the polygon sides of the mesh
-  void MakePolygonNormals();                        // compute the normals of the polygons
+  void MakePolygons(const double* dvert);            // compute the polygon sides of the mesh
+  void MakePolygonNormals(const double* dvert);     // compute the normals of the polygons
 
   // computes the inertia matrix of the mesh given the type of inertia
-  double ComputeInertia(double inert[6], const double CoM[3]) const;
+  double ComputeInertia(double inert[6], const double CoM[3], const double* dvert) const;
 
   int* GraphFaces() const {
     return graph_ + 2 + 3*(graph_[0] + graph_[1]);
@@ -1276,9 +1310,8 @@ class mjCMesh: public mjCMesh_, private mjsMesh {
   std::vector<std::vector<int>> polygon_map_;   // map from vertex to polygon
 
   // compute the volume and center-of-mass of the mesh given the face centroid
-  double ComputeVolume(double CoM[3], const double facecen[3]) const;
-  // compute the surface area and center-of-mass of the mesh given the face centroid
-  double ComputeSurfaceArea(double CoM[3], const double facecen[3]) const;
+  double ComputeVolume(double CoM[3], const double facecen[3], const double* dvert) const;
+  double ComputeSurfaceArea(double CoM[3], const double facecen[3], const double* dvert) const;
 };
 
 
@@ -1313,9 +1346,6 @@ class mjCSkin_ : public mjCBase {
 
   int matid;                          // material id
   std::vector<int> bodyid;            // body ids
-
-  // paths stored during model attachment
-  mujoco::user::FilePath modelfiledir_;
 };
 
 class mjCSkin: public mjCSkin_, private mjsSkin {
@@ -1368,9 +1398,6 @@ class mjCHField_ : public mjCBase {
   std::string spec_file_;
   std::string spec_content_type_;
   std::vector<float> spec_userdata_;
-
-  // paths stored during model attachment
-  mujoco::user::FilePath modelfiledir_;
 };
 
 class mjCHField : public mjCHField_, private mjsHField {
@@ -1419,9 +1446,6 @@ class mjCTexture_ : public mjCBase {
   std::string spec_file_;
   std::string spec_content_type_;
   std::vector<std::string> spec_cubefiles_;
-
-  // paths stored during model attachment
-  mujoco::user::FilePath modelfiledir_;
 };
 
 class mjCTexture : public mjCTexture_, private mjsTexture {
@@ -1441,14 +1465,14 @@ class mjCTexture : public mjCTexture_, private mjsTexture {
   void CopyFromSpec(void);
   void PointToLocal(void);
   void NameSpace(const mjCModel* m);
+  void Compile(const mjVFS* vfs);
+  double texture_time_ = 0;
 
   std::string File() const { return file_; }
   std::string get_content_type() const { return content_type_; }
   std::vector<std::string> get_cubefiles() const { return cubefiles_; }
 
  private:
-  void Compile(const mjVFS* vfs);         // compiler
-
   // store texture into asset cache
   std::string GetCacheId(const mjResource* resource, const std::string& asset_type);
   void Builtin2D(void);                                 // make builtin 2D

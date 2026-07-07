@@ -25,10 +25,12 @@
 #include <deque>
 #include <functional>
 #include <limits>
+#include <map>
 #include <memory>
 #include <new>
 #include <optional>
 #include <random>
+#include <set>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -36,12 +38,11 @@
 #include <utility>
 #include <vector>
 
-#include "lodepng.h"
-#include "cc/array_safety.h"
-#include "engine/engine_passive.h"
-#include "engine/engine_support.h"
+#include "lodepng.h"  // NOLINT
 #include <mujoco/mjspec.h>
 #include <mujoco/mujoco.h>
+#include "cc/array_safety.h"
+#include "engine/engine_passive.h"
 #include "user/user_api.h"
 #include "user/user_cache.h"
 #include "user/user_model.h"
@@ -195,7 +196,6 @@ mjCError::mjCError(const mjCBase* obj, const char* msg, const char* str, int pos
   char temp[600];
 
   // init
-  warning = false;
   if (obj || msg) {
     mju::sprintf_arr(message, "Error");
   } else {
@@ -374,6 +374,7 @@ void mjCBoundingVolumeHierarchy::RemoveInactiveVolumes(int nmax) {
   bvleaf_.erase(bvleaf_.begin() + nmax, bvleaf_.end());
 }
 
+
 const mjCBoundingVolume*
 mjCBoundingVolumeHierarchy::AddBoundingVolume(int id, int contype, int conaffinity,
                                               const double* pos, const double* quat,
@@ -393,12 +394,12 @@ mjCBoundingVolumeHierarchy::AddBoundingVolume(const int* id, int contype, int co
 
 
 // create bounding volume hierarchy
-void mjCBoundingVolumeHierarchy::CreateBVH() {
+void mjCBoundingVolumeHierarchy::CreateBVH(mjCModel* model,
+                                           const mjCBase* owner) {
   std::vector<BVElement> elements;
   Make(elements);
-  MakeBVH(elements.begin(), elements.end());
+  MakeBVH(elements.begin(), elements.end(), 0, model, owner);
 }
-
 
 void mjCBoundingVolumeHierarchy::Make(std::vector<BVElement>& elements) {
   // precompute the positions of each element in the hierarchy's axes, and drop
@@ -421,8 +422,9 @@ void mjCBoundingVolumeHierarchy::Make(std::vector<BVElement>& elements) {
 
 // compute bounding volume hierarchy
 int mjCBoundingVolumeHierarchy::MakeBVH(
-  std::vector<BVElement>::iterator elements_begin,
-  std::vector<BVElement>::iterator elements_end, int lev) {
+    std::vector<BVElement>::iterator elements_begin,
+    std::vector<BVElement>::iterator elements_end, int lev, mjCModel* model,
+    const mjCBase* owner) {
   int nelements = elements_end - elements_begin;
   if (nelements == 0) {
     return -1;
@@ -522,11 +524,13 @@ int mjCBoundingVolumeHierarchy::MakeBVH(
 
   // recursive calls
   if (m > 0) {
-    child_[2*index + 0] = MakeBVH(elements_begin, elements_begin + m, lev + 1);
+    child_[2 * index + 0] =
+        MakeBVH(elements_begin, elements_begin + m, lev + 1, model, owner);
   }
 
   if (m != nelements) {
-    child_[2*index + 1] = MakeBVH(elements_begin + m, elements_end, lev + 1);
+    child_[2 * index + 1] =
+        MakeBVH(elements_begin + m, elements_end, lev + 1, model, owner);
   }
 
   // SHOULD NOT OCCUR
@@ -536,13 +540,11 @@ int mjCBoundingVolumeHierarchy::MakeBVH(
   }
 
   if (lev > mjMAXTREEDEPTH) {
-    mju_warning("max tree depth exceeded in body=%s", name_.c_str());
+    model->AddWarning("max tree depth exceeded", owner);
   }
 
   return index;
 }
-
-
 
 //------------------------- class mjCOctree implementation --------------------------------------------
 
@@ -552,6 +554,7 @@ void mjCOctree::CopyLevel(int* level) const {
   }
 }
 
+
 void mjCOctree::CopyChild(int* child) const {
   for (int i = 0; i < node_.size(); ++i) {
     for (int j = 0; j < 8; ++j) {
@@ -559,6 +562,7 @@ void mjCOctree::CopyChild(int* child) const {
     }
   }
 }
+
 
 void mjCOctree::CopyAabb(mjtNum* aabb) const {
   for (int i = 0; i < node_.size(); ++i) {
@@ -571,6 +575,7 @@ void mjCOctree::CopyAabb(mjtNum* aabb) const {
   }
 }
 
+
 void mjCOctree::CopyCoeff(mjtNum* coeff) const {
   for (int i = 0; i < node_.size(); ++i) {
     for (int j = 0; j < 8; ++j) {
@@ -579,7 +584,9 @@ void mjCOctree::CopyCoeff(mjtNum* coeff) const {
   }
 }
 
+
 void mjCOctree::SetFace(const std::vector<double>& vert, const std::vector<int>& face) {
+  face_.reserve(face.size()/3);
   for (int i = 0; i < face.size(); i += 3) {
     std::array<double, 3> v0 = {vert[3*face[i+0]], vert[3*face[i+0]+1], vert[3*face[i+0]+2]};
     std::array<double, 3> v1 = {vert[3*face[i+1]], vert[3*face[i+1]+1], vert[3*face[i+1]+2]};
@@ -606,6 +613,8 @@ void mjCOctree::Make(std::vector<Triangle>& elements) {
 
 
 void mjCOctree::CreateOctree(const double aamm[6]) {
+  Clear();
+
   double aabb[6] = {(aamm[0] + aamm[3]) / 2, (aamm[1] + aamm[4]) / 2, (aamm[2] + aamm[5]) / 2,
                     (aamm[3] - aamm[0]) / 2, (aamm[4] - aamm[1]) / 2, (aamm[5] - aamm[2]) / 2};
   double box[6] = {aabb[0] - 1.1 * aabb[3], aabb[1] - 1.1 * aabb[4], aabb[2] - 1.1 * aabb[5],
@@ -621,12 +630,302 @@ void mjCOctree::CreateOctree(const double aamm[6]) {
 }
 
 
+namespace {
+
+double pointBoxDistSq(const double* p, const mjtNum* aabb) {
+  double dist_sq = 0;
+  for (int i = 0; i < 3; ++i) {
+    double lo = aabb[i] - aabb[i + 3];
+    double hi = aabb[i] + aabb[i + 3];
+    if (p[i] < lo) {
+      dist_sq += (lo - p[i]) * (lo - p[i]);
+    } else if (p[i] > hi) {
+      dist_sq += (p[i] - hi) * (p[i] - hi);
+    }
+  }
+  return dist_sq;
+}
+
+
+// compute squared distance between point p and triangle (v0, v1, v2),
+// and return barycentric coordinates (u,v) of the closest point
+double pointTriDistSqWithUV(const double* p, const double* v0, const double* v1,
+                            const double* v2, double& out_u, double& out_v) {
+  double ab[3] = {v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]};
+  double ac[3] = {v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]};
+  double ap[3] = {p[0] - v0[0], p[1] - v0[1], p[2] - v0[2]};
+
+  // the closest point on the triangle is determined by partitioning space into Voronoi regions
+  double d1 = ab[0]*ap[0] + ab[1]*ap[1] + ab[2]*ap[2];
+  double d2 = ac[0]*ap[0] + ac[1]*ap[1] + ac[2]*ap[2];
+
+  // region A (vertex v0)
+  if (d1 <= 0 && d2 <= 0) {
+    out_u = 0; out_v = 0;
+    return ap[0]*ap[0] + ap[1]*ap[1] + ap[2]*ap[2];
+  }
+
+  double bp[3] = {p[0] - v1[0], p[1] - v1[1], p[2] - v1[2]};
+  double d3 = ab[0]*bp[0] + ab[1]*bp[1] + ab[2]*bp[2];
+  double d4 = ac[0]*bp[0] + ac[1]*bp[1] + ac[2]*bp[2];
+
+  // region B (vertex v1)
+  if (d3 >= 0 && d4 <= d3) {
+    out_u = 1; out_v = 0;
+    return bp[0]*bp[0] + bp[1]*bp[1] + bp[2]*bp[2];
+  }
+
+  // region AB (edge v0-v1)
+  double vc = d1*d4 - d3*d2;
+  if (vc <= 0 && d1 >= 0 && d3 <= 0) {
+    double u = d1 / (d1 - d3);
+    out_u = u; out_v = 0;
+    double closest[3] = {v0[0] + u*ab[0], v0[1] + u*ab[1], v0[2] + u*ab[2]};
+    return (p[0]-closest[0])*(p[0]-closest[0]) +
+           (p[1]-closest[1])*(p[1]-closest[1]) +
+           (p[2]-closest[2])*(p[2]-closest[2]);
+  }
+
+  double cp[3] = {p[0] - v2[0], p[1] - v2[1], p[2] - v2[2]};
+  double d5 = ab[0]*cp[0] + ab[1]*cp[1] + ab[2]*cp[2];
+  double d6 = ac[0]*cp[0] + ac[1]*cp[1] + ac[2]*cp[2];
+
+  // region C (vertex v2)
+  if (d6 >= 0 && d5 <= d6) {
+    out_u = 0; out_v = 1;
+    return cp[0]*cp[0] + cp[1]*cp[1] + cp[2]*cp[2];
+  }
+
+  // region AC (edge v0-v2)
+  double vb = d5*d2 - d1*d6;
+  if (vb <= 0 && d2 >= 0 && d6 <= 0) {
+    double v = d2 / (d2 - d6);
+    out_u = 0; out_v = v;
+    double closest[3] = {v0[0] + v*ac[0], v0[1] + v*ac[1], v0[2] + v*ac[2]};
+    return (p[0]-closest[0])*(p[0]-closest[0]) +
+           (p[1]-closest[1])*(p[1]-closest[1]) +
+           (p[2]-closest[2])*(p[2]-closest[2]);
+  }
+
+  // region BC (edge v1-v2)
+  double va = d3*d6 - d5*d4;
+  if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0) {
+    double w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+    out_u = 1 - w; out_v = w;
+    double bc[3] = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+    double closest[3] = {v1[0] + w*bc[0], v1[1] + w*bc[1], v1[2] + w*bc[2]};
+    return (p[0]-closest[0])*(p[0]-closest[0]) +
+           (p[1]-closest[1])*(p[1]-closest[1]) +
+           (p[2]-closest[2])*(p[2]-closest[2]);
+  }
+
+  // region ABC (inside triangle)
+  double denom = 1.0 / (va + vb + vc);
+  double u = vb * denom;
+  double v = vc * denom;
+  out_u = u; out_v = v;
+  double closest[3] = {v0[0] + u*ab[0] + v*ac[0],
+                       v0[1] + u*ab[1] + v*ac[1],
+                       v0[2] + u*ab[2] + v*ac[2]};
+  return (p[0]-closest[0])*(p[0]-closest[0]) +
+         (p[1]-closest[1])*(p[1]-closest[1]) +
+         (p[2]-closest[2])*(p[2]-closest[2]);
+}
+
+
+// query BVH for closest face to point p, return distance, face index and barycentric coordinates
+void queryClosestBVHWithFace(const mjtNum* bvh, const int* child, const int* nodeid,
+                             const double* vert, const int* face, int node_idx,
+                             const double* p, double& best_dist_sq,
+                             int& best_face, double& best_u, double& best_v) {
+  const mjtNum* aabb = &bvh[node_idx * 6];
+  if (pointBoxDistSq(p, aabb) >= best_dist_sq) return;
+
+  int left = child[node_idx * 2];
+  int right = child[node_idx * 2 + 1];
+
+  if (left == -1 && right == -1) {
+    int fi = nodeid[node_idx];
+    if (fi >= 0) {
+      const double* v0 = vert + face[fi * 3 + 0] * 3;
+      const double* v1 = vert + face[fi * 3 + 1] * 3;
+      const double* v2 = vert + face[fi * 3 + 2] * 3;
+      double u, v;
+      double dist_sq = pointTriDistSqWithUV(p, v0, v1, v2, u, v);
+      if (dist_sq < best_dist_sq) {
+        best_dist_sq = dist_sq;
+        best_face = fi;
+        best_u = u;
+        best_v = v;
+      }
+    }
+    return;
+  }
+
+  if (left >= 0) {
+    queryClosestBVHWithFace(bvh, child, nodeid, vert, face, left, p,
+                            best_dist_sq, best_face, best_u, best_v);
+  }
+  if (right >= 0) {
+    queryClosestBVHWithFace(bvh, child, nodeid, vert, face, right, p,
+                            best_dist_sq, best_face, best_u, best_v);
+  }
+}
+
+
+double querySignedDistance(const mjtNum* bvh, const int* child, const int* nodeid,
+                           int nbvh, const double* point,
+                           const double* vert, const int* face) {
+  if (nbvh == 0) {
+    return 0;
+  }
+
+  double best_dist_sq = 1e20;
+  int best_face = -1;
+  double best_u = 0, best_v = 0;
+  queryClosestBVHWithFace(bvh, child, nodeid, vert, face, 0, point,
+                          best_dist_sq, best_face, best_u, best_v);
+  double dist = std::sqrt(best_dist_sq);
+
+  double sign = 1.0;
+  if (best_face >= 0) {
+    const double* v0 = vert + face[best_face * 3 + 0] * 3;
+    const double* v1 = vert + face[best_face * 3 + 1] * 3;
+    const double* v2 = vert + face[best_face * 3 + 2] * 3;
+
+    double e1[3] = {v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2]};
+    double e2[3] = {v2[0]-v0[0], v2[1]-v0[1], v2[2]-v0[2]};
+    double normal[3] = {
+      e1[1]*e2[2] - e1[2]*e2[1],
+      e1[2]*e2[0] - e1[0]*e2[2],
+      e1[0]*e2[1] - e1[1]*e2[0]
+    };
+
+    double closest[3] = {
+      v0[0] + best_u*(v1[0]-v0[0]) + best_v*(v2[0]-v0[0]),
+      v0[1] + best_u*(v1[1]-v0[1]) + best_v*(v2[1]-v0[1]),
+      v0[2] + best_u*(v1[2]-v0[2]) + best_v*(v2[2]-v0[2])
+    };
+
+    double u[3] = {point[0]-closest[0], point[1]-closest[1], point[2]-closest[2]};
+    double dot = u[0]*normal[0] + u[1]*normal[1] + u[2]*normal[2];
+    double normal_len = mjuu_normvec(normal, 3);
+    double eps = 1e-12 * normal_len * dist;
+    sign = (dot > eps) ? 1.0 : -1.0;
+  }
+
+  return sign * dist;
+}
+
+}  // namespace
+
+
+double mjCBoundingVolumeHierarchy::QuerySignedDistance(
+    const double* point, const double* vert, const int* face) const {
+  return querySignedDistance(bvh_.data(), child_.data(), nodeid_.data(),
+                             nbvh_, point, vert, face);
+}
+
+
+void mjCOctree::ComputeSdfCoeffs(const double* vert, int nvert, const int* face, int nface,
+                                 const mjCBoundingVolumeHierarchy& tree) {
+  std::vector<double> coeffs(nvert_, 0.0);
+  std::vector<bool> processed(nvert_, false);
+  std::deque<int> queue;
+
+  if (NumNodes() > 0) {
+    queue.push_back(0);
+  }
+
+  while (!queue.empty()) {
+    int node_idx = queue.front();
+    queue.pop_front();
+
+    // compute SDF coefficients at the 8 vertices of the octree node
+    for (int j = 0; j < 8; ++j) {
+      int vert_id = VertId(node_idx, j);
+      if (processed[vert_id]) {
+        continue;
+      }
+      if (Hang(vert_id).empty()) {
+        // transform from octree frame (body inertial) back to mesh frame
+        double p_mesh[3];
+        mjuu_rotVecQuat(p_mesh, Vert(vert_id), iquat_);
+        p_mesh[0] += ipos_[0];
+        p_mesh[1] += ipos_[1];
+        p_mesh[2] += ipos_[2];
+
+        coeffs[vert_id] = tree.QuerySignedDistance(p_mesh, vert, face);
+      } else {
+        // hanging node: interpolate from parents
+        double sum_coeff = 0;
+        for (int dep_id : Hang(vert_id)) {
+          sum_coeff += coeffs[dep_id];
+        }
+        coeffs[vert_id] = sum_coeff / Hang(vert_id).size();
+      }
+      processed[vert_id] = true;
+    }
+
+    // add children to the queue
+    for (int child_idx : Children(node_idx)) {
+      if (child_idx != -1) {
+        queue.push_back(child_idx);
+      }
+    }
+  }
+
+  // optional Laplacian smoothing (smooths octree level transitions)
+  if (smoothing_iterations_ > 0) {
+    // build vertex neighbor graph from octree connectivity
+    std::vector<std::set<int>> neighbors(nvert_);
+    for (int i = 0; i < NumNodes(); ++i) {
+      static const int edges[12][2] = {
+        {0, 1}, {2, 3}, {4, 5}, {6, 7},
+        {0, 2}, {1, 3}, {4, 6}, {5, 7},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7}
+      };
+      for (const auto& edge : edges) {
+        int v0 = VertId(i, edge[0]);
+        int v1 = VertId(i, edge[1]);
+        neighbors[v0].insert(v1);
+        neighbors[v1].insert(v0);
+      }
+    }
+
+    // apply Laplacian smoothing
+    const double alpha = 0.2;
+    std::vector<double> sdf_new(nvert_);
+    for (int iter = 0; iter < smoothing_iterations_; ++iter) {
+      for (int i = 0; i < nvert_; ++i) {
+        if (neighbors[i].empty()) {
+          sdf_new[i] = coeffs[i];
+        } else {
+          double avg = 0;
+          for (int j : neighbors[i]) avg += coeffs[j];
+          avg /= neighbors[i].size();
+          sdf_new[i] = (1 - alpha) * coeffs[i] + alpha * avg;
+        }
+      }
+      std::swap(coeffs, sdf_new);
+    }
+  }
+
+  // copy coefficients to the octree nodes
+  for (int i = 0; i < NumNodes(); ++i) {
+    for (int j = 0; j < 8; j++) {
+      AddCoeff(i, j, coeffs[VertId(i, j)]);
+    }
+  }
+}
+
+
 static double dot2(const double* a, const double* b) {
   return a[0] * b[0] + a[1] * b[1];
 }
 
 
-// From M. Schwarz and H.-P. Seidel, "Fast Parallel Surface and Solid Voxelization on GPUs".
+// from M. Schwarz and H.-P. Seidel, "Fast Parallel Surface and Solid Voxelization on GPUs".
 static bool boxTriangle(const Triangle& v, const double aamm[6]) {
   // bounding box tests
   for (int i = 0; i < 3; i++) {
@@ -985,7 +1284,7 @@ void mjCOctree::MakeOctree(const std::vector<Triangle*>& elements, const double 
     }
 
     // skip if the box is empty
-    if (colliding.empty() || task.lev >= 6) {
+    if (colliding.empty() || task.lev >= max_depth_) {
       continue;
     }
 
@@ -1951,7 +2250,7 @@ mjCBase* mjCBody::GetObject(mjtObj type, int i) {
 
 // find object by name in given list
 template <class T>
-static T* findobject(std::string name, std::vector<T*>& list) {
+static T* findobject(const std::string& name, const std::vector<T*>& list) {
   for (unsigned int i=0; i < list.size(); i++) {
     if (list[i]->name == name) {
       return list[i];
@@ -1964,12 +2263,12 @@ static T* findobject(std::string name, std::vector<T*>& list) {
 
 
 // recursive find by name
-mjCBase* mjCBody::FindObject(mjtObj type, std::string _name, bool recursive) {
+mjCBase* mjCBody::FindObject(mjtObj type, const std::string& _name, bool recursive) const {
   mjCBase* res = 0;
 
   // check self: just in case
   if (name == _name) {
-    return this;
+    return const_cast<mjCBody*>(this);
   }
 
   // search elements of this body
@@ -2106,7 +2405,7 @@ static mjsElement* GetNextBody(const mjCBody* body, const mjsElement* child,
 
 
 // get next child of given type
-mjsElement* mjCBody::NextChild(const mjsElement* child, mjtObj type, bool recursive) {
+mjsElement* mjCBody::NextChild(const mjsElement* child, mjtObj type, bool recursive) const {
   if (type == mjOBJ_UNKNOWN) {
     if (!child) {
       throw mjCError(this, "child type must be specified if no child element is given");
@@ -2263,7 +2562,7 @@ void mjCBody::AccumulateInertia(const mjsBody* other, mjsBody* result) {
   };
   double iquat[2][4] = {
     {result->iquat[0], result->iquat[1], result->iquat[2], result->iquat[3]},
-    {other->iquat[0], other->iquat[1], other->iquat[2], other->iquat[3]}
+    {other_iquat[0], other_iquat[1], other_iquat[2], other_iquat[3]}
   };
 
   // compute total mass
@@ -2331,7 +2630,7 @@ void mjCBody::ComputeBVH() {
     tree.AddBoundingVolume(&geom->id, geom->contype, geom->conaffinity,
                            geom->pos, geom->quat, geom->aabb);
   }
-  tree.CreateBVH();
+  tree.CreateBVH(model, this);
 }
 
 
@@ -3571,7 +3870,7 @@ void mjCGeom::SetFluidCoefs(void) {
 
 // compute bounding box
 void mjCGeom::ComputeAABB(void) {
-  double aamm[6]; // axis-aligned bounding box in (min, max) format
+  double aamm[6];  // axis-aligned bounding box in (min, max) format
   switch (type) {
     case mjGEOM_HFIELD:
       aamm[0] = -hfield->size[0];
@@ -4116,15 +4415,23 @@ void mjCCamera::Compile(void) {
                    name.c_str(), id, fovy);
   }
 
-  // check that specs are not duplicated
-  if ((principal_length[0] && principal_pixel[0]) ||
-      (principal_length[1] && principal_pixel[1])) {
-    throw mjCError(this, "principal length duplicated in camera");
+  // check for advanced camera intrinsic parameters
+  bool has_intrinsic = focal_length[0]     || focal_length[1]     ||
+                       focal_pixel[0]      || focal_pixel[1]      ||
+                       principal_length[0] || principal_length[1] ||
+                       principal_pixel[0]  || principal_pixel[1];
+  bool has_sensorsize = sensor_size[0] > 0 && sensor_size[1] > 0;
+
+  // intrinsic params require sensorsize
+  if (has_intrinsic && !has_sensorsize) {
+    throw mjCError(this, "focal/principal require sensorsize in camera '%s' (id = %d)",
+                   name.c_str(), id);
   }
 
-  if ((focal_length[0] && focal_pixel[0]) ||
-      (focal_length[1] && focal_pixel[1])) {
-    throw mjCError(this, "focal length duplicated in camera");
+  // sensorsize requires resolution
+  if (has_sensorsize && (resolution[0] <= 0 || resolution[1] <= 0)) {
+    throw mjCError(this, "sensorsize requires positive resolution in camera '%s' (id = %d)",
+                   name.c_str(), id);
   }
 
   // compute number of pixels per unit length
@@ -4134,11 +4441,11 @@ void mjCCamera::Compile(void) {
       (float)resolution[1] / sensor_size[1],
     };
 
-    // defaults are zero, so only one term in each sum is nonzero
-    intrinsic[0] = focal_pixel[0] / pixel_density[0] + focal_length[0];
-    intrinsic[1] = focal_pixel[1] / pixel_density[1] + focal_length[1];
-    intrinsic[2] = principal_pixel[0] / pixel_density[0] + principal_length[0];
-    intrinsic[3] = principal_pixel[1] / pixel_density[1] + principal_length[1];
+    // pixel values override length values when both are specified
+    intrinsic[0] = focal_pixel[0] ? focal_pixel[0] / pixel_density[0] : focal_length[0];
+    intrinsic[1] = focal_pixel[1] ? focal_pixel[1] / pixel_density[1] : focal_length[1];
+    intrinsic[2] = principal_pixel[0] ? principal_pixel[0] / pixel_density[0] : principal_length[0];
+    intrinsic[3] = principal_pixel[1] ? principal_pixel[1] / pixel_density[1] : principal_length[1];
 
     // fovy with principal point at (0, 0)
     fovy = std::atan2(sensor_size[1]/2, intrinsic[1]) * 360.0 / mjPI;
@@ -4360,9 +4667,6 @@ void mjCHField::NameSpace(const mjCModel* m) {
     name = mjuu_stripext(stripped);
   }
   mjCBase::NameSpace(m);
-  if (modelfiledir_.empty()) {
-    modelfiledir_ = FilePath(m->spec_modelfiledir_);
-  }
 }
 
 
@@ -4490,15 +4794,12 @@ void mjCHField::Compile(const mjVFS* vfs) {
       throw mjCError(this, "unsupported content type: '%s'", asset_type.c_str());
     }
 
-    // copy paths from model if not already defined
-    if (modelfiledir_.empty()) {
-      modelfiledir_ = FilePath(model->modelfiledir_);
-    }
     mujoco::user::FilePath meshdir_;
     meshdir_ = FilePath(mjs_getString(compiler->meshdir));
 
     FilePath filename = meshdir_ + FilePath(file_);
-    mjResource* resource = LoadResource(modelfiledir_.Str(), filename.Str(), vfs);
+    mjSpec* owning_spec = model->FindSpec(compiler);
+    mjResource* resource = LoadResource(owning_spec->modelfiledir->c_str(), filename.Str(), vfs);
 
     struct CachedHField {
       int nrow, ncol;
@@ -4657,9 +4958,6 @@ void mjCTexture::NameSpace(const mjCModel* m) {
     name = mjuu_stripext(stripped);
   }
   mjCBase::NameSpace(m);
-  if (modelfiledir_.empty()) {
-    modelfiledir_ = FilePath(m->spec_modelfiledir_);
-  }
 }
 
 
@@ -4817,7 +5115,7 @@ void mjCTexture::BuiltinCube(void) {
   if (w > std::numeric_limits<int>::max() / w) {
     throw mjCError(this, "Cube texture width is too large.");
   }
-  int ww = width*width;
+  mjtSize ww = width*width;
 
   // convert fixed colors
   for (int j = 0; j < 3; j++) {
@@ -4830,7 +5128,7 @@ void mjCTexture::BuiltinCube(void) {
 
   // gradient
   if (builtin == mjBUILTIN_GRADIENT) {
-    if (ww > std::numeric_limits<int>::max() / 18) {
+    if (ww > std::numeric_limits<std::int64_t>::max() / 18) {
       throw mjCError(this, "Gradient texture width is too large.");
     }
     for (int r = 0; r < w; r++) {
@@ -4957,6 +5255,7 @@ void mjCTexture::LoadKTX(mjResource* resource, std::vector<std::byte>& image,
 
   w = buffer_sz;
   h = 1;
+  nchannel = 1;
   is_srgb = false;
 
   image.resize(buffer_sz);
@@ -5079,7 +5378,8 @@ void mjCTexture::LoadFlip(std::string filename, const mjVFS* vfs,
   }
 
   // try loading from cache
-  mjResource* resource = LoadResource(modelfiledir_.Str(), filename, vfs);
+  mjSpec* owning_spec = model->FindSpec(compiler);
+  mjResource* resource = LoadResource(owning_spec->modelfiledir->c_str(), filename, vfs);
   if (cache && cache->PopulateData(GetCacheId(resource, asset_type), resource, callback)) {
     mju_closeResource(resource);
     return;
@@ -5168,7 +5468,7 @@ void mjCTexture::LoadCubeSingle(std::string filename, const mjVFS* vfs) {
 
   // allocate data
   std::int64_t size = static_cast<std::int64_t>(width)*height;
-  if (size >= std::numeric_limits<int>::max() / 3 || size <= 0) {
+  if (size >= std::numeric_limits<std::int64_t>::max() / 3 || size <= 0) {
     throw mjCError(this, "Cube texture too large");
   }
   try {
@@ -5285,7 +5585,7 @@ void mjCTexture::LoadCubeSeparate(const mjVFS* vfs) {
         }
         height = 6*width;
         std::int64_t size = static_cast<std::int64_t>(width)*height;
-        if (size >= std::numeric_limits<int>::max() / 3 || size <= 0) {
+        if (size >= std::numeric_limits<mjtSize>::max() / 3 || size <= 0) {
           throw mjCError(this, "PNG texture too large");
         }
         try {
@@ -5331,10 +5631,6 @@ void mjCTexture::LoadCubeSeparate(const mjVFS* vfs) {
 void mjCTexture::Compile(const mjVFS* vfs) {
   CopyFromSpec();
 
-  // copy paths from model if not already defined
-  if (modelfiledir_.empty()) {
-    modelfiledir_ = FilePath(model->modelfiledir_);
-  }
   mujoco::user::FilePath texturedir_;
   texturedir_ = FilePath(mjs_getString(compiler->texturedir));
 
@@ -5370,7 +5666,7 @@ void mjCTexture::Compile(const mjVFS* vfs) {
     }
 
     std::int64_t size = static_cast<std::int64_t>(width)*height;
-    if (size >= std::numeric_limits<int>::max() / nchannel || size <= 0) {
+    if (size >= std::numeric_limits<int64_t>::max() / nchannel || size <= 0) {
       throw mjCError(this, "Builtin texture too large");
     }
     // allocate data
@@ -5987,7 +6283,7 @@ void mjCEquality::ResolveReferences(const mjCModel* m) {
     object_type = mjOBJ_JOINT;
   } else if (type == mjEQ_TENDON) {
     object_type = mjOBJ_TENDON;
-  } else if (type == mjEQ_FLEX) {
+  } else if (type == mjEQ_FLEX || type == mjEQ_FLEXVERT || type == mjEQ_FLEXSTRAIN) {
     object_type = mjOBJ_FLEX;
   } else {
     throw mjCError(this, "invalid type in equality constraint");
@@ -6044,7 +6340,8 @@ void mjCEquality::Compile(void) {
   ResolveReferences(model);
 
   // make sure flex is not rigid
-  if (type == mjEQ_FLEX && model->Flexes()[obj1id]->rigid) {
+  if ((type == mjEQ_FLEX || type == mjEQ_FLEXVERT || type == mjEQ_FLEXSTRAIN) &&
+      model->Flexes()[obj1id]->rigid) {
     throw mjCError(this, "rigid flex '%s' in equality constraint %d", name1_.c_str(), id);
   }
 }
@@ -6259,12 +6556,16 @@ void mjCTendon::ResolveReferences(const mjCModel* m) {
     try {
       // look for wrapped element with namespace
       path[i]->name = prefix + pname + suffix;
-      path[i]->sidesite = prefix + psidesite + suffix;
+      if (!psidesite.empty()) {
+        path[i]->sidesite = prefix + psidesite + suffix;
+      }
       path[i]->ResolveReferences(m);
     } catch(mjCError) {
       // remove namespace from wrap names
       path[i]->name = pname;
-      path[i]->sidesite = psidesite;
+      if (!psidesite.empty()) {
+        path[i]->sidesite = psidesite;
+      }
       path[i]->ResolveReferences(m);
       nfailure++;
     }
@@ -6813,6 +7114,27 @@ void mjCActuator::Compile(void) {
   // find transmission target in object arrays
   ResolveReferences(model);
 
+  // check damping/armature only valid for joint and tendon transmission
+  bool has_damping = false;
+  for (int i = 0; i < mjNPOLY+1; i++) {
+    if (damping[i] != 0) {
+      has_damping = true;
+      break;
+    }
+  }
+  if (has_damping &&
+      trntype != mjTRN_JOINT && trntype != mjTRN_JOINTINPARENT && trntype != mjTRN_TENDON) {
+    throw mjCError(this,
+                   "damping requires joint or tendon transmission in actuator '%s' (id = %d)",
+                   name.c_str(), id);
+  }
+  if (armature != 0 &&
+      trntype != mjTRN_JOINT && trntype != mjTRN_JOINTINPARENT && trntype != mjTRN_TENDON) {
+    throw mjCError(this,
+                   "armature requires joint or tendon transmission in actuator '%s' (id = %d)",
+                   name.c_str(), id);
+  }
+
   // handle inheritrange
   if (gaintype == mjGAIN_FIXED && biastype == mjBIAS_AFFINE &&
       gainprm[0] == -biasprm[1] && inheritrange > 0) {
@@ -6887,20 +7209,26 @@ void mjCActuator::Compile(void) {
 
   // check and set actdim
   if (!plugin.active) {
-    if (actdim > 1 && dyntype != mjDYN_USER) {
-      throw mjCError(this, "actdim > 1 is only allowed for dyntype 'user' in actuator");
+    if (actdim > 1 && dyntype != mjDYN_USER && dyntype != mjDYN_DCMOTOR) {
+      throw mjCError(this, "actdim > 1 is only allowed for dyntype 'user' and 'dcmotor'");
     }
     if (actdim == 1 && dyntype == mjDYN_NONE) {
       throw mjCError(this, "invalid actdim 1 in stateless actuator");
     }
-    if (actdim == 0 && dyntype != mjDYN_NONE) {
+    if (actdim == 0 && dyntype != mjDYN_NONE && dyntype != mjDYN_DCMOTOR) {
       throw mjCError(this, "invalid actdim 0 in stateful actuator");
     }
   }
 
-  // set actdim
+  // set actdim to 1 if it is unset and type is standard one-activation dyntype
   if (actdim < 0) {
-    actdim = (dyntype != mjDYN_NONE);
+    actdim = (dyntype != mjDYN_NONE && dyntype != mjDYN_DCMOTOR);
+  }
+
+  // DC motor always uses actearly
+  if (dyntype == mjDYN_DCMOTOR && !actearly) {
+    throw mjCError(this, "actearly cannot be false for DC motor actuator '%s' (id = %d)",
+                   name.c_str(), id);
   }
 
   // check muscle parameters
@@ -6951,6 +7279,17 @@ void mjCActuator::Compile(void) {
     if (!(pplugin->capabilityflags & mjPLUGIN_ACTUATOR)) {
       throw mjCError(this, "plugin '%s' does not support actuators", pplugin->name);
     }
+  }
+
+  // validate delay
+  if (delay > 0 && nsample <= 0) {
+    throw mjCError(this, "setting delay > 0 without a history buffer");
+  }
+
+  // nsample is limited to 2^24 because the cursor is stored as an mjtNum, which may be a float
+  // single-precision floats can represent all integers up to 2^24 exactly
+  if (nsample > 16777216) {
+    throw mjCError(this, "at most 2^24 samples in history buffer, got %d", nullptr, nsample);
   }
 }
 
@@ -7141,7 +7480,6 @@ void mjCSensor::ResolveReferences(const mjCModel* m) {
 mjtDataType sensorDatatype(mjtSensor type) {
   switch (type) {
   case mjSENS_TOUCH:
-  case mjSENS_RANGEFINDER:
   case mjSENS_INSIDESITE:
     return mjDATATYPE_POSITIVE;
 
@@ -7188,6 +7526,7 @@ mjtDataType sensorDatatype(mjtSensor type) {
   case mjSENS_SUBTREEANGMOM:
   case mjSENS_GEOMDIST:
   case mjSENS_GEOMFROMTO:
+  case mjSENS_RANGEFINDER:
   case mjSENS_CONTACT:
   case mjSENS_TACTILE:
   case mjSENS_E_POTENTIAL:
@@ -7283,6 +7622,31 @@ void mjCSensor::Compile(void) {
     throw mjCError(this, "negative cutoff in sensor");
   }
 
+  // require non-negative interval
+  if (interval[0] < 0) {
+    throw mjCError(this, "negative interval in sensor");
+  }
+
+  // require non-positive phase
+  if (interval[1] > 0) {
+    throw mjCError(this, "positive phase in sensor");
+  }
+
+  // require phase > -period (values outside this are equivalent modulo period)
+  if (interval[0] > 0 && interval[1] <= -interval[0]) {
+    throw mjCError(this, "phase must be greater than -period in sensor");
+  }
+
+  // require nsample for delay
+  if (delay > 0 && nsample <= 0) {
+    throw mjCError(this, "setting delay > 0 without a history buffer");
+  }
+
+  // validate nsample size (max 2^24)
+  if (nsample > 16777216) {
+    throw mjCError(this, "at most 2^24 samples in sensor history buffer, got %d", nullptr, nsample);
+  }
+
   // Find referenced object
   ResolveReferences(model);
 
@@ -7305,7 +7669,6 @@ void mjCSensor::Compile(void) {
     case mjSENS_FORCE:
     case mjSENS_TORQUE:
     case mjSENS_MAGNETOMETER:
-    case mjSENS_RANGEFINDER:
     case mjSENS_CAMPROJECTION:
       // must be attached to site
       if (objtype != mjOBJ_SITE) {
@@ -7317,6 +7680,30 @@ void mjCSensor::Compile(void) {
         mjCCamera* camref = (mjCCamera*)ref;
         if (!camref->resolution[0] || !camref->resolution[1]) {
           throw mjCError(this, "camera projection sensor requires camera resolution");
+        }
+      }
+      break;
+
+    case mjSENS_RANGEFINDER:
+      {
+        // must be attached to site or camera
+        if (objtype != mjOBJ_SITE && objtype != mjOBJ_CAMERA) {
+          throw mjCError(this, "sensor must be attached to site or camera");
+        }
+
+        // check for dataspec correctness
+        int dataspec = intprm[0];
+        if (dataspec <= 0) {
+          throw mjCError(this, "data spec (intprm[0]) must be positive, got %d", nullptr, dataspec);
+        }
+        int mask = (1 << mjNRAYDATA) - 1;
+        if (!(dataspec & mask)) {
+          throw mjCError(this, "data spec intprm[0]=%d must have at least one bit set of the first "
+                         "mjNRAYDATA bits", nullptr, dataspec);
+        }
+        if (dataspec & ~mask) {
+          throw mjCError(this, "data spec intprm[0]=%d has bits set beyond the first "
+                         "mjNRAYDATA bits", nullptr, dataspec);
         }
       }
       break;

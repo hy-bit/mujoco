@@ -1,4 +1,4 @@
-# Copyright 2025 DeepMind Technologies Limited
+# Copyright 2026 DeepMind Technologies Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 
 """DO NOT EDIT. This file is auto-generated."""
 import dataclasses
+import functools
 import jax
 from mujoco.mjx._src import types
 from mujoco.mjx.warp import ffi
 import mujoco.mjx.third_party.mujoco_warp as mjwarp
 from mujoco.mjx.third_party.mujoco_warp._src import types as mjwp_types
 import warp as wp
-
 
 _m = mjwarp.Model(
     **{f.name: None for f in dataclasses.fields(mjwarp.Model) if f.init}
@@ -41,191 +41,250 @@ _c = mjwarp.Contact(
 _e = mjwarp.Constraint(
     **{f.name: None for f in dataclasses.fields(mjwarp.Constraint) if f.init}
 )
+_cb = mjwp_types.Callback(
+    **{f.name: None for f in dataclasses.fields(mjwp_types.Callback) if f.init}
+)
 
 
 @ffi.format_args_for_warp
 def _forward_shim(
     # Model
     nworld: int,
-    M_rowadr: wp.array(dtype=int),
-    M_rownnz: wp.array(dtype=int),
-    actuator_acc0: wp.array(dtype=float),
-    actuator_actadr: wp.array(dtype=int),
-    actuator_actearly: wp.array(dtype=bool),
-    actuator_actlimited: wp.array(dtype=bool),
-    actuator_actnum: wp.array(dtype=int),
-    actuator_actrange: wp.array2d(dtype=wp.vec2),
-    actuator_biasprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_biastype: wp.array(dtype=int),
-    actuator_cranklength: wp.array(dtype=float),
-    actuator_ctrllimited: wp.array(dtype=bool),
-    actuator_ctrlrange: wp.array2d(dtype=wp.vec2),
-    actuator_dynprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_dyntype: wp.array(dtype=int),
-    actuator_forcelimited: wp.array(dtype=bool),
-    actuator_forcerange: wp.array2d(dtype=wp.vec2),
-    actuator_gainprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_gaintype: wp.array(dtype=int),
-    actuator_gear: wp.array2d(dtype=wp.spatial_vector),
-    actuator_lengthrange: wp.array(dtype=wp.vec2),
-    actuator_trnid: wp.array(dtype=wp.vec2i),
-    actuator_trntype: wp.array(dtype=int),
-    actuator_trntype_body_adr: wp.array(dtype=int),
+    M_elemid: wp.array2d[int],
+    M_fullm_i: wp.array[int],
+    M_fullm_j: wp.array[int],
+    M_mulm_col: wp.array[int],
+    M_mulm_madr: wp.array[int],
+    M_mulm_rowadr: wp.array[int],
+    M_rowadr: wp.array[int],
+    M_rownnz: wp.array[int],
+    M_tiles: tuple[mjwp_types.TileSet, ...],
+    actuator_acc0: wp.array2d[float],
+    actuator_actadr: wp.array[int],
+    actuator_actearly: wp.array[bool],
+    actuator_actlimited: wp.array[bool],
+    actuator_actnum: wp.array[int],
+    actuator_actrange: wp.array2d[wp.vec2],
+    actuator_biasprm: wp.array2d[mjwp_types.vec10f],
+    actuator_biastype: wp.array[int],
+    actuator_cranklength: wp.array2d[float],
+    actuator_ctrllimited: wp.array[bool],
+    actuator_ctrlrange: wp.array2d[wp.vec2],
+    actuator_delay: wp.array[float],
+    actuator_dynprm: wp.array2d[mjwp_types.vec10f],
+    actuator_dyntype: wp.array[int],
+    actuator_forcelimited: wp.array[bool],
+    actuator_forcerange: wp.array2d[wp.vec2],
+    actuator_gainprm: wp.array2d[mjwp_types.vec10f],
+    actuator_gaintype: wp.array[int],
+    actuator_gear: wp.array2d[wp.spatial_vector],
+    actuator_history: wp.array[wp.vec2i],
+    actuator_historyadr: wp.array[int],
+    actuator_lengthrange: wp.array2d[wp.vec2],
+    actuator_trnid: wp.array[wp.vec2i],
+    actuator_trntype: wp.array[int],
+    actuator_trntype_body_adr: wp.array[int],
     block_dim: mjwp_types.BlockDim,
-    body_dofadr: wp.array(dtype=int),
-    body_dofnum: wp.array(dtype=int),
-    body_fluid_ellipsoid: wp.array(dtype=bool),
-    body_geomadr: wp.array(dtype=int),
-    body_geomnum: wp.array(dtype=int),
-    body_gravcomp: wp.array2d(dtype=float),
-    body_inertia: wp.array2d(dtype=wp.vec3),
-    body_invweight0: wp.array2d(dtype=wp.vec2),
-    body_ipos: wp.array2d(dtype=wp.vec3),
-    body_iquat: wp.array2d(dtype=wp.quat),
-    body_jntadr: wp.array(dtype=int),
-    body_jntnum: wp.array(dtype=int),
-    body_mass: wp.array2d(dtype=float),
-    body_mocapid: wp.array(dtype=int),
-    body_parentid: wp.array(dtype=int),
-    body_pos: wp.array2d(dtype=wp.vec3),
-    body_quat: wp.array2d(dtype=wp.quat),
-    body_rootid: wp.array(dtype=int),
-    body_subtreemass: wp.array2d(dtype=float),
-    body_tree: tuple[wp.array(dtype=int), ...],
-    body_weldid: wp.array(dtype=int),
-    cam_bodyid: wp.array(dtype=int),
-    cam_fovy: wp.array(dtype=float),
-    cam_intrinsic: wp.array(dtype=wp.vec4),
-    cam_mat0: wp.array2d(dtype=wp.mat33),
-    cam_mode: wp.array(dtype=int),
-    cam_pos: wp.array2d(dtype=wp.vec3),
-    cam_pos0: wp.array2d(dtype=wp.vec3),
-    cam_poscom0: wp.array2d(dtype=wp.vec3),
-    cam_quat: wp.array2d(dtype=wp.quat),
-    cam_resolution: wp.array(dtype=wp.vec2i),
-    cam_sensorsize: wp.array(dtype=wp.vec2),
-    cam_targetbodyid: wp.array(dtype=int),
-    collision_sensor_adr: wp.array(dtype=int),
-    dof_Madr: wp.array(dtype=int),
-    dof_armature: wp.array2d(dtype=float),
-    dof_bodyid: wp.array(dtype=int),
-    dof_damping: wp.array2d(dtype=float),
-    dof_frictionloss: wp.array2d(dtype=float),
-    dof_invweight0: wp.array2d(dtype=float),
-    dof_jntid: wp.array(dtype=int),
-    dof_parentid: wp.array(dtype=int),
-    dof_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    dof_solref: wp.array2d(dtype=wp.vec2),
-    dof_tri_col: wp.array(dtype=int),
-    dof_tri_row: wp.array(dtype=int),
-    eq_connect_adr: wp.array(dtype=int),
-    eq_data: wp.array2d(dtype=mjwp_types.vec11),
-    eq_jnt_adr: wp.array(dtype=int),
-    eq_obj1id: wp.array(dtype=int),
-    eq_obj2id: wp.array(dtype=int),
-    eq_objtype: wp.array(dtype=int),
-    eq_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    eq_solref: wp.array2d(dtype=wp.vec2),
-    eq_ten_adr: wp.array(dtype=int),
-    eq_wld_adr: wp.array(dtype=int),
-    flex_bending: wp.array2d(dtype=float),
-    flex_damping: wp.array(dtype=float),
-    flex_dim: wp.array(dtype=int),
-    flex_edge: wp.array(dtype=wp.vec2i),
-    flex_edgeadr: wp.array(dtype=int),
-    flex_edgeflap: wp.array(dtype=wp.vec2i),
-    flex_elem: wp.array(dtype=int),
-    flex_elemedge: wp.array(dtype=int),
-    flex_elemedgeadr: wp.array(dtype=int),
-    flex_stiffness: wp.array2d(dtype=float),
-    flex_vertadr: wp.array(dtype=int),
-    flex_vertbodyid: wp.array(dtype=int),
-    flexedge_length0: wp.array(dtype=float),
-    geom_aabb: wp.array3d(dtype=wp.vec3),
-    geom_bodyid: wp.array(dtype=int),
-    geom_condim: wp.array(dtype=int),
-    geom_dataid: wp.array(dtype=int),
-    geom_fluid: wp.array2d(dtype=float),
-    geom_friction: wp.array2d(dtype=wp.vec3),
-    geom_gap: wp.array2d(dtype=float),
-    geom_group: wp.array(dtype=int),
-    geom_margin: wp.array2d(dtype=float),
-    geom_matid: wp.array2d(dtype=int),
+    body_branch_start: wp.array[int],
+    body_branches: wp.array[int],
+    body_dofadr: wp.array[int],
+    body_dofnum: wp.array[int],
+    body_fluid_ellipsoid: wp.array[bool],
+    body_geomadr: wp.array[int],
+    body_geomnum: wp.array[int],
+    body_gravcomp: wp.array2d[float],
+    body_inertia: wp.array2d[wp.vec3],
+    body_invweight0: wp.array2d[wp.vec2],
+    body_ipos: wp.array2d[wp.vec3],
+    body_iquat: wp.array2d[wp.quat],
+    body_isdofancestor: wp.array2d[int],
+    body_jntadr: wp.array[int],
+    body_jntnum: wp.array[int],
+    body_mass: wp.array2d[float],
+    body_mocapid: wp.array[int],
+    body_parentid: wp.array[int],
+    body_pos: wp.array2d[wp.vec3],
+    body_quat: wp.array2d[wp.quat],
+    body_rootid: wp.array[int],
+    body_subtreemass: wp.array2d[float],
+    body_tree: tuple[wp.array[int], ...],
+    body_treeid: wp.array[int],
+    body_weldid: wp.array[int],
+    cam_bodyid: wp.array[int],
+    cam_fovy: wp.array2d[float],
+    cam_intrinsic: wp.array2d[wp.vec4],
+    cam_mat0: wp.array2d[wp.mat33],
+    cam_mode: wp.array[int],
+    cam_pos: wp.array2d[wp.vec3],
+    cam_pos0: wp.array2d[wp.vec3],
+    cam_poscom0: wp.array2d[wp.vec3],
+    cam_quat: wp.array2d[wp.quat],
+    cam_resolution: wp.array[wp.vec2i],
+    cam_sensorsize: wp.array[wp.vec2],
+    cam_targetbodyid: wp.array[int],
+    dof_armature: wp.array2d[float],
+    dof_bodyid: wp.array[int],
+    dof_damping: wp.array2d[float],
+    dof_dampingpoly: wp.array2d[wp.vec2],
+    dof_frictionloss: wp.array2d[float],
+    dof_invweight0: wp.array2d[float],
+    dof_jntid: wp.array[int],
+    dof_length: wp.array[float],
+    dof_parentid: wp.array[int],
+    dof_solimp: wp.array2d[mjwp_types.vec5],
+    dof_solref: wp.array2d[wp.vec2],
+    dof_treeid: wp.array[int],
+    dof_tri_col: wp.array[int],
+    dof_tri_row: wp.array[int],
+    eq_connect_adr: wp.array[int],
+    eq_data: wp.array2d[mjwp_types.vec11],
+    eq_flex_adr: wp.array[int],
+    eq_jnt_adr: wp.array[int],
+    eq_obj1id: wp.array[int],
+    eq_obj2id: wp.array[int],
+    eq_objtype: wp.array[int],
+    eq_solimp: wp.array2d[mjwp_types.vec5],
+    eq_solref: wp.array2d[wp.vec2],
+    eq_ten_adr: wp.array[int],
+    eq_type: wp.array[int],
+    eq_wld_adr: wp.array[int],
+    flex_bending: wp.array[float],
+    flex_bendingadr: wp.array[int],
+    flex_centered: wp.array[bool],
+    flex_conaffinity: wp.array[int],
+    flex_condim: wp.array[int],
+    flex_contype: wp.array[int],
+    flex_damping: wp.array[float],
+    flex_dim: wp.array[int],
+    flex_edge: wp.array[wp.vec2i],
+    flex_edgeadr: wp.array[int],
+    flex_edgeflap: wp.array[wp.vec2i],
+    flex_edgenum: wp.array[int],
+    flex_elem: wp.array[int],
+    flex_elemadr: wp.array[int],
+    flex_elemdataadr: wp.array[int],
+    flex_elemedge: wp.array[int],
+    flex_elemedgeadr: wp.array[int],
+    flex_elemnum: wp.array[int],
+    flex_friction: wp.array[wp.vec3],
+    flex_gap: wp.array[float],
+    flex_margin: wp.array[float],
+    flex_priority: wp.array[int],
+    flex_radius: wp.array[float],
+    flex_shell: wp.array[int],
+    flex_shelldataadr: wp.array[int],
+    flex_shellnum: wp.array[int],
+    flex_solimp: wp.array[mjwp_types.vec5],
+    flex_solmix: wp.array[float],
+    flex_solref: wp.array[wp.vec2],
+    flex_stiffness: wp.array[float],
+    flex_stiffnessadr: wp.array[int],
+    flex_vert: wp.array[wp.vec3],
+    flex_vertadr: wp.array[int],
+    flex_vertbodyid: wp.array[int],
+    flex_vertflexid: wp.array[int],
+    flex_vertnum: wp.array[int],
+    flexedge_J_colind: wp.array[int],
+    flexedge_J_rowadr: wp.array[int],
+    flexedge_J_rownnz: wp.array[int],
+    flexedge_invweight0: wp.array[float],
+    flexedge_length0: wp.array[float],
+    geom_aabb: wp.array3d[wp.vec3],
+    geom_bodyid: wp.array[int],
+    geom_conaffinity: wp.array[int],
+    geom_condim: wp.array[int],
+    geom_contype: wp.array[int],
+    geom_dataid: wp.array2d[int],
+    geom_fluid: wp.array2d[float],
+    geom_friction: wp.array2d[wp.vec3],
+    geom_gap: wp.array2d[float],
+    geom_group: wp.array[int],
+    geom_margin: wp.array2d[float],
+    geom_matid: wp.array2d[int],
     geom_pair_type_count: tuple[int, ...],
-    geom_plugin_index: wp.array(dtype=int),
-    geom_pos: wp.array2d(dtype=wp.vec3),
-    geom_priority: wp.array(dtype=int),
-    geom_quat: wp.array2d(dtype=wp.quat),
-    geom_rbound: wp.array2d(dtype=float),
-    geom_rgba: wp.array2d(dtype=wp.vec4),
-    geom_size: wp.array2d(dtype=wp.vec3),
-    geom_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    geom_solmix: wp.array2d(dtype=float),
-    geom_solref: wp.array2d(dtype=wp.vec2),
-    geom_type: wp.array(dtype=int),
+    geom_plugin_index: wp.array[int],
+    geom_pos: wp.array2d[wp.vec3],
+    geom_priority: wp.array[int],
+    geom_quat: wp.array2d[wp.quat],
+    geom_rbound: wp.array2d[float],
+    geom_rgba: wp.array2d[wp.vec4],
+    geom_size: wp.array2d[wp.vec3],
+    geom_solimp: wp.array2d[mjwp_types.vec5],
+    geom_solmix: wp.array2d[float],
+    geom_solref: wp.array2d[wp.vec2],
+    geom_type: wp.array[int],
+    has_fluid: bool,
     has_sdf_geom: bool,
-    hfield_adr: wp.array(dtype=int),
-    hfield_data: wp.array(dtype=float),
-    hfield_ncol: wp.array(dtype=int),
-    hfield_nrow: wp.array(dtype=int),
-    hfield_size: wp.array(dtype=wp.vec4),
-    jnt_actfrclimited: wp.array(dtype=bool),
-    jnt_actfrcrange: wp.array2d(dtype=wp.vec2),
-    jnt_actgravcomp: wp.array(dtype=int),
-    jnt_axis: wp.array2d(dtype=wp.vec3),
-    jnt_bodyid: wp.array(dtype=int),
-    jnt_dofadr: wp.array(dtype=int),
-    jnt_limited_ball_adr: wp.array(dtype=int),
-    jnt_limited_slide_hinge_adr: wp.array(dtype=int),
-    jnt_margin: wp.array2d(dtype=float),
-    jnt_pos: wp.array2d(dtype=wp.vec3),
-    jnt_qposadr: wp.array(dtype=int),
-    jnt_range: wp.array2d(dtype=wp.vec2),
-    jnt_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    jnt_solref: wp.array2d(dtype=wp.vec2),
-    jnt_stiffness: wp.array2d(dtype=float),
-    jnt_type: wp.array(dtype=int),
-    light_bodyid: wp.array(dtype=int),
-    light_dir: wp.array2d(dtype=wp.vec3),
-    light_dir0: wp.array2d(dtype=wp.vec3),
-    light_mode: wp.array(dtype=int),
-    light_pos: wp.array2d(dtype=wp.vec3),
-    light_pos0: wp.array2d(dtype=wp.vec3),
-    light_poscom0: wp.array2d(dtype=wp.vec3),
-    light_targetbodyid: wp.array(dtype=int),
-    mapM2M: wp.array(dtype=int),
-    mat_rgba: wp.array2d(dtype=wp.vec4),
-    mesh_face: wp.array(dtype=wp.vec3i),
-    mesh_faceadr: wp.array(dtype=int),
-    mesh_graph: wp.array(dtype=int),
-    mesh_graphadr: wp.array(dtype=int),
-    mesh_normal: wp.array(dtype=wp.vec3),
-    mesh_normaladr: wp.array(dtype=int),
-    mesh_polyadr: wp.array(dtype=int),
-    mesh_polymap: wp.array(dtype=int),
-    mesh_polymapadr: wp.array(dtype=int),
-    mesh_polymapnum: wp.array(dtype=int),
-    mesh_polynormal: wp.array(dtype=wp.vec3),
-    mesh_polynum: wp.array(dtype=int),
-    mesh_polyvert: wp.array(dtype=int),
-    mesh_polyvertadr: wp.array(dtype=int),
-    mesh_polyvertnum: wp.array(dtype=int),
-    mesh_quat: wp.array(dtype=wp.quat),
-    mesh_vert: wp.array(dtype=wp.vec3),
-    mesh_vertadr: wp.array(dtype=int),
-    mesh_vertnum: wp.array(dtype=int),
-    mocap_bodyid: wp.array(dtype=int),
-    nC: int,
+    hfield_adr: wp.array[int],
+    hfield_data: wp.array[float],
+    hfield_ncol: wp.array[int],
+    hfield_nrow: wp.array[int],
+    hfield_size: wp.array[wp.vec4],
+    is_sparse: bool,
+    jnt_actfrclimited: wp.array[bool],
+    jnt_actfrcrange: wp.array2d[wp.vec2],
+    jnt_actgravcomp: wp.array[int],
+    jnt_axis: wp.array2d[wp.vec3],
+    jnt_bodyid: wp.array[int],
+    jnt_dofadr: wp.array[int],
+    jnt_limited_ball_adr: wp.array[int],
+    jnt_limited_slide_hinge_adr: wp.array[int],
+    jnt_margin: wp.array2d[float],
+    jnt_pos: wp.array2d[wp.vec3],
+    jnt_qposadr: wp.array[int],
+    jnt_range: wp.array2d[wp.vec2],
+    jnt_solimp: wp.array2d[mjwp_types.vec5],
+    jnt_solref: wp.array2d[wp.vec2],
+    jnt_stiffness: wp.array2d[float],
+    jnt_stiffnesspoly: wp.array2d[wp.vec2],
+    jnt_type: wp.array[int],
+    jtcj_max_pairs: int,
+    light_bodyid: wp.array[int],
+    light_dir: wp.array2d[wp.vec3],
+    light_dir0: wp.array2d[wp.vec3],
+    light_mode: wp.array[int],
+    light_pos: wp.array2d[wp.vec3],
+    light_pos0: wp.array2d[wp.vec3],
+    light_poscom0: wp.array2d[wp.vec3],
+    light_targetbodyid: wp.array[int],
+    mat_rgba: wp.array2d[wp.vec4],
+    max_ten_J_rownnz: int,
+    mesh_face: wp.array[wp.vec3i],
+    mesh_faceadr: wp.array[int],
+    mesh_graph: wp.array[int],
+    mesh_graphadr: wp.array[int],
+    mesh_normal: wp.array[wp.vec3],
+    mesh_normaladr: wp.array[int],
+    mesh_normalnum: wp.array[int],
+    mesh_octadr: wp.array[int],
+    mesh_polyadr: wp.array[int],
+    mesh_polymap: wp.array[int],
+    mesh_polymapadr: wp.array[int],
+    mesh_polymapnum: wp.array[int],
+    mesh_polynormal: wp.array[wp.vec3],
+    mesh_polynum: wp.array[int],
+    mesh_polyvert: wp.array[int],
+    mesh_polyvertadr: wp.array[int],
+    mesh_polyvertnum: wp.array[int],
+    mesh_quat: wp.array[wp.quat],
+    mesh_vert: wp.array[wp.vec3],
+    mesh_vertadr: wp.array[int],
+    mesh_vertnum: wp.array[int],
+    nJten: int,
     na: int,
     nacttrnbody: int,
     nbody: int,
+    nbranch: int,
     ncam: int,
     neq: int,
+    nflex: int,
     nflexedge: int,
     nflexelem: int,
+    nflexshelldata: int,
     nflexvert: int,
     ngeom: int,
     ngravcomp: int,
+    nhistory: int,
     njnt: int,
     nlight: int,
     nmaxcondim: int,
@@ -233,273 +292,311 @@ def _forward_shim(
     nmaxpolygon: int,
     nmaxpyramid: int,
     nmeshface: int,
-    nmocap: int,
     nrangefinder: int,
     nsensorcollision: int,
     nsensorcontact: int,
     nsensortaxel: int,
     nsite: int,
     ntendon: int,
+    ntree: int,
     nu: int,
     nv: int,
+    nv_pad: int,
     nwrap: int,
-    nxn_geom_pair_filtered: wp.array(dtype=wp.vec2i),
-    nxn_pairid: wp.array(dtype=wp.vec2i),
-    nxn_pairid_filtered: wp.array(dtype=wp.vec2i),
-    oct_aabb: wp.array2d(dtype=wp.vec3),
-    oct_child: wp.array(dtype=mjwp_types.vec8i),
-    oct_coeff: wp.array(dtype=mjwp_types.vec8),
-    pair_dim: wp.array(dtype=int),
-    pair_friction: wp.array2d(dtype=mjwp_types.vec5),
-    pair_gap: wp.array2d(dtype=float),
-    pair_margin: wp.array2d(dtype=float),
-    pair_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    pair_solref: wp.array2d(dtype=wp.vec2),
-    pair_solreffriction: wp.array2d(dtype=wp.vec2),
-    plugin: wp.array(dtype=int),
-    plugin_attr: wp.array(dtype=wp.vec3f),
-    qLD_updates: tuple[wp.array(dtype=wp.vec3i), ...],
-    qM_fullm_i: wp.array(dtype=int),
-    qM_fullm_j: wp.array(dtype=int),
-    qM_madr_ij: wp.array(dtype=int),
-    qM_mulm_i: wp.array(dtype=int),
-    qM_mulm_j: wp.array(dtype=int),
-    qM_tiles: tuple[mjwp_types.TileSet, ...],
-    qpos0: wp.array2d(dtype=float),
-    qpos_spring: wp.array2d(dtype=float),
-    rangefinder_sensor_adr: wp.array(dtype=int),
-    sensor_acc_adr: wp.array(dtype=int),
-    sensor_adr: wp.array(dtype=int),
-    sensor_adr_to_contact_adr: wp.array(dtype=int),
-    sensor_collision_start_adr: wp.array(dtype=int),
-    sensor_contact_adr: wp.array(dtype=int),
-    sensor_cutoff: wp.array(dtype=float),
-    sensor_datatype: wp.array(dtype=int),
-    sensor_dim: wp.array(dtype=int),
+    nxn_geom_pair_filtered: wp.array[wp.vec2i],
+    nxn_pairid: wp.array[wp.vec2i],
+    nxn_pairid_filtered: wp.array[wp.vec2i],
+    oct_aabb: wp.array2d[wp.vec3],
+    oct_child: wp.array[mjwp_types.vec8i],
+    oct_coeff: wp.array[mjwp_types.vec8],
+    pair_dim: wp.array[int],
+    pair_friction: wp.array2d[mjwp_types.vec5],
+    pair_gap: wp.array2d[float],
+    pair_margin: wp.array2d[float],
+    pair_solimp: wp.array2d[mjwp_types.vec5],
+    pair_solref: wp.array2d[wp.vec2],
+    pair_solreffriction: wp.array2d[wp.vec2],
+    plugin: wp.array[int],
+    plugin_attr: wp.array[mjwp_types.vec_pluginattr],
+    qLD_all_updates: wp.array[wp.vec3i],
+    qLD_level_offsets: wp.array[int],
+    qLD_updates: tuple[wp.array[wp.vec3i], ...],
+    qpos0: wp.array2d[float],
+    qpos_spring: wp.array2d[float],
+    rangefinder_sensor_adr: wp.array[int],
+    sensor_acc_adr: wp.array[int],
+    sensor_adr: wp.array[int],
+    sensor_adr_to_contact_adr: wp.array[int],
+    sensor_contact_adr: wp.array[int],
+    sensor_cutoff: wp.array[float],
+    sensor_datatype: wp.array[int],
+    sensor_delay: wp.array[float],
+    sensor_dim: wp.array[int],
     sensor_e_kinetic: bool,
     sensor_e_potential: bool,
-    sensor_intprm: wp.array2d(dtype=int),
-    sensor_limitfrc_adr: wp.array(dtype=int),
-    sensor_limitpos_adr: wp.array(dtype=int),
-    sensor_limitvel_adr: wp.array(dtype=int),
-    sensor_objid: wp.array(dtype=int),
-    sensor_objtype: wp.array(dtype=int),
-    sensor_pos_adr: wp.array(dtype=int),
-    sensor_rangefinder_adr: wp.array(dtype=int),
-    sensor_rangefinder_bodyid: wp.array(dtype=int),
-    sensor_refid: wp.array(dtype=int),
-    sensor_reftype: wp.array(dtype=int),
+    sensor_history: wp.array[wp.vec2i],
+    sensor_historyadr: wp.array[int],
+    sensor_interval: wp.array[wp.vec2],
+    sensor_intprm: wp.array2d[int],
+    sensor_limitfrc_adr: wp.array[int],
+    sensor_limitpos_adr: wp.array[int],
+    sensor_limitvel_adr: wp.array[int],
+    sensor_objid: wp.array[int],
+    sensor_objtype: wp.array[int],
+    sensor_pos_adr: wp.array[int],
+    sensor_rangefinder_adr: wp.array[int],
+    sensor_rangefinder_bodyid: wp.array[int],
+    sensor_refid: wp.array[int],
+    sensor_reftype: wp.array[int],
     sensor_rne_postconstraint: bool,
     sensor_subtree_vel: bool,
-    sensor_tendonactfrc_adr: wp.array(dtype=int),
-    sensor_touch_adr: wp.array(dtype=int),
-    sensor_type: wp.array(dtype=int),
-    sensor_vel_adr: wp.array(dtype=int),
-    site_bodyid: wp.array(dtype=int),
-    site_pos: wp.array2d(dtype=wp.vec3),
-    site_quat: wp.array2d(dtype=wp.quat),
-    site_size: wp.array(dtype=wp.vec3),
-    site_type: wp.array(dtype=int),
-    taxel_sensorid: wp.array(dtype=int),
-    taxel_vertadr: wp.array(dtype=int),
-    tendon_actfrclimited: wp.array(dtype=bool),
-    tendon_actfrcrange: wp.array2d(dtype=wp.vec2),
-    tendon_adr: wp.array(dtype=int),
-    tendon_armature: wp.array2d(dtype=float),
-    tendon_damping: wp.array2d(dtype=float),
-    tendon_frictionloss: wp.array2d(dtype=float),
-    tendon_geom_adr: wp.array(dtype=int),
-    tendon_invweight0: wp.array2d(dtype=float),
-    tendon_jnt_adr: wp.array(dtype=int),
-    tendon_length0: wp.array2d(dtype=float),
-    tendon_lengthspring: wp.array2d(dtype=wp.vec2),
-    tendon_limited_adr: wp.array(dtype=int),
-    tendon_margin: wp.array2d(dtype=float),
-    tendon_num: wp.array(dtype=int),
-    tendon_range: wp.array2d(dtype=wp.vec2),
-    tendon_site_pair_adr: wp.array(dtype=int),
-    tendon_solimp_fri: wp.array2d(dtype=mjwp_types.vec5),
-    tendon_solimp_lim: wp.array2d(dtype=mjwp_types.vec5),
-    tendon_solref_fri: wp.array2d(dtype=wp.vec2),
-    tendon_solref_lim: wp.array2d(dtype=wp.vec2),
-    tendon_stiffness: wp.array2d(dtype=float),
-    wrap_geom_adr: wp.array(dtype=int),
-    wrap_jnt_adr: wp.array(dtype=int),
-    wrap_objid: wp.array(dtype=int),
-    wrap_prm: wp.array(dtype=float),
-    wrap_pulley_scale: wp.array(dtype=float),
-    wrap_site_pair_adr: wp.array(dtype=int),
-    wrap_type: wp.array(dtype=int),
+    sensor_tendonactfrc_adr: wp.array[int],
+    sensor_touch_adr: wp.array[int],
+    sensor_type: wp.array[int],
+    sensor_vel_adr: wp.array[int],
+    site_bodyid: wp.array[int],
+    site_pos: wp.array2d[wp.vec3],
+    site_quat: wp.array2d[wp.quat],
+    site_size: wp.array[wp.vec3],
+    site_type: wp.array[int],
+    taxel_sensorid: wp.array[int],
+    taxel_vertadr: wp.array[int],
+    ten_J_colind: wp.array[int],
+    ten_J_rowadr: wp.array[int],
+    ten_J_rownnz: wp.array[int],
+    tendon_actfrclimited: wp.array[bool],
+    tendon_actfrcrange: wp.array2d[wp.vec2],
+    tendon_adr: wp.array[int],
+    tendon_armature: wp.array2d[float],
+    tendon_damping: wp.array2d[float],
+    tendon_dampingpoly: wp.array2d[wp.vec2],
+    tendon_frictionloss: wp.array2d[float],
+    tendon_geom_adr: wp.array[int],
+    tendon_invweight0: wp.array2d[float],
+    tendon_jnt_adr: wp.array[int],
+    tendon_length0: wp.array2d[float],
+    tendon_lengthspring: wp.array2d[wp.vec2],
+    tendon_limited: wp.array[int],
+    tendon_limited_adr: wp.array[int],
+    tendon_margin: wp.array2d[float],
+    tendon_num: wp.array[int],
+    tendon_range: wp.array2d[wp.vec2],
+    tendon_site_pair_adr: wp.array[int],
+    tendon_solimp_fri: wp.array2d[mjwp_types.vec5],
+    tendon_solimp_lim: wp.array2d[mjwp_types.vec5],
+    tendon_solref_fri: wp.array2d[wp.vec2],
+    tendon_solref_lim: wp.array2d[wp.vec2],
+    tendon_stiffness: wp.array2d[float],
+    tendon_stiffnesspoly: wp.array2d[wp.vec2],
+    tree_dofadr: wp.array[int],
+    tree_dofnum: wp.array[int],
+    tree_sleep_policy: wp.array[int],
+    wrap_geom_adr: wp.array[int],
+    wrap_jnt_adr: wp.array[int],
+    wrap_objid: wp.array[int],
+    wrap_prm: wp.array[float],
+    wrap_pulley_scale: wp.array[float],
+    wrap_site_pair_adr: wp.array[int],
+    wrap_type: wp.array[int],
     opt__broadphase: int,
     opt__broadphase_filter: int,
     opt__ccd_iterations: int,
-    opt__ccd_tolerance: wp.array(dtype=float),
+    opt__ccd_tolerance: wp.array[float],
     opt__cone: int,
     opt__contact_sensor_maxmatch: int,
-    opt__density: wp.array(dtype=float),
+    opt__density: wp.array[float],
     opt__disableflags: int,
     opt__enableflags: int,
     opt__graph_conditional: bool,
-    opt__gravity: wp.array(dtype=wp.vec3),
-    opt__has_fluid: bool,
-    opt__impratio: wp.array(dtype=float),
-    opt__is_sparse: bool,
+    opt__gravity: wp.array[wp.vec3],
+    opt__impratio_invsqrt: wp.array[float],
+    opt__integrator: int,
     opt__iterations: int,
     opt__ls_iterations: int,
-    opt__ls_parallel: bool,
-    opt__ls_parallel_min_step: float,
-    opt__ls_tolerance: wp.array(dtype=float),
-    opt__magnetic: wp.array(dtype=wp.vec3),
+    opt__ls_tolerance: wp.array[float],
+    opt__magnetic: wp.array[wp.vec3],
     opt__run_collision_detection: bool,
     opt__sdf_initpoints: int,
     opt__sdf_iterations: int,
     opt__solver: int,
-    opt__timestep: wp.array(dtype=float),
-    opt__tolerance: wp.array(dtype=float),
-    opt__viscosity: wp.array(dtype=float),
-    opt__wind: wp.array(dtype=wp.vec3),
-    stat__meaninertia: float,
+    opt__timestep: wp.array[float],
+    opt__tolerance: wp.array[float],
+    opt__viscosity: wp.array[float],
+    opt__wind: wp.array[wp.vec3],
+    stat__meaninertia: wp.array[float],
     # Data
+    naccdmax: int,
     naconmax: int,
     njmax: int,
-    act: wp.array2d(dtype=float),
-    act_dot: wp.array2d(dtype=float),
-    actuator_force: wp.array2d(dtype=float),
-    actuator_length: wp.array2d(dtype=float),
-    actuator_moment: wp.array3d(dtype=float),
-    actuator_velocity: wp.array2d(dtype=float),
-    cacc: wp.array2d(dtype=wp.spatial_vector),
-    cam_xmat: wp.array2d(dtype=wp.mat33),
-    cam_xpos: wp.array2d(dtype=wp.vec3),
-    cdof: wp.array2d(dtype=wp.spatial_vector),
-    cdof_dot: wp.array2d(dtype=wp.spatial_vector),
-    cfrc_ext: wp.array2d(dtype=wp.spatial_vector),
-    cfrc_int: wp.array2d(dtype=wp.spatial_vector),
-    cinert: wp.array2d(dtype=mjwp_types.vec10),
-    collision_pair: wp.array(dtype=wp.vec2i),
-    collision_pairid: wp.array(dtype=wp.vec2i),
-    collision_worldid: wp.array(dtype=int),
-    crb: wp.array2d(dtype=mjwp_types.vec10),
-    ctrl: wp.array2d(dtype=float),
-    cvel: wp.array2d(dtype=wp.spatial_vector),
-    energy: wp.array(dtype=wp.vec2),
-    eq_active: wp.array2d(dtype=bool),
-    flexedge_length: wp.array2d(dtype=float),
-    flexedge_velocity: wp.array2d(dtype=float),
-    flexvert_xpos: wp.array2d(dtype=wp.vec3),
-    geom_xmat: wp.array2d(dtype=wp.mat33),
-    geom_xpos: wp.array2d(dtype=wp.vec3),
-    light_xdir: wp.array2d(dtype=wp.vec3),
-    light_xpos: wp.array2d(dtype=wp.vec3),
-    mocap_pos: wp.array2d(dtype=wp.vec3),
-    mocap_quat: wp.array2d(dtype=wp.quat),
-    nacon: wp.array(dtype=int),
-    ncollision: wp.array(dtype=int),
-    ne: wp.array(dtype=int),
-    ne_connect: wp.array(dtype=int),
-    ne_jnt: wp.array(dtype=int),
-    ne_ten: wp.array(dtype=int),
-    ne_weld: wp.array(dtype=int),
-    nefc: wp.array(dtype=int),
-    nf: wp.array(dtype=int),
-    nl: wp.array(dtype=int),
-    nsolving: wp.array(dtype=int),
-    qLD: wp.array3d(dtype=float),
-    qLDiagInv: wp.array2d(dtype=float),
-    qM: wp.array3d(dtype=float),
-    qacc: wp.array2d(dtype=float),
-    qacc_smooth: wp.array2d(dtype=float),
-    qacc_warmstart: wp.array2d(dtype=float),
-    qfrc_actuator: wp.array2d(dtype=float),
-    qfrc_applied: wp.array2d(dtype=float),
-    qfrc_bias: wp.array2d(dtype=float),
-    qfrc_constraint: wp.array2d(dtype=float),
-    qfrc_damper: wp.array2d(dtype=float),
-    qfrc_fluid: wp.array2d(dtype=float),
-    qfrc_gravcomp: wp.array2d(dtype=float),
-    qfrc_passive: wp.array2d(dtype=float),
-    qfrc_smooth: wp.array2d(dtype=float),
-    qfrc_spring: wp.array2d(dtype=float),
-    qpos: wp.array2d(dtype=float),
-    qvel: wp.array2d(dtype=float),
-    sensordata: wp.array2d(dtype=float),
-    site_xmat: wp.array2d(dtype=wp.mat33),
-    site_xpos: wp.array2d(dtype=wp.vec3),
-    solver_niter: wp.array(dtype=int),
-    subtree_angmom: wp.array2d(dtype=wp.vec3),
-    subtree_bodyvel: wp.array2d(dtype=wp.spatial_vector),
-    subtree_com: wp.array2d(dtype=wp.vec3),
-    subtree_linvel: wp.array2d(dtype=wp.vec3),
-    ten_J: wp.array3d(dtype=float),
-    ten_length: wp.array2d(dtype=float),
-    ten_velocity: wp.array2d(dtype=float),
-    ten_wrapadr: wp.array2d(dtype=int),
-    ten_wrapnum: wp.array2d(dtype=int),
-    time: wp.array(dtype=float),
-    wrap_obj: wp.array2d(dtype=wp.vec2i),
-    wrap_xpos: wp.array2d(dtype=wp.spatial_vector),
-    xanchor: wp.array2d(dtype=wp.vec3),
-    xaxis: wp.array2d(dtype=wp.vec3),
-    xfrc_applied: wp.array2d(dtype=wp.spatial_vector),
-    ximat: wp.array2d(dtype=wp.mat33),
-    xipos: wp.array2d(dtype=wp.vec3),
-    xmat: wp.array2d(dtype=wp.mat33),
-    xpos: wp.array2d(dtype=wp.vec3),
-    xquat: wp.array2d(dtype=wp.quat),
-    contact__dim: wp.array(dtype=int),
-    contact__dist: wp.array(dtype=float),
-    contact__efc_address: wp.array2d(dtype=int),
-    contact__frame: wp.array(dtype=wp.mat33),
-    contact__friction: wp.array(dtype=mjwp_types.vec5),
-    contact__geom: wp.array(dtype=wp.vec2i),
-    contact__geomcollisionid: wp.array(dtype=int),
-    contact__includemargin: wp.array(dtype=float),
-    contact__pos: wp.array(dtype=wp.vec3),
-    contact__solimp: wp.array(dtype=mjwp_types.vec5),
-    contact__solref: wp.array(dtype=wp.vec2),
-    contact__solreffriction: wp.array(dtype=wp.vec2),
-    contact__type: wp.array(dtype=int),
-    contact__worldid: wp.array(dtype=int),
-    efc__D: wp.array2d(dtype=float),
-    efc__J: wp.array3d(dtype=float),
-    efc__Jaref: wp.array2d(dtype=float),
-    efc__Ma: wp.array2d(dtype=float),
-    efc__Mgrad: wp.array2d(dtype=float),
-    efc__alpha: wp.array(dtype=float),
-    efc__aref: wp.array2d(dtype=float),
-    efc__beta: wp.array(dtype=float),
-    efc__cholesky_L_tmp: wp.array3d(dtype=float),
-    efc__cholesky_y_tmp: wp.array2d(dtype=float),
-    efc__cost: wp.array(dtype=float),
-    efc__done: wp.array(dtype=bool),
-    efc__force: wp.array2d(dtype=float),
-    efc__frictionloss: wp.array2d(dtype=float),
-    efc__gauss: wp.array(dtype=float),
-    efc__grad: wp.array2d(dtype=float),
-    efc__grad_dot: wp.array(dtype=float),
-    efc__h: wp.array3d(dtype=float),
-    efc__id: wp.array2d(dtype=int),
-    efc__jv: wp.array2d(dtype=float),
-    efc__margin: wp.array2d(dtype=float),
-    efc__mv: wp.array2d(dtype=float),
-    efc__pos: wp.array2d(dtype=float),
-    efc__prev_Mgrad: wp.array2d(dtype=float),
-    efc__prev_cost: wp.array(dtype=float),
-    efc__prev_grad: wp.array2d(dtype=float),
-    efc__quad: wp.array2d(dtype=wp.vec3),
-    efc__quad_gauss: wp.array(dtype=wp.vec3),
-    efc__search: wp.array2d(dtype=float),
-    efc__search_dot: wp.array(dtype=float),
-    efc__state: wp.array2d(dtype=int),
-    efc__type: wp.array2d(dtype=int),
-    efc__vel: wp.array2d(dtype=float),
+    njmax_nnz: int,
+    M: wp.array3d[float],
+    act: wp.array2d[float],
+    act_dot: wp.array2d[float],
+    actuator_force: wp.array2d[float],
+    actuator_length: wp.array2d[float],
+    actuator_moment: wp.array2d[float],
+    actuator_velocity: wp.array2d[float],
+    body_awake: wp.array2d[int],
+    body_awake_ind: wp.array2d[int],
+    cacc: wp.array2d[wp.spatial_vector],
+    cam_xmat: wp.array2d[wp.mat33],
+    cam_xpos: wp.array2d[wp.vec3],
+    cdof: wp.array2d[wp.spatial_vector],
+    cdof_dot: wp.array2d[wp.spatial_vector],
+    cfrc_ext: wp.array2d[wp.spatial_vector],
+    cfrc_int: wp.array2d[wp.spatial_vector],
+    cinert: wp.array2d[mjwp_types.vec10],
+    crb: wp.array2d[mjwp_types.vec10],
+    ctrl: wp.array2d[float],
+    cvel: wp.array2d[wp.spatial_vector],
+    dof_awake_ind: wp.array2d[int],
+    dof_island: wp.array2d[int],
+    dof_islandid: wp.array2d[int],
+    efc_islandid: wp.array2d[int],
+    energy: wp.array[wp.vec2],
+    eq_active: wp.array2d[bool],
+    flexedge_J: wp.array2d[float],
+    flexedge_length: wp.array2d[float],
+    flexedge_velocity: wp.array2d[float],
+    flexvert_xpos: wp.array2d[wp.vec3],
+    geom_xmat: wp.array2d[wp.mat33],
+    geom_xpos: wp.array2d[wp.vec3],
+    history: wp.array2d[float],
+    iqacc: wp.array2d[float],
+    iqacc_smooth: wp.array2d[float],
+    iqfrc_constraint: wp.array2d[float],
+    iqfrc_smooth: wp.array2d[float],
+    island_dofadr: wp.array2d[int],
+    island_efcadr: wp.array2d[int],
+    island_idofadr: wp.array2d[int],
+    island_ne: wp.array2d[int],
+    island_nefc: wp.array2d[int],
+    island_nf: wp.array2d[int],
+    island_nv: wp.array2d[int],
+    light_xdir: wp.array2d[wp.vec3],
+    light_xpos: wp.array2d[wp.vec3],
+    map_dof2idof: wp.array2d[int],
+    map_efc2iefc: wp.array2d[int],
+    map_idof2dof: wp.array2d[int],
+    map_iefc2efc: wp.array2d[int],
+    mocap_pos: wp.array2d[wp.vec3],
+    mocap_quat: wp.array2d[wp.quat],
+    moment_colind: wp.array2d[int],
+    moment_rowadr: wp.array2d[int],
+    moment_rownnz: wp.array2d[int],
+    nacon: wp.array[int],
+    nbody_awake: wp.array[int],
+    ncollision: wp.array[int],
+    ne: wp.array[int],
+    nefc: wp.array[int],
+    nf: wp.array[int],
+    nidof: wp.array[int],
+    nisland: wp.array[int],
+    nl: wp.array[int],
+    ntree_awake: wp.array[int],
+    nv_awake: wp.array[int],
+    qLD: wp.array3d[float],
+    qLDiagInv: wp.array2d[float],
+    qacc: wp.array2d[float],
+    qacc_smooth: wp.array2d[float],
+    qacc_warmstart: wp.array2d[float],
+    qfrc_actuator: wp.array2d[float],
+    qfrc_applied: wp.array2d[float],
+    qfrc_bias: wp.array2d[float],
+    qfrc_constraint: wp.array2d[float],
+    qfrc_damper: wp.array2d[float],
+    qfrc_fluid: wp.array2d[float],
+    qfrc_gravcomp: wp.array2d[float],
+    qfrc_passive: wp.array2d[float],
+    qfrc_smooth: wp.array2d[float],
+    qfrc_spring: wp.array2d[float],
+    qpos: wp.array2d[float],
+    qvel: wp.array2d[float],
+    sensordata: wp.array2d[float],
+    site_xmat: wp.array2d[wp.mat33],
+    site_xpos: wp.array2d[wp.vec3],
+    solver_niter: wp.array[int],
+    subtree_angmom: wp.array2d[wp.vec3],
+    subtree_com: wp.array2d[wp.vec3],
+    subtree_linvel: wp.array2d[wp.vec3],
+    ten_J: wp.array2d[float],
+    ten_length: wp.array2d[float],
+    ten_velocity: wp.array2d[float],
+    ten_wrapadr: wp.array2d[int],
+    ten_wrapnum: wp.array2d[int],
+    time: wp.array[float],
+    tree_asleep: wp.array2d[int],
+    tree_awake: wp.array2d[int],
+    tree_island: wp.array2d[int],
+    wrap_obj: wp.array2d[wp.vec2i],
+    wrap_xpos: wp.array2d[wp.spatial_vector],
+    xanchor: wp.array2d[wp.vec3],
+    xaxis: wp.array2d[wp.vec3],
+    xfrc_applied: wp.array2d[wp.spatial_vector],
+    ximat: wp.array2d[wp.mat33],
+    xipos: wp.array2d[wp.vec3],
+    xmat: wp.array2d[wp.mat33],
+    xpos: wp.array2d[wp.vec3],
+    xquat: wp.array2d[wp.quat],
+    contact__dim: wp.array[int],
+    contact__dist: wp.array[float],
+    contact__efc_address: wp.array2d[int],
+    contact__flex: wp.array[wp.vec2i],
+    contact__frame: wp.array[wp.mat33],
+    contact__friction: wp.array[mjwp_types.vec5],
+    contact__geom: wp.array[wp.vec2i],
+    contact__geomcollisionid: wp.array[int],
+    contact__includemargin: wp.array[float],
+    contact__pos: wp.array[wp.vec3],
+    contact__solimp: wp.array[mjwp_types.vec5],
+    contact__solref: wp.array[wp.vec2],
+    contact__solreffriction: wp.array[wp.vec2],
+    contact__type: wp.array[int],
+    contact__vert: wp.array[wp.vec2i],
+    contact__worldid: wp.array[int],
+    efc__D: wp.array2d[float],
+    efc__J: wp.array3d[float],
+    efc__J_colind: wp.array3d[int],
+    efc__J_rowadr: wp.array2d[int],
+    efc__J_rownnz: wp.array2d[int],
+    efc__Jqvel: wp.array2d[float],
+    efc__Ma: wp.array2d[float],
+    efc__aref: wp.array2d[float],
+    efc__force: wp.array2d[float],
+    efc__frictionloss: wp.array2d[float],
+    efc__iD: wp.array2d[float],
+    efc__iJ: wp.array3d[float],
+    efc__iJ_colind: wp.array3d[int],
+    efc__iJ_rowadr: wp.array2d[int],
+    efc__iJ_rownnz: wp.array2d[int],
+    efc__iaref: wp.array2d[float],
+    efc__id: wp.array2d[int],
+    efc__iforce: wp.array2d[float],
+    efc__ifrictionloss: wp.array2d[float],
+    efc__iid: wp.array2d[int],
+    efc__island: wp.array2d[int],
+    efc__istate: wp.array2d[int],
+    efc__itype: wp.array2d[int],
+    efc__margin: wp.array2d[float],
+    efc__pos: wp.array2d[float],
+    efc__state: wp.array2d[int],
+    efc__type: wp.array2d[int],
+    efc__vel: wp.array2d[float],
 ):
   _m.stat = _s
   _m.opt = _o
+  _m.callback = _cb
   _d.efc = _e
   _d.contact = _c
+  _m.M_elemid = M_elemid
+  _m.M_fullm_i = M_fullm_i
+  _m.M_fullm_j = M_fullm_j
+  _m.M_mulm_col = M_mulm_col
+  _m.M_mulm_madr = M_mulm_madr
+  _m.M_mulm_rowadr = M_mulm_rowadr
   _m.M_rowadr = M_rowadr
   _m.M_rownnz = M_rownnz
+  _m.M_tiles = M_tiles
   _m.actuator_acc0 = actuator_acc0
   _m.actuator_actadr = actuator_actadr
   _m.actuator_actearly = actuator_actearly
@@ -511,6 +608,7 @@ def _forward_shim(
   _m.actuator_cranklength = actuator_cranklength
   _m.actuator_ctrllimited = actuator_ctrllimited
   _m.actuator_ctrlrange = actuator_ctrlrange
+  _m.actuator_delay = actuator_delay
   _m.actuator_dynprm = actuator_dynprm
   _m.actuator_dyntype = actuator_dyntype
   _m.actuator_forcelimited = actuator_forcelimited
@@ -518,11 +616,15 @@ def _forward_shim(
   _m.actuator_gainprm = actuator_gainprm
   _m.actuator_gaintype = actuator_gaintype
   _m.actuator_gear = actuator_gear
+  _m.actuator_history = actuator_history
+  _m.actuator_historyadr = actuator_historyadr
   _m.actuator_lengthrange = actuator_lengthrange
   _m.actuator_trnid = actuator_trnid
   _m.actuator_trntype = actuator_trntype
   _m.actuator_trntype_body_adr = actuator_trntype_body_adr
   _m.block_dim = block_dim
+  _m.body_branch_start = body_branch_start
+  _m.body_branches = body_branches
   _m.body_dofadr = body_dofadr
   _m.body_dofnum = body_dofnum
   _m.body_fluid_ellipsoid = body_fluid_ellipsoid
@@ -533,6 +635,7 @@ def _forward_shim(
   _m.body_invweight0 = body_invweight0
   _m.body_ipos = body_ipos
   _m.body_iquat = body_iquat
+  _m.body_isdofancestor = body_isdofancestor
   _m.body_jntadr = body_jntadr
   _m.body_jntnum = body_jntnum
   _m.body_mass = body_mass
@@ -543,6 +646,7 @@ def _forward_shim(
   _m.body_rootid = body_rootid
   _m.body_subtreemass = body_subtreemass
   _m.body_tree = body_tree
+  _m.body_treeid = body_treeid
   _m.body_weldid = body_weldid
   _m.cam_bodyid = cam_bodyid
   _m.cam_fovy = cam_fovy
@@ -556,21 +660,23 @@ def _forward_shim(
   _m.cam_resolution = cam_resolution
   _m.cam_sensorsize = cam_sensorsize
   _m.cam_targetbodyid = cam_targetbodyid
-  _m.collision_sensor_adr = collision_sensor_adr
-  _m.dof_Madr = dof_Madr
   _m.dof_armature = dof_armature
   _m.dof_bodyid = dof_bodyid
   _m.dof_damping = dof_damping
+  _m.dof_dampingpoly = dof_dampingpoly
   _m.dof_frictionloss = dof_frictionloss
   _m.dof_invweight0 = dof_invweight0
   _m.dof_jntid = dof_jntid
+  _m.dof_length = dof_length
   _m.dof_parentid = dof_parentid
   _m.dof_solimp = dof_solimp
   _m.dof_solref = dof_solref
+  _m.dof_treeid = dof_treeid
   _m.dof_tri_col = dof_tri_col
   _m.dof_tri_row = dof_tri_row
   _m.eq_connect_adr = eq_connect_adr
   _m.eq_data = eq_data
+  _m.eq_flex_adr = eq_flex_adr
   _m.eq_jnt_adr = eq_jnt_adr
   _m.eq_obj1id = eq_obj1id
   _m.eq_obj2id = eq_obj2id
@@ -578,23 +684,54 @@ def _forward_shim(
   _m.eq_solimp = eq_solimp
   _m.eq_solref = eq_solref
   _m.eq_ten_adr = eq_ten_adr
+  _m.eq_type = eq_type
   _m.eq_wld_adr = eq_wld_adr
   _m.flex_bending = flex_bending
+  _m.flex_bendingadr = flex_bendingadr
+  _m.flex_centered = flex_centered
+  _m.flex_conaffinity = flex_conaffinity
+  _m.flex_condim = flex_condim
+  _m.flex_contype = flex_contype
   _m.flex_damping = flex_damping
   _m.flex_dim = flex_dim
   _m.flex_edge = flex_edge
   _m.flex_edgeadr = flex_edgeadr
   _m.flex_edgeflap = flex_edgeflap
+  _m.flex_edgenum = flex_edgenum
   _m.flex_elem = flex_elem
+  _m.flex_elemadr = flex_elemadr
+  _m.flex_elemdataadr = flex_elemdataadr
   _m.flex_elemedge = flex_elemedge
   _m.flex_elemedgeadr = flex_elemedgeadr
+  _m.flex_elemnum = flex_elemnum
+  _m.flex_friction = flex_friction
+  _m.flex_gap = flex_gap
+  _m.flex_margin = flex_margin
+  _m.flex_priority = flex_priority
+  _m.flex_radius = flex_radius
+  _m.flex_shell = flex_shell
+  _m.flex_shelldataadr = flex_shelldataadr
+  _m.flex_shellnum = flex_shellnum
+  _m.flex_solimp = flex_solimp
+  _m.flex_solmix = flex_solmix
+  _m.flex_solref = flex_solref
   _m.flex_stiffness = flex_stiffness
+  _m.flex_stiffnessadr = flex_stiffnessadr
+  _m.flex_vert = flex_vert
   _m.flex_vertadr = flex_vertadr
   _m.flex_vertbodyid = flex_vertbodyid
+  _m.flex_vertflexid = flex_vertflexid
+  _m.flex_vertnum = flex_vertnum
+  _m.flexedge_J_colind = flexedge_J_colind
+  _m.flexedge_J_rowadr = flexedge_J_rowadr
+  _m.flexedge_J_rownnz = flexedge_J_rownnz
+  _m.flexedge_invweight0 = flexedge_invweight0
   _m.flexedge_length0 = flexedge_length0
   _m.geom_aabb = geom_aabb
   _m.geom_bodyid = geom_bodyid
+  _m.geom_conaffinity = geom_conaffinity
   _m.geom_condim = geom_condim
+  _m.geom_contype = geom_contype
   _m.geom_dataid = geom_dataid
   _m.geom_fluid = geom_fluid
   _m.geom_friction = geom_friction
@@ -614,12 +751,14 @@ def _forward_shim(
   _m.geom_solmix = geom_solmix
   _m.geom_solref = geom_solref
   _m.geom_type = geom_type
+  _m.has_fluid = has_fluid
   _m.has_sdf_geom = has_sdf_geom
   _m.hfield_adr = hfield_adr
   _m.hfield_data = hfield_data
   _m.hfield_ncol = hfield_ncol
   _m.hfield_nrow = hfield_nrow
   _m.hfield_size = hfield_size
+  _m.is_sparse = is_sparse
   _m.jnt_actfrclimited = jnt_actfrclimited
   _m.jnt_actfrcrange = jnt_actfrcrange
   _m.jnt_actgravcomp = jnt_actgravcomp
@@ -635,7 +774,9 @@ def _forward_shim(
   _m.jnt_solimp = jnt_solimp
   _m.jnt_solref = jnt_solref
   _m.jnt_stiffness = jnt_stiffness
+  _m.jnt_stiffnesspoly = jnt_stiffnesspoly
   _m.jnt_type = jnt_type
+  _m.jtcj_max_pairs = jtcj_max_pairs
   _m.light_bodyid = light_bodyid
   _m.light_dir = light_dir
   _m.light_dir0 = light_dir0
@@ -644,14 +785,16 @@ def _forward_shim(
   _m.light_pos0 = light_pos0
   _m.light_poscom0 = light_poscom0
   _m.light_targetbodyid = light_targetbodyid
-  _m.mapM2M = mapM2M
   _m.mat_rgba = mat_rgba
+  _m.max_ten_J_rownnz = max_ten_J_rownnz
   _m.mesh_face = mesh_face
   _m.mesh_faceadr = mesh_faceadr
   _m.mesh_graph = mesh_graph
   _m.mesh_graphadr = mesh_graphadr
   _m.mesh_normal = mesh_normal
   _m.mesh_normaladr = mesh_normaladr
+  _m.mesh_normalnum = mesh_normalnum
+  _m.mesh_octadr = mesh_octadr
   _m.mesh_polyadr = mesh_polyadr
   _m.mesh_polymap = mesh_polymap
   _m.mesh_polymapadr = mesh_polymapadr
@@ -665,18 +808,21 @@ def _forward_shim(
   _m.mesh_vert = mesh_vert
   _m.mesh_vertadr = mesh_vertadr
   _m.mesh_vertnum = mesh_vertnum
-  _m.mocap_bodyid = mocap_bodyid
-  _m.nC = nC
+  _m.nJten = nJten
   _m.na = na
   _m.nacttrnbody = nacttrnbody
   _m.nbody = nbody
+  _m.nbranch = nbranch
   _m.ncam = ncam
   _m.neq = neq
+  _m.nflex = nflex
   _m.nflexedge = nflexedge
   _m.nflexelem = nflexelem
+  _m.nflexshelldata = nflexshelldata
   _m.nflexvert = nflexvert
   _m.ngeom = ngeom
   _m.ngravcomp = ngravcomp
+  _m.nhistory = nhistory
   _m.njnt = njnt
   _m.nlight = nlight
   _m.nmaxcondim = nmaxcondim
@@ -684,15 +830,16 @@ def _forward_shim(
   _m.nmaxpolygon = nmaxpolygon
   _m.nmaxpyramid = nmaxpyramid
   _m.nmeshface = nmeshface
-  _m.nmocap = nmocap
   _m.nrangefinder = nrangefinder
   _m.nsensorcollision = nsensorcollision
   _m.nsensorcontact = nsensorcontact
   _m.nsensortaxel = nsensortaxel
   _m.nsite = nsite
   _m.ntendon = ntendon
+  _m.ntree = ntree
   _m.nu = nu
   _m.nv = nv
+  _m.nv_pad = nv_pad
   _m.nwrap = nwrap
   _m.nxn_geom_pair_filtered = nxn_geom_pair_filtered
   _m.nxn_pairid = nxn_pairid
@@ -711,13 +858,10 @@ def _forward_shim(
   _m.opt.enableflags = opt__enableflags
   _m.opt.graph_conditional = opt__graph_conditional
   _m.opt.gravity = opt__gravity
-  _m.opt.has_fluid = opt__has_fluid
-  _m.opt.impratio = opt__impratio
-  _m.opt.is_sparse = opt__is_sparse
+  _m.opt.impratio_invsqrt = opt__impratio_invsqrt
+  _m.opt.integrator = opt__integrator
   _m.opt.iterations = opt__iterations
   _m.opt.ls_iterations = opt__ls_iterations
-  _m.opt.ls_parallel = opt__ls_parallel
-  _m.opt.ls_parallel_min_step = opt__ls_parallel_min_step
   _m.opt.ls_tolerance = opt__ls_tolerance
   _m.opt.magnetic = opt__magnetic
   _m.opt.run_collision_detection = opt__run_collision_detection
@@ -737,26 +881,25 @@ def _forward_shim(
   _m.pair_solreffriction = pair_solreffriction
   _m.plugin = plugin
   _m.plugin_attr = plugin_attr
+  _m.qLD_all_updates = qLD_all_updates
+  _m.qLD_level_offsets = qLD_level_offsets
   _m.qLD_updates = qLD_updates
-  _m.qM_fullm_i = qM_fullm_i
-  _m.qM_fullm_j = qM_fullm_j
-  _m.qM_madr_ij = qM_madr_ij
-  _m.qM_mulm_i = qM_mulm_i
-  _m.qM_mulm_j = qM_mulm_j
-  _m.qM_tiles = qM_tiles
   _m.qpos0 = qpos0
   _m.qpos_spring = qpos_spring
   _m.rangefinder_sensor_adr = rangefinder_sensor_adr
   _m.sensor_acc_adr = sensor_acc_adr
   _m.sensor_adr = sensor_adr
   _m.sensor_adr_to_contact_adr = sensor_adr_to_contact_adr
-  _m.sensor_collision_start_adr = sensor_collision_start_adr
   _m.sensor_contact_adr = sensor_contact_adr
   _m.sensor_cutoff = sensor_cutoff
   _m.sensor_datatype = sensor_datatype
+  _m.sensor_delay = sensor_delay
   _m.sensor_dim = sensor_dim
   _m.sensor_e_kinetic = sensor_e_kinetic
   _m.sensor_e_potential = sensor_e_potential
+  _m.sensor_history = sensor_history
+  _m.sensor_historyadr = sensor_historyadr
+  _m.sensor_interval = sensor_interval
   _m.sensor_intprm = sensor_intprm
   _m.sensor_limitfrc_adr = sensor_limitfrc_adr
   _m.sensor_limitpos_adr = sensor_limitpos_adr
@@ -782,17 +925,22 @@ def _forward_shim(
   _m.stat.meaninertia = stat__meaninertia
   _m.taxel_sensorid = taxel_sensorid
   _m.taxel_vertadr = taxel_vertadr
+  _m.ten_J_colind = ten_J_colind
+  _m.ten_J_rowadr = ten_J_rowadr
+  _m.ten_J_rownnz = ten_J_rownnz
   _m.tendon_actfrclimited = tendon_actfrclimited
   _m.tendon_actfrcrange = tendon_actfrcrange
   _m.tendon_adr = tendon_adr
   _m.tendon_armature = tendon_armature
   _m.tendon_damping = tendon_damping
+  _m.tendon_dampingpoly = tendon_dampingpoly
   _m.tendon_frictionloss = tendon_frictionloss
   _m.tendon_geom_adr = tendon_geom_adr
   _m.tendon_invweight0 = tendon_invweight0
   _m.tendon_jnt_adr = tendon_jnt_adr
   _m.tendon_length0 = tendon_length0
   _m.tendon_lengthspring = tendon_lengthspring
+  _m.tendon_limited = tendon_limited
   _m.tendon_limited_adr = tendon_limited_adr
   _m.tendon_margin = tendon_margin
   _m.tendon_num = tendon_num
@@ -803,6 +951,10 @@ def _forward_shim(
   _m.tendon_solref_fri = tendon_solref_fri
   _m.tendon_solref_lim = tendon_solref_lim
   _m.tendon_stiffness = tendon_stiffness
+  _m.tendon_stiffnesspoly = tendon_stiffnesspoly
+  _m.tree_dofadr = tree_dofadr
+  _m.tree_dofnum = tree_dofnum
+  _m.tree_sleep_policy = tree_sleep_policy
   _m.wrap_geom_adr = wrap_geom_adr
   _m.wrap_jnt_adr = wrap_jnt_adr
   _m.wrap_objid = wrap_objid
@@ -810,12 +962,15 @@ def _forward_shim(
   _m.wrap_pulley_scale = wrap_pulley_scale
   _m.wrap_site_pair_adr = wrap_site_pair_adr
   _m.wrap_type = wrap_type
+  _d.M = M
   _d.act = act
   _d.act_dot = act_dot
   _d.actuator_force = actuator_force
   _d.actuator_length = actuator_length
   _d.actuator_moment = actuator_moment
   _d.actuator_velocity = actuator_velocity
+  _d.body_awake = body_awake
+  _d.body_awake_ind = body_awake_ind
   _d.cacc = cacc
   _d.cam_xmat = cam_xmat
   _d.cam_xpos = cam_xpos
@@ -824,12 +979,10 @@ def _forward_shim(
   _d.cfrc_ext = cfrc_ext
   _d.cfrc_int = cfrc_int
   _d.cinert = cinert
-  _d.collision_pair = collision_pair
-  _d.collision_pairid = collision_pairid
-  _d.collision_worldid = collision_worldid
   _d.contact.dim = contact__dim
   _d.contact.dist = contact__dist
   _d.contact.efc_address = contact__efc_address
+  _d.contact.flex = contact__flex
   _d.contact.frame = contact__frame
   _d.contact.friction = contact__friction
   _d.contact.geom = contact__geom
@@ -840,70 +993,91 @@ def _forward_shim(
   _d.contact.solref = contact__solref
   _d.contact.solreffriction = contact__solreffriction
   _d.contact.type = contact__type
+  _d.contact.vert = contact__vert
   _d.contact.worldid = contact__worldid
   _d.crb = crb
   _d.ctrl = ctrl
   _d.cvel = cvel
+  _d.dof_awake_ind = dof_awake_ind
+  _d.dof_island = dof_island
+  _d.dof_islandid = dof_islandid
   _d.efc.D = efc__D
   _d.efc.J = efc__J
-  _d.efc.Jaref = efc__Jaref
+  _d.efc.J_colind = efc__J_colind
+  _d.efc.J_rowadr = efc__J_rowadr
+  _d.efc.J_rownnz = efc__J_rownnz
+  _d.efc.Jqvel = efc__Jqvel
   _d.efc.Ma = efc__Ma
-  _d.efc.Mgrad = efc__Mgrad
-  _d.efc.alpha = efc__alpha
   _d.efc.aref = efc__aref
-  _d.efc.beta = efc__beta
-  _d.efc.cholesky_L_tmp = efc__cholesky_L_tmp
-  _d.efc.cholesky_y_tmp = efc__cholesky_y_tmp
-  _d.efc.cost = efc__cost
-  _d.efc.done = efc__done
   _d.efc.force = efc__force
   _d.efc.frictionloss = efc__frictionloss
-  _d.efc.gauss = efc__gauss
-  _d.efc.grad = efc__grad
-  _d.efc.grad_dot = efc__grad_dot
-  _d.efc.h = efc__h
+  _d.efc.iD = efc__iD
+  _d.efc.iJ = efc__iJ
+  _d.efc.iJ_colind = efc__iJ_colind
+  _d.efc.iJ_rowadr = efc__iJ_rowadr
+  _d.efc.iJ_rownnz = efc__iJ_rownnz
+  _d.efc.iaref = efc__iaref
   _d.efc.id = efc__id
-  _d.efc.jv = efc__jv
+  _d.efc.iforce = efc__iforce
+  _d.efc.ifrictionloss = efc__ifrictionloss
+  _d.efc.iid = efc__iid
+  _d.efc.island = efc__island
+  _d.efc.istate = efc__istate
+  _d.efc.itype = efc__itype
   _d.efc.margin = efc__margin
-  _d.efc.mv = efc__mv
   _d.efc.pos = efc__pos
-  _d.efc.prev_Mgrad = efc__prev_Mgrad
-  _d.efc.prev_cost = efc__prev_cost
-  _d.efc.prev_grad = efc__prev_grad
-  _d.efc.quad = efc__quad
-  _d.efc.quad_gauss = efc__quad_gauss
-  _d.efc.search = efc__search
-  _d.efc.search_dot = efc__search_dot
   _d.efc.state = efc__state
   _d.efc.type = efc__type
   _d.efc.vel = efc__vel
+  _d.efc_islandid = efc_islandid
   _d.energy = energy
   _d.eq_active = eq_active
+  _d.flexedge_J = flexedge_J
   _d.flexedge_length = flexedge_length
   _d.flexedge_velocity = flexedge_velocity
   _d.flexvert_xpos = flexvert_xpos
   _d.geom_xmat = geom_xmat
   _d.geom_xpos = geom_xpos
+  _d.history = history
+  _d.iqacc = iqacc
+  _d.iqacc_smooth = iqacc_smooth
+  _d.iqfrc_constraint = iqfrc_constraint
+  _d.iqfrc_smooth = iqfrc_smooth
+  _d.island_dofadr = island_dofadr
+  _d.island_efcadr = island_efcadr
+  _d.island_idofadr = island_idofadr
+  _d.island_ne = island_ne
+  _d.island_nefc = island_nefc
+  _d.island_nf = island_nf
+  _d.island_nv = island_nv
   _d.light_xdir = light_xdir
   _d.light_xpos = light_xpos
+  _d.map_dof2idof = map_dof2idof
+  _d.map_efc2iefc = map_efc2iefc
+  _d.map_idof2dof = map_idof2dof
+  _d.map_iefc2efc = map_iefc2efc
   _d.mocap_pos = mocap_pos
   _d.mocap_quat = mocap_quat
+  _d.moment_colind = moment_colind
+  _d.moment_rowadr = moment_rowadr
+  _d.moment_rownnz = moment_rownnz
+  _d.naccdmax = naccdmax
   _d.nacon = nacon
   _d.naconmax = naconmax
+  _d.nbody_awake = nbody_awake
   _d.ncollision = ncollision
   _d.ne = ne
-  _d.ne_connect = ne_connect
-  _d.ne_jnt = ne_jnt
-  _d.ne_ten = ne_ten
-  _d.ne_weld = ne_weld
   _d.nefc = nefc
   _d.nf = nf
+  _d.nidof = nidof
+  _d.nisland = nisland
   _d.njmax = njmax
+  _d.njmax_nnz = njmax_nnz
   _d.nl = nl
-  _d.nsolving = nsolving
+  _d.ntree_awake = ntree_awake
+  _d.nv_awake = nv_awake
   _d.qLD = qLD
   _d.qLDiagInv = qLDiagInv
-  _d.qM = qM
   _d.qacc = qacc
   _d.qacc_smooth = qacc_smooth
   _d.qacc_warmstart = qacc_warmstart
@@ -924,7 +1098,6 @@ def _forward_shim(
   _d.site_xpos = site_xpos
   _d.solver_niter = solver_niter
   _d.subtree_angmom = subtree_angmom
-  _d.subtree_bodyvel = subtree_bodyvel
   _d.subtree_com = subtree_com
   _d.subtree_linvel = subtree_linvel
   _d.ten_J = ten_J
@@ -933,6 +1106,9 @@ def _forward_shim(
   _d.ten_wrapadr = ten_wrapadr
   _d.ten_wrapnum = ten_wrapnum
   _d.time = time
+  _d.tree_asleep = tree_asleep
+  _d.tree_awake = tree_awake
+  _d.tree_island = tree_island
   _d.wrap_obj = wrap_obj
   _d.wrap_xpos = wrap_xpos
   _d.xanchor = xanchor
@@ -949,56 +1125,72 @@ def _forward_shim(
 
 def _forward_jax_impl(m: types.Model, d: types.Data):
   output_dims = {
-      'act': d.act.shape,
+      'M': d._impl.M.shape,
       'act_dot': d.act_dot.shape,
       'actuator_force': d.actuator_force.shape,
-      'actuator_length': d._impl.actuator_length.shape,
+      'actuator_length': d.actuator_length.shape,
       'actuator_moment': d._impl.actuator_moment.shape,
       'actuator_velocity': d._impl.actuator_velocity.shape,
+      'body_awake': d._impl.body_awake.shape,
+      'body_awake_ind': d._impl.body_awake_ind.shape,
       'cacc': d._impl.cacc.shape,
       'cam_xmat': d.cam_xmat.shape,
       'cam_xpos': d.cam_xpos.shape,
-      'cdof': d._impl.cdof.shape,
-      'cdof_dot': d._impl.cdof_dot.shape,
+      'cdof': d.cdof.shape,
+      'cdof_dot': d.cdof_dot.shape,
       'cfrc_ext': d._impl.cfrc_ext.shape,
       'cfrc_int': d._impl.cfrc_int.shape,
       'cinert': d._impl.cinert.shape,
-      'collision_pair': d._impl.collision_pair.shape,
-      'collision_pairid': d._impl.collision_pairid.shape,
-      'collision_worldid': d._impl.collision_worldid.shape,
       'crb': d._impl.crb.shape,
-      'ctrl': d.ctrl.shape,
       'cvel': d.cvel.shape,
+      'dof_awake_ind': d._impl.dof_awake_ind.shape,
+      'dof_island': d._impl.dof_island.shape,
+      'dof_islandid': d._impl.dof_islandid.shape,
+      'efc_islandid': d._impl.efc_islandid.shape,
       'energy': d._impl.energy.shape,
-      'eq_active': d.eq_active.shape,
+      'flexedge_J': d._impl.flexedge_J.shape,
       'flexedge_length': d._impl.flexedge_length.shape,
       'flexedge_velocity': d._impl.flexedge_velocity.shape,
       'flexvert_xpos': d._impl.flexvert_xpos.shape,
       'geom_xmat': d.geom_xmat.shape,
       'geom_xpos': d.geom_xpos.shape,
+      'history': d.history.shape,
+      'iqacc': d._impl.iqacc.shape,
+      'iqacc_smooth': d._impl.iqacc_smooth.shape,
+      'iqfrc_constraint': d._impl.iqfrc_constraint.shape,
+      'iqfrc_smooth': d._impl.iqfrc_smooth.shape,
+      'island_dofadr': d._impl.island_dofadr.shape,
+      'island_efcadr': d._impl.island_efcadr.shape,
+      'island_idofadr': d._impl.island_idofadr.shape,
+      'island_ne': d._impl.island_ne.shape,
+      'island_nefc': d._impl.island_nefc.shape,
+      'island_nf': d._impl.island_nf.shape,
+      'island_nv': d._impl.island_nv.shape,
       'light_xdir': d._impl.light_xdir.shape,
       'light_xpos': d._impl.light_xpos.shape,
-      'mocap_pos': d.mocap_pos.shape,
-      'mocap_quat': d.mocap_quat.shape,
+      'map_dof2idof': d._impl.map_dof2idof.shape,
+      'map_efc2iefc': d._impl.map_efc2iefc.shape,
+      'map_idof2dof': d._impl.map_idof2dof.shape,
+      'map_iefc2efc': d._impl.map_iefc2efc.shape,
+      'moment_colind': d._impl.moment_colind.shape,
+      'moment_rowadr': d._impl.moment_rowadr.shape,
+      'moment_rownnz': d._impl.moment_rownnz.shape,
       'nacon': d._impl.nacon.shape,
+      'nbody_awake': d._impl.nbody_awake.shape,
       'ncollision': d._impl.ncollision.shape,
       'ne': d._impl.ne.shape,
-      'ne_connect': d._impl.ne_connect.shape,
-      'ne_jnt': d._impl.ne_jnt.shape,
-      'ne_ten': d._impl.ne_ten.shape,
-      'ne_weld': d._impl.ne_weld.shape,
       'nefc': d._impl.nefc.shape,
       'nf': d._impl.nf.shape,
+      'nidof': d._impl.nidof.shape,
+      'nisland': d._impl.nisland.shape,
       'nl': d._impl.nl.shape,
-      'nsolving': d._impl.nsolving.shape,
+      'ntree_awake': d._impl.ntree_awake.shape,
+      'nv_awake': d._impl.nv_awake.shape,
       'qLD': d._impl.qLD.shape,
       'qLDiagInv': d._impl.qLDiagInv.shape,
-      'qM': d._impl.qM.shape,
       'qacc': d.qacc.shape,
       'qacc_smooth': d.qacc_smooth.shape,
-      'qacc_warmstart': d.qacc_warmstart.shape,
       'qfrc_actuator': d.qfrc_actuator.shape,
-      'qfrc_applied': d.qfrc_applied.shape,
       'qfrc_bias': d.qfrc_bias.shape,
       'qfrc_constraint': d.qfrc_constraint.shape,
       'qfrc_damper': d._impl.qfrc_damper.shape,
@@ -1007,14 +1199,12 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       'qfrc_passive': d.qfrc_passive.shape,
       'qfrc_smooth': d.qfrc_smooth.shape,
       'qfrc_spring': d._impl.qfrc_spring.shape,
-      'qpos': d.qpos.shape,
       'qvel': d.qvel.shape,
       'sensordata': d.sensordata.shape,
       'site_xmat': d.site_xmat.shape,
       'site_xpos': d.site_xpos.shape,
       'solver_niter': d._impl.solver_niter.shape,
       'subtree_angmom': d._impl.subtree_angmom.shape,
-      'subtree_bodyvel': d._impl.subtree_bodyvel.shape,
       'subtree_com': d.subtree_com.shape,
       'subtree_linvel': d._impl.subtree_linvel.shape,
       'ten_J': d._impl.ten_J.shape,
@@ -1022,12 +1212,13 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       'ten_velocity': d._impl.ten_velocity.shape,
       'ten_wrapadr': d._impl.ten_wrapadr.shape,
       'ten_wrapnum': d._impl.ten_wrapnum.shape,
-      'time': d.time.shape,
+      'tree_asleep': d._impl.tree_asleep.shape,
+      'tree_awake': d._impl.tree_awake.shape,
+      'tree_island': d._impl.tree_island.shape,
       'wrap_obj': d._impl.wrap_obj.shape,
       'wrap_xpos': d._impl.wrap_xpos.shape,
       'xanchor': d.xanchor.shape,
       'xaxis': d.xaxis.shape,
-      'xfrc_applied': d.xfrc_applied.shape,
       'ximat': d.ximat.shape,
       'xipos': d.xipos.shape,
       'xmat': d.xmat.shape,
@@ -1036,6 +1227,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       'contact__dim': d._impl.contact__dim.shape,
       'contact__dist': d._impl.contact__dist.shape,
       'contact__efc_address': d._impl.contact__efc_address.shape,
+      'contact__flex': d._impl.contact__flex.shape,
       'contact__frame': d._impl.contact__frame.shape,
       'contact__friction': d._impl.contact__friction.shape,
       'contact__geom': d._impl.contact__geom.shape,
@@ -1046,53 +1238,51 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       'contact__solref': d._impl.contact__solref.shape,
       'contact__solreffriction': d._impl.contact__solreffriction.shape,
       'contact__type': d._impl.contact__type.shape,
+      'contact__vert': d._impl.contact__vert.shape,
       'contact__worldid': d._impl.contact__worldid.shape,
       'efc__D': d._impl.efc__D.shape,
       'efc__J': d._impl.efc__J.shape,
-      'efc__Jaref': d._impl.efc__Jaref.shape,
+      'efc__J_colind': d._impl.efc__J_colind.shape,
+      'efc__J_rowadr': d._impl.efc__J_rowadr.shape,
+      'efc__J_rownnz': d._impl.efc__J_rownnz.shape,
+      'efc__Jqvel': d._impl.efc__Jqvel.shape,
       'efc__Ma': d._impl.efc__Ma.shape,
-      'efc__Mgrad': d._impl.efc__Mgrad.shape,
-      'efc__alpha': d._impl.efc__alpha.shape,
       'efc__aref': d._impl.efc__aref.shape,
-      'efc__beta': d._impl.efc__beta.shape,
-      'efc__cholesky_L_tmp': d._impl.efc__cholesky_L_tmp.shape,
-      'efc__cholesky_y_tmp': d._impl.efc__cholesky_y_tmp.shape,
-      'efc__cost': d._impl.efc__cost.shape,
-      'efc__done': d._impl.efc__done.shape,
       'efc__force': d._impl.efc__force.shape,
       'efc__frictionloss': d._impl.efc__frictionloss.shape,
-      'efc__gauss': d._impl.efc__gauss.shape,
-      'efc__grad': d._impl.efc__grad.shape,
-      'efc__grad_dot': d._impl.efc__grad_dot.shape,
-      'efc__h': d._impl.efc__h.shape,
+      'efc__iD': d._impl.efc__iD.shape,
+      'efc__iJ': d._impl.efc__iJ.shape,
+      'efc__iJ_colind': d._impl.efc__iJ_colind.shape,
+      'efc__iJ_rowadr': d._impl.efc__iJ_rowadr.shape,
+      'efc__iJ_rownnz': d._impl.efc__iJ_rownnz.shape,
+      'efc__iaref': d._impl.efc__iaref.shape,
       'efc__id': d._impl.efc__id.shape,
-      'efc__jv': d._impl.efc__jv.shape,
+      'efc__iforce': d._impl.efc__iforce.shape,
+      'efc__ifrictionloss': d._impl.efc__ifrictionloss.shape,
+      'efc__iid': d._impl.efc__iid.shape,
+      'efc__island': d._impl.efc__island.shape,
+      'efc__istate': d._impl.efc__istate.shape,
+      'efc__itype': d._impl.efc__itype.shape,
       'efc__margin': d._impl.efc__margin.shape,
-      'efc__mv': d._impl.efc__mv.shape,
       'efc__pos': d._impl.efc__pos.shape,
-      'efc__prev_Mgrad': d._impl.efc__prev_Mgrad.shape,
-      'efc__prev_cost': d._impl.efc__prev_cost.shape,
-      'efc__prev_grad': d._impl.efc__prev_grad.shape,
-      'efc__quad': d._impl.efc__quad.shape,
-      'efc__quad_gauss': d._impl.efc__quad_gauss.shape,
-      'efc__search': d._impl.efc__search.shape,
-      'efc__search_dot': d._impl.efc__search_dot.shape,
       'efc__state': d._impl.efc__state.shape,
       'efc__type': d._impl.efc__type.shape,
       'efc__vel': d._impl.efc__vel.shape,
   }
   jf = ffi.jax_callable_variadic_tuple(
       _forward_shim,
-      num_outputs=131,
+      num_outputs=143,
       output_dims=output_dims,
       vmap_method=None,
-      in_out_argnames={
-          'act',
+      in_out_argnames=set([
+          'M',
           'act_dot',
           'actuator_force',
           'actuator_length',
           'actuator_moment',
           'actuator_velocity',
+          'body_awake',
+          'body_awake_ind',
           'cacc',
           'cam_xmat',
           'cam_xpos',
@@ -1101,42 +1291,56 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
           'cfrc_ext',
           'cfrc_int',
           'cinert',
-          'collision_pair',
-          'collision_pairid',
-          'collision_worldid',
           'crb',
-          'ctrl',
           'cvel',
+          'dof_awake_ind',
+          'dof_island',
+          'dof_islandid',
+          'efc_islandid',
           'energy',
-          'eq_active',
+          'flexedge_J',
           'flexedge_length',
           'flexedge_velocity',
           'flexvert_xpos',
           'geom_xmat',
           'geom_xpos',
+          'history',
+          'iqacc',
+          'iqacc_smooth',
+          'iqfrc_constraint',
+          'iqfrc_smooth',
+          'island_dofadr',
+          'island_efcadr',
+          'island_idofadr',
+          'island_ne',
+          'island_nefc',
+          'island_nf',
+          'island_nv',
           'light_xdir',
           'light_xpos',
-          'mocap_pos',
-          'mocap_quat',
+          'map_dof2idof',
+          'map_efc2iefc',
+          'map_idof2dof',
+          'map_iefc2efc',
+          'moment_colind',
+          'moment_rowadr',
+          'moment_rownnz',
           'nacon',
+          'nbody_awake',
           'ncollision',
           'ne',
-          'ne_connect',
-          'ne_jnt',
-          'ne_ten',
-          'ne_weld',
           'nefc',
           'nf',
+          'nidof',
+          'nisland',
           'nl',
-          'nsolving',
+          'ntree_awake',
+          'nv_awake',
           'qLD',
           'qLDiagInv',
-          'qM',
           'qacc',
           'qacc_smooth',
-          'qacc_warmstart',
           'qfrc_actuator',
-          'qfrc_applied',
           'qfrc_bias',
           'qfrc_constraint',
           'qfrc_damper',
@@ -1145,14 +1349,12 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
           'qfrc_passive',
           'qfrc_smooth',
           'qfrc_spring',
-          'qpos',
           'qvel',
           'sensordata',
           'site_xmat',
           'site_xpos',
           'solver_niter',
           'subtree_angmom',
-          'subtree_bodyvel',
           'subtree_com',
           'subtree_linvel',
           'ten_J',
@@ -1160,12 +1362,13 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
           'ten_velocity',
           'ten_wrapadr',
           'ten_wrapnum',
-          'time',
+          'tree_asleep',
+          'tree_awake',
+          'tree_island',
           'wrap_obj',
           'wrap_xpos',
           'xanchor',
           'xaxis',
-          'xfrc_applied',
           'ximat',
           'xipos',
           'xmat',
@@ -1174,6 +1377,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
           'contact__dim',
           'contact__dist',
           'contact__efc_address',
+          'contact__flex',
           'contact__frame',
           'contact__friction',
           'contact__geom',
@@ -1184,46 +1388,230 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
           'contact__solref',
           'contact__solreffriction',
           'contact__type',
+          'contact__vert',
           'contact__worldid',
           'efc__D',
           'efc__J',
-          'efc__Jaref',
+          'efc__J_colind',
+          'efc__J_rowadr',
+          'efc__J_rownnz',
+          'efc__Jqvel',
           'efc__Ma',
-          'efc__Mgrad',
-          'efc__alpha',
           'efc__aref',
-          'efc__beta',
-          'efc__cholesky_L_tmp',
-          'efc__cholesky_y_tmp',
-          'efc__cost',
-          'efc__done',
           'efc__force',
           'efc__frictionloss',
-          'efc__gauss',
-          'efc__grad',
-          'efc__grad_dot',
-          'efc__h',
+          'efc__iD',
+          'efc__iJ',
+          'efc__iJ_colind',
+          'efc__iJ_rowadr',
+          'efc__iJ_rownnz',
+          'efc__iaref',
           'efc__id',
-          'efc__jv',
+          'efc__iforce',
+          'efc__ifrictionloss',
+          'efc__iid',
+          'efc__island',
+          'efc__istate',
+          'efc__itype',
           'efc__margin',
-          'efc__mv',
           'efc__pos',
-          'efc__prev_Mgrad',
-          'efc__prev_cost',
-          'efc__prev_grad',
-          'efc__quad',
-          'efc__quad_gauss',
-          'efc__search',
-          'efc__search_dot',
           'efc__state',
           'efc__type',
           'efc__vel',
-      },
+      ]),
+      stage_in_argnames=set([
+          'act',
+          'act_dot',
+          'actuator_acc0',
+          'actuator_actrange',
+          'actuator_biasprm',
+          'actuator_cranklength',
+          'actuator_ctrlrange',
+          'actuator_dynprm',
+          'actuator_force',
+          'actuator_forcerange',
+          'actuator_gainprm',
+          'actuator_gear',
+          'actuator_length',
+          'actuator_lengthrange',
+          'body_gravcomp',
+          'body_inertia',
+          'body_invweight0',
+          'body_ipos',
+          'body_iquat',
+          'body_mass',
+          'body_pos',
+          'body_quat',
+          'body_subtreemass',
+          'cam_fovy',
+          'cam_intrinsic',
+          'cam_mat0',
+          'cam_pos',
+          'cam_pos0',
+          'cam_poscom0',
+          'cam_quat',
+          'cam_xmat',
+          'cam_xpos',
+          'cdof',
+          'cdof_dot',
+          'ctrl',
+          'cvel',
+          'dof_armature',
+          'dof_damping',
+          'dof_dampingpoly',
+          'dof_frictionloss',
+          'dof_invweight0',
+          'dof_solimp',
+          'dof_solref',
+          'eq_active',
+          'eq_data',
+          'eq_solimp',
+          'eq_solref',
+          'geom_aabb',
+          'geom_friction',
+          'geom_gap',
+          'geom_margin',
+          'geom_matid',
+          'geom_pos',
+          'geom_quat',
+          'geom_rbound',
+          'geom_rgba',
+          'geom_size',
+          'geom_solimp',
+          'geom_solmix',
+          'geom_solref',
+          'geom_xmat',
+          'geom_xpos',
+          'hfield_data',
+          'history',
+          'jnt_actfrcrange',
+          'jnt_axis',
+          'jnt_margin',
+          'jnt_pos',
+          'jnt_range',
+          'jnt_solimp',
+          'jnt_solref',
+          'jnt_stiffness',
+          'jnt_stiffnesspoly',
+          'light_dir',
+          'light_dir0',
+          'light_pos',
+          'light_pos0',
+          'light_poscom0',
+          'mat_rgba',
+          'mocap_pos',
+          'mocap_quat',
+          'opt__density',
+          'opt__gravity',
+          'opt__ls_tolerance',
+          'opt__magnetic',
+          'opt__timestep',
+          'opt__tolerance',
+          'opt__viscosity',
+          'opt__wind',
+          'pair_friction',
+          'pair_gap',
+          'pair_margin',
+          'pair_solimp',
+          'pair_solref',
+          'pair_solreffriction',
+          'qacc',
+          'qacc_smooth',
+          'qacc_warmstart',
+          'qfrc_actuator',
+          'qfrc_applied',
+          'qfrc_bias',
+          'qfrc_constraint',
+          'qfrc_fluid',
+          'qfrc_gravcomp',
+          'qfrc_passive',
+          'qfrc_smooth',
+          'qpos',
+          'qpos0',
+          'qpos_spring',
+          'qvel',
+          'sensordata',
+          'site_pos',
+          'site_quat',
+          'site_xmat',
+          'site_xpos',
+          'subtree_com',
+          'ten_length',
+          'tendon_actfrcrange',
+          'tendon_armature',
+          'tendon_damping',
+          'tendon_dampingpoly',
+          'tendon_frictionloss',
+          'tendon_invweight0',
+          'tendon_length0',
+          'tendon_lengthspring',
+          'tendon_margin',
+          'tendon_range',
+          'tendon_solimp_fri',
+          'tendon_solimp_lim',
+          'tendon_solref_fri',
+          'tendon_solref_lim',
+          'tendon_stiffness',
+          'tendon_stiffnesspoly',
+          'time',
+          'xanchor',
+          'xaxis',
+          'xfrc_applied',
+          'ximat',
+          'xipos',
+          'xmat',
+          'xpos',
+          'xquat',
+      ]),
+      stage_out_argnames=set([
+          'act_dot',
+          'actuator_force',
+          'actuator_length',
+          'cam_xmat',
+          'cam_xpos',
+          'cdof',
+          'cdof_dot',
+          'cvel',
+          'geom_xmat',
+          'geom_xpos',
+          'history',
+          'qacc',
+          'qacc_smooth',
+          'qfrc_actuator',
+          'qfrc_bias',
+          'qfrc_constraint',
+          'qfrc_fluid',
+          'qfrc_gravcomp',
+          'qfrc_passive',
+          'qfrc_smooth',
+          'qvel',
+          'sensordata',
+          'site_xmat',
+          'site_xpos',
+          'subtree_com',
+          'ten_length',
+          'xanchor',
+          'xaxis',
+          'ximat',
+          'xipos',
+          'xmat',
+          'xpos',
+          'xquat',
+      ]),
+      graph_mode=m.opt._impl.graph_mode,
+      has_side_effect=False,
   )
   out = jf(
       d.qpos.shape[0],
+      m._impl.M_elemid,
+      m._impl.M_fullm_i,
+      m._impl.M_fullm_j,
+      m._impl.M_mulm_col,
+      m._impl.M_mulm_madr,
+      m._impl.M_mulm_rowadr,
       m._impl.M_rowadr,
       m._impl.M_rownnz,
+      m._impl.M_tiles,
       m.actuator_acc0,
       m.actuator_actadr,
       m.actuator_actearly,
@@ -1235,6 +1623,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.actuator_cranklength,
       m.actuator_ctrllimited,
       m.actuator_ctrlrange,
+      m._impl.actuator_delay,
       m.actuator_dynprm,
       m.actuator_dyntype,
       m.actuator_forcelimited,
@@ -1242,11 +1631,15 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.actuator_gainprm,
       m.actuator_gaintype,
       m.actuator_gear,
+      m._impl.actuator_history,
+      m._impl.actuator_historyadr,
       m.actuator_lengthrange,
       m.actuator_trnid,
       m.actuator_trntype,
       m._impl.actuator_trntype_body_adr,
       m._impl.block_dim,
+      m._impl.body_branch_start,
+      m._impl.body_branches,
       m.body_dofadr,
       m.body_dofnum,
       m._impl.body_fluid_ellipsoid,
@@ -1257,6 +1650,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.body_invweight0,
       m.body_ipos,
       m.body_iquat,
+      m._impl.body_isdofancestor,
       m.body_jntadr,
       m.body_jntnum,
       m.body_mass,
@@ -1267,6 +1661,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.body_rootid,
       m.body_subtreemass,
       m._impl.body_tree,
+      m.body_treeid,
       m.body_weldid,
       m.cam_bodyid,
       m.cam_fovy,
@@ -1280,21 +1675,23 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.cam_resolution,
       m.cam_sensorsize,
       m.cam_targetbodyid,
-      m._impl.collision_sensor_adr,
-      m.dof_Madr,
       m.dof_armature,
       m.dof_bodyid,
       m.dof_damping,
+      m.dof_dampingpoly,
       m.dof_frictionloss,
       m.dof_invweight0,
       m.dof_jntid,
+      m._impl.dof_length,
       m.dof_parentid,
       m.dof_solimp,
       m.dof_solref,
+      m.dof_treeid,
       m._impl.dof_tri_col,
       m._impl.dof_tri_row,
       m._impl.eq_connect_adr,
       m.eq_data,
+      m._impl.eq_flex_adr,
       m._impl.eq_jnt_adr,
       m.eq_obj1id,
       m.eq_obj2id,
@@ -1302,24 +1699,55 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.eq_solimp,
       m.eq_solref,
       m._impl.eq_ten_adr,
+      m.eq_type,
       m._impl.eq_wld_adr,
       m._impl.flex_bending,
+      m._impl.flex_bendingadr,
+      m._impl.flex_centered,
+      m._impl.flex_conaffinity,
+      m._impl.flex_condim,
+      m._impl.flex_contype,
       m._impl.flex_damping,
       m._impl.flex_dim,
       m._impl.flex_edge,
       m._impl.flex_edgeadr,
       m._impl.flex_edgeflap,
+      m._impl.flex_edgenum,
       m._impl.flex_elem,
+      m._impl.flex_elemadr,
+      m._impl.flex_elemdataadr,
       m._impl.flex_elemedge,
       m._impl.flex_elemedgeadr,
+      m._impl.flex_elemnum,
+      m._impl.flex_friction,
+      m._impl.flex_gap,
+      m._impl.flex_margin,
+      m._impl.flex_priority,
+      m._impl.flex_radius,
+      m._impl.flex_shell,
+      m._impl.flex_shelldataadr,
+      m._impl.flex_shellnum,
+      m._impl.flex_solimp,
+      m._impl.flex_solmix,
+      m._impl.flex_solref,
       m._impl.flex_stiffness,
-      m._impl.flex_vertadr,
+      m._impl.flex_stiffnessadr,
+      m._impl.flex_vert,
+      m.flex_vertadr,
       m._impl.flex_vertbodyid,
+      m._impl.flex_vertflexid,
+      m.flex_vertnum,
+      m._impl.flexedge_J_colind,
+      m._impl.flexedge_J_rowadr,
+      m._impl.flexedge_J_rownnz,
+      m._impl.flexedge_invweight0,
       m._impl.flexedge_length0,
       m.geom_aabb,
       m.geom_bodyid,
+      m.geom_conaffinity,
       m.geom_condim,
-      m.geom_dataid,
+      m.geom_contype,
+      jax.numpy.expand_dims(m.geom_dataid, 0),
       m.geom_fluid,
       m.geom_friction,
       m.geom_gap,
@@ -1338,12 +1766,14 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.geom_solmix,
       m.geom_solref,
       m.geom_type,
+      m._impl.has_fluid,
       m._impl.has_sdf_geom,
       m.hfield_adr,
       m.hfield_data,
       m.hfield_ncol,
       m.hfield_nrow,
       m.hfield_size,
+      m._impl.is_sparse,
       m.jnt_actfrclimited,
       m.jnt_actfrcrange,
       m.jnt_actgravcomp,
@@ -1359,7 +1789,9 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.jnt_solimp,
       m.jnt_solref,
       m.jnt_stiffness,
+      m.jnt_stiffnesspoly,
       m.jnt_type,
+      m._impl.jtcj_max_pairs,
       m._impl.light_bodyid,
       m.light_dir,
       m.light_dir0,
@@ -1368,14 +1800,16 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.light_pos0,
       m.light_poscom0,
       m._impl.light_targetbodyid,
-      m._impl.mapM2M,
       m.mat_rgba,
+      m._impl.max_ten_J_rownnz,
       m.mesh_face,
       m.mesh_faceadr,
       m.mesh_graph,
       m.mesh_graphadr,
       m.mesh_normal,
       m.mesh_normaladr,
+      m.mesh_normalnum,
+      m.mesh_octadr,
       m._impl.mesh_polyadr,
       m._impl.mesh_polymap,
       m._impl.mesh_polymapadr,
@@ -1389,18 +1823,21 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.mesh_vert,
       m.mesh_vertadr,
       m.mesh_vertnum,
-      m._impl.mocap_bodyid,
-      m.nC,
+      m.nJten,
       m.na,
       m._impl.nacttrnbody,
       m.nbody,
+      m._impl.nbranch,
       m.ncam,
       m.neq,
+      m.nflex,
       m._impl.nflexedge,
       m._impl.nflexelem,
+      m._impl.nflexshelldata,
       m._impl.nflexvert,
       m.ngeom,
       m.ngravcomp,
+      m.nhistory,
       m.njnt,
       m.nlight,
       m._impl.nmaxcondim,
@@ -1408,15 +1845,16 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m._impl.nmaxpolygon,
       m._impl.nmaxpyramid,
       m.nmeshface,
-      m.nmocap,
       m._impl.nrangefinder,
       m._impl.nsensorcollision,
       m._impl.nsensorcontact,
       m._impl.nsensortaxel,
       m.nsite,
       m.ntendon,
+      m._impl.ntree,
       m.nu,
       m.nv,
+      m._impl.nv_pad,
       m.nwrap,
       m._impl.nxn_geom_pair_filtered,
       m._impl.nxn_pairid,
@@ -1433,26 +1871,25 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.pair_solreffriction,
       m._impl.plugin,
       m._impl.plugin_attr,
+      m._impl.qLD_all_updates,
+      m._impl.qLD_level_offsets,
       m._impl.qLD_updates,
-      m._impl.qM_fullm_i,
-      m._impl.qM_fullm_j,
-      m._impl.qM_madr_ij,
-      m._impl.qM_mulm_i,
-      m._impl.qM_mulm_j,
-      m._impl.qM_tiles,
       m.qpos0,
       m.qpos_spring,
       m._impl.rangefinder_sensor_adr,
       m._impl.sensor_acc_adr,
       m.sensor_adr,
       m._impl.sensor_adr_to_contact_adr,
-      m._impl.sensor_collision_start_adr,
       m._impl.sensor_contact_adr,
       m.sensor_cutoff,
       m.sensor_datatype,
+      m._impl.sensor_delay,
       m.sensor_dim,
       m._impl.sensor_e_kinetic,
       m._impl.sensor_e_potential,
+      m._impl.sensor_history,
+      m._impl.sensor_historyadr,
+      m._impl.sensor_interval,
       m.sensor_intprm,
       m._impl.sensor_limitfrc_adr,
       m._impl.sensor_limitpos_adr,
@@ -1477,17 +1914,22 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.site_type,
       m._impl.taxel_sensorid,
       m._impl.taxel_vertadr,
+      m._impl.ten_J_colind,
+      m._impl.ten_J_rowadr,
+      m._impl.ten_J_rownnz,
       m.tendon_actfrclimited,
       m.tendon_actfrcrange,
       m.tendon_adr,
       m.tendon_armature,
       m.tendon_damping,
+      m.tendon_dampingpoly,
       m.tendon_frictionloss,
       m._impl.tendon_geom_adr,
       m.tendon_invweight0,
       m._impl.tendon_jnt_adr,
       m.tendon_length0,
       m.tendon_lengthspring,
+      m.tendon_limited,
       m._impl.tendon_limited_adr,
       m.tendon_margin,
       m.tendon_num,
@@ -1498,6 +1940,10 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.tendon_solref_fri,
       m.tendon_solref_lim,
       m.tendon_stiffness,
+      m.tendon_stiffnesspoly,
+      m._impl.tree_dofadr,
+      m._impl.tree_dofnum,
+      m._impl.tree_sleep_policy,
       m._impl.wrap_geom_adr,
       m._impl.wrap_jnt_adr,
       m.wrap_objid,
@@ -1516,13 +1962,10 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.opt.enableflags,
       m.opt._impl.graph_conditional,
       m.opt.gravity,
-      m.opt._impl.has_fluid,
-      m.opt.impratio,
-      m.opt._impl.is_sparse,
+      m.opt._impl.impratio_invsqrt,
+      m.opt.integrator,
       m.opt.iterations,
       m.opt.ls_iterations,
-      m.opt._impl.ls_parallel,
-      m.opt._impl.ls_parallel_min_step,
       m.opt.ls_tolerance,
       m.opt.magnetic,
       m.opt._impl.run_collision_detection,
@@ -1534,53 +1977,78 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       m.opt.viscosity,
       m.opt.wind,
       m.stat.meaninertia,
+      d._impl.naccdmax,
       d._impl.naconmax,
       d._impl.njmax,
+      d._impl.njmax_nnz,
+      d._impl.M,
       d.act,
       d.act_dot,
       d.actuator_force,
-      d._impl.actuator_length,
+      d.actuator_length,
       d._impl.actuator_moment,
       d._impl.actuator_velocity,
+      d._impl.body_awake,
+      d._impl.body_awake_ind,
       d._impl.cacc,
       d.cam_xmat,
       d.cam_xpos,
-      d._impl.cdof,
-      d._impl.cdof_dot,
+      d.cdof,
+      d.cdof_dot,
       d._impl.cfrc_ext,
       d._impl.cfrc_int,
       d._impl.cinert,
-      d._impl.collision_pair,
-      d._impl.collision_pairid,
-      d._impl.collision_worldid,
       d._impl.crb,
       d.ctrl,
       d.cvel,
+      d._impl.dof_awake_ind,
+      d._impl.dof_island,
+      d._impl.dof_islandid,
+      d._impl.efc_islandid,
       d._impl.energy,
       d.eq_active,
+      d._impl.flexedge_J,
       d._impl.flexedge_length,
       d._impl.flexedge_velocity,
       d._impl.flexvert_xpos,
       d.geom_xmat,
       d.geom_xpos,
+      d.history,
+      d._impl.iqacc,
+      d._impl.iqacc_smooth,
+      d._impl.iqfrc_constraint,
+      d._impl.iqfrc_smooth,
+      d._impl.island_dofadr,
+      d._impl.island_efcadr,
+      d._impl.island_idofadr,
+      d._impl.island_ne,
+      d._impl.island_nefc,
+      d._impl.island_nf,
+      d._impl.island_nv,
       d._impl.light_xdir,
       d._impl.light_xpos,
+      d._impl.map_dof2idof,
+      d._impl.map_efc2iefc,
+      d._impl.map_idof2dof,
+      d._impl.map_iefc2efc,
       d.mocap_pos,
       d.mocap_quat,
+      d._impl.moment_colind,
+      d._impl.moment_rowadr,
+      d._impl.moment_rownnz,
       d._impl.nacon,
+      d._impl.nbody_awake,
       d._impl.ncollision,
       d._impl.ne,
-      d._impl.ne_connect,
-      d._impl.ne_jnt,
-      d._impl.ne_ten,
-      d._impl.ne_weld,
       d._impl.nefc,
       d._impl.nf,
+      d._impl.nidof,
+      d._impl.nisland,
       d._impl.nl,
-      d._impl.nsolving,
+      d._impl.ntree_awake,
+      d._impl.nv_awake,
       d._impl.qLD,
       d._impl.qLDiagInv,
-      d._impl.qM,
       d.qacc,
       d.qacc_smooth,
       d.qacc_warmstart,
@@ -1601,7 +2069,6 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       d.site_xpos,
       d._impl.solver_niter,
       d._impl.subtree_angmom,
-      d._impl.subtree_bodyvel,
       d.subtree_com,
       d._impl.subtree_linvel,
       d._impl.ten_J,
@@ -1610,6 +2077,9 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       d._impl.ten_wrapadr,
       d._impl.ten_wrapnum,
       d.time,
+      d._impl.tree_asleep,
+      d._impl.tree_awake,
+      d._impl.tree_island,
       d._impl.wrap_obj,
       d._impl.wrap_xpos,
       d.xanchor,
@@ -1623,6 +2093,7 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       d._impl.contact__dim,
       d._impl.contact__dist,
       d._impl.contact__efc_address,
+      d._impl.contact__flex,
       d._impl.contact__frame,
       d._impl.contact__friction,
       d._impl.contact__geom,
@@ -1633,173 +2104,181 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
       d._impl.contact__solref,
       d._impl.contact__solreffriction,
       d._impl.contact__type,
+      d._impl.contact__vert,
       d._impl.contact__worldid,
       d._impl.efc__D,
       d._impl.efc__J,
-      d._impl.efc__Jaref,
+      d._impl.efc__J_colind,
+      d._impl.efc__J_rowadr,
+      d._impl.efc__J_rownnz,
+      d._impl.efc__Jqvel,
       d._impl.efc__Ma,
-      d._impl.efc__Mgrad,
-      d._impl.efc__alpha,
       d._impl.efc__aref,
-      d._impl.efc__beta,
-      d._impl.efc__cholesky_L_tmp,
-      d._impl.efc__cholesky_y_tmp,
-      d._impl.efc__cost,
-      d._impl.efc__done,
       d._impl.efc__force,
       d._impl.efc__frictionloss,
-      d._impl.efc__gauss,
-      d._impl.efc__grad,
-      d._impl.efc__grad_dot,
-      d._impl.efc__h,
+      d._impl.efc__iD,
+      d._impl.efc__iJ,
+      d._impl.efc__iJ_colind,
+      d._impl.efc__iJ_rowadr,
+      d._impl.efc__iJ_rownnz,
+      d._impl.efc__iaref,
       d._impl.efc__id,
-      d._impl.efc__jv,
+      d._impl.efc__iforce,
+      d._impl.efc__ifrictionloss,
+      d._impl.efc__iid,
+      d._impl.efc__island,
+      d._impl.efc__istate,
+      d._impl.efc__itype,
       d._impl.efc__margin,
-      d._impl.efc__mv,
       d._impl.efc__pos,
-      d._impl.efc__prev_Mgrad,
-      d._impl.efc__prev_cost,
-      d._impl.efc__prev_grad,
-      d._impl.efc__quad,
-      d._impl.efc__quad_gauss,
-      d._impl.efc__search,
-      d._impl.efc__search_dot,
       d._impl.efc__state,
       d._impl.efc__type,
       d._impl.efc__vel,
   )
   d = d.tree_replace({
-      'act': out[0],
+      '_impl.M': out[0],
       'act_dot': out[1],
       'actuator_force': out[2],
-      '_impl.actuator_length': out[3],
+      'actuator_length': out[3],
       '_impl.actuator_moment': out[4],
       '_impl.actuator_velocity': out[5],
-      '_impl.cacc': out[6],
-      'cam_xmat': out[7],
-      'cam_xpos': out[8],
-      '_impl.cdof': out[9],
-      '_impl.cdof_dot': out[10],
-      '_impl.cfrc_ext': out[11],
-      '_impl.cfrc_int': out[12],
-      '_impl.cinert': out[13],
-      '_impl.collision_pair': out[14],
-      '_impl.collision_pairid': out[15],
-      '_impl.collision_worldid': out[16],
-      '_impl.crb': out[17],
-      'ctrl': out[18],
-      'cvel': out[19],
-      '_impl.energy': out[20],
-      'eq_active': out[21],
-      '_impl.flexedge_length': out[22],
-      '_impl.flexedge_velocity': out[23],
-      '_impl.flexvert_xpos': out[24],
-      'geom_xmat': out[25],
-      'geom_xpos': out[26],
-      '_impl.light_xdir': out[27],
-      '_impl.light_xpos': out[28],
-      'mocap_pos': out[29],
-      'mocap_quat': out[30],
-      '_impl.nacon': out[31],
-      '_impl.ncollision': out[32],
-      '_impl.ne': out[33],
-      '_impl.ne_connect': out[34],
-      '_impl.ne_jnt': out[35],
-      '_impl.ne_ten': out[36],
-      '_impl.ne_weld': out[37],
-      '_impl.nefc': out[38],
-      '_impl.nf': out[39],
-      '_impl.nl': out[40],
-      '_impl.nsolving': out[41],
-      '_impl.qLD': out[42],
-      '_impl.qLDiagInv': out[43],
-      '_impl.qM': out[44],
-      'qacc': out[45],
-      'qacc_smooth': out[46],
-      'qacc_warmstart': out[47],
-      'qfrc_actuator': out[48],
-      'qfrc_applied': out[49],
-      'qfrc_bias': out[50],
-      'qfrc_constraint': out[51],
-      '_impl.qfrc_damper': out[52],
-      'qfrc_fluid': out[53],
-      'qfrc_gravcomp': out[54],
-      'qfrc_passive': out[55],
-      'qfrc_smooth': out[56],
-      '_impl.qfrc_spring': out[57],
-      'qpos': out[58],
-      'qvel': out[59],
-      'sensordata': out[60],
-      'site_xmat': out[61],
-      'site_xpos': out[62],
-      '_impl.solver_niter': out[63],
-      '_impl.subtree_angmom': out[64],
-      '_impl.subtree_bodyvel': out[65],
-      'subtree_com': out[66],
-      '_impl.subtree_linvel': out[67],
-      '_impl.ten_J': out[68],
-      'ten_length': out[69],
-      '_impl.ten_velocity': out[70],
-      '_impl.ten_wrapadr': out[71],
-      '_impl.ten_wrapnum': out[72],
-      'time': out[73],
-      '_impl.wrap_obj': out[74],
-      '_impl.wrap_xpos': out[75],
-      'xanchor': out[76],
-      'xaxis': out[77],
-      'xfrc_applied': out[78],
-      'ximat': out[79],
-      'xipos': out[80],
-      'xmat': out[81],
-      'xpos': out[82],
-      'xquat': out[83],
-      '_impl.contact__dim': out[84],
-      '_impl.contact__dist': out[85],
-      '_impl.contact__efc_address': out[86],
-      '_impl.contact__frame': out[87],
-      '_impl.contact__friction': out[88],
-      '_impl.contact__geom': out[89],
-      '_impl.contact__geomcollisionid': out[90],
-      '_impl.contact__includemargin': out[91],
-      '_impl.contact__pos': out[92],
-      '_impl.contact__solimp': out[93],
-      '_impl.contact__solref': out[94],
-      '_impl.contact__solreffriction': out[95],
-      '_impl.contact__type': out[96],
-      '_impl.contact__worldid': out[97],
-      '_impl.efc__D': out[98],
-      '_impl.efc__J': out[99],
-      '_impl.efc__Jaref': out[100],
-      '_impl.efc__Ma': out[101],
-      '_impl.efc__Mgrad': out[102],
-      '_impl.efc__alpha': out[103],
-      '_impl.efc__aref': out[104],
-      '_impl.efc__beta': out[105],
-      '_impl.efc__cholesky_L_tmp': out[106],
-      '_impl.efc__cholesky_y_tmp': out[107],
-      '_impl.efc__cost': out[108],
-      '_impl.efc__done': out[109],
-      '_impl.efc__force': out[110],
-      '_impl.efc__frictionloss': out[111],
-      '_impl.efc__gauss': out[112],
-      '_impl.efc__grad': out[113],
-      '_impl.efc__grad_dot': out[114],
-      '_impl.efc__h': out[115],
-      '_impl.efc__id': out[116],
-      '_impl.efc__jv': out[117],
-      '_impl.efc__margin': out[118],
-      '_impl.efc__mv': out[119],
-      '_impl.efc__pos': out[120],
-      '_impl.efc__prev_Mgrad': out[121],
-      '_impl.efc__prev_cost': out[122],
-      '_impl.efc__prev_grad': out[123],
-      '_impl.efc__quad': out[124],
-      '_impl.efc__quad_gauss': out[125],
-      '_impl.efc__search': out[126],
-      '_impl.efc__search_dot': out[127],
-      '_impl.efc__state': out[128],
-      '_impl.efc__type': out[129],
-      '_impl.efc__vel': out[130],
+      '_impl.body_awake': out[6],
+      '_impl.body_awake_ind': out[7],
+      '_impl.cacc': out[8],
+      'cam_xmat': out[9],
+      'cam_xpos': out[10],
+      'cdof': out[11],
+      'cdof_dot': out[12],
+      '_impl.cfrc_ext': out[13],
+      '_impl.cfrc_int': out[14],
+      '_impl.cinert': out[15],
+      '_impl.crb': out[16],
+      'cvel': out[17],
+      '_impl.dof_awake_ind': out[18],
+      '_impl.dof_island': out[19],
+      '_impl.dof_islandid': out[20],
+      '_impl.efc_islandid': out[21],
+      '_impl.energy': out[22],
+      '_impl.flexedge_J': out[23],
+      '_impl.flexedge_length': out[24],
+      '_impl.flexedge_velocity': out[25],
+      '_impl.flexvert_xpos': out[26],
+      'geom_xmat': out[27],
+      'geom_xpos': out[28],
+      'history': out[29],
+      '_impl.iqacc': out[30],
+      '_impl.iqacc_smooth': out[31],
+      '_impl.iqfrc_constraint': out[32],
+      '_impl.iqfrc_smooth': out[33],
+      '_impl.island_dofadr': out[34],
+      '_impl.island_efcadr': out[35],
+      '_impl.island_idofadr': out[36],
+      '_impl.island_ne': out[37],
+      '_impl.island_nefc': out[38],
+      '_impl.island_nf': out[39],
+      '_impl.island_nv': out[40],
+      '_impl.light_xdir': out[41],
+      '_impl.light_xpos': out[42],
+      '_impl.map_dof2idof': out[43],
+      '_impl.map_efc2iefc': out[44],
+      '_impl.map_idof2dof': out[45],
+      '_impl.map_iefc2efc': out[46],
+      '_impl.moment_colind': out[47],
+      '_impl.moment_rowadr': out[48],
+      '_impl.moment_rownnz': out[49],
+      '_impl.nacon': out[50],
+      '_impl.nbody_awake': out[51],
+      '_impl.ncollision': out[52],
+      '_impl.ne': out[53],
+      '_impl.nefc': out[54],
+      '_impl.nf': out[55],
+      '_impl.nidof': out[56],
+      '_impl.nisland': out[57],
+      '_impl.nl': out[58],
+      '_impl.ntree_awake': out[59],
+      '_impl.nv_awake': out[60],
+      '_impl.qLD': out[61],
+      '_impl.qLDiagInv': out[62],
+      'qacc': out[63],
+      'qacc_smooth': out[64],
+      'qfrc_actuator': out[65],
+      'qfrc_bias': out[66],
+      'qfrc_constraint': out[67],
+      '_impl.qfrc_damper': out[68],
+      'qfrc_fluid': out[69],
+      'qfrc_gravcomp': out[70],
+      'qfrc_passive': out[71],
+      'qfrc_smooth': out[72],
+      '_impl.qfrc_spring': out[73],
+      'qvel': out[74],
+      'sensordata': out[75],
+      'site_xmat': out[76],
+      'site_xpos': out[77],
+      '_impl.solver_niter': out[78],
+      '_impl.subtree_angmom': out[79],
+      'subtree_com': out[80],
+      '_impl.subtree_linvel': out[81],
+      '_impl.ten_J': out[82],
+      'ten_length': out[83],
+      '_impl.ten_velocity': out[84],
+      '_impl.ten_wrapadr': out[85],
+      '_impl.ten_wrapnum': out[86],
+      '_impl.tree_asleep': out[87],
+      '_impl.tree_awake': out[88],
+      '_impl.tree_island': out[89],
+      '_impl.wrap_obj': out[90],
+      '_impl.wrap_xpos': out[91],
+      'xanchor': out[92],
+      'xaxis': out[93],
+      'ximat': out[94],
+      'xipos': out[95],
+      'xmat': out[96],
+      'xpos': out[97],
+      'xquat': out[98],
+      '_impl.contact__dim': out[99],
+      '_impl.contact__dist': out[100],
+      '_impl.contact__efc_address': out[101],
+      '_impl.contact__flex': out[102],
+      '_impl.contact__frame': out[103],
+      '_impl.contact__friction': out[104],
+      '_impl.contact__geom': out[105],
+      '_impl.contact__geomcollisionid': out[106],
+      '_impl.contact__includemargin': out[107],
+      '_impl.contact__pos': out[108],
+      '_impl.contact__solimp': out[109],
+      '_impl.contact__solref': out[110],
+      '_impl.contact__solreffriction': out[111],
+      '_impl.contact__type': out[112],
+      '_impl.contact__vert': out[113],
+      '_impl.contact__worldid': out[114],
+      '_impl.efc__D': out[115],
+      '_impl.efc__J': out[116],
+      '_impl.efc__J_colind': out[117],
+      '_impl.efc__J_rowadr': out[118],
+      '_impl.efc__J_rownnz': out[119],
+      '_impl.efc__Jqvel': out[120],
+      '_impl.efc__Ma': out[121],
+      '_impl.efc__aref': out[122],
+      '_impl.efc__force': out[123],
+      '_impl.efc__frictionloss': out[124],
+      '_impl.efc__iD': out[125],
+      '_impl.efc__iJ': out[126],
+      '_impl.efc__iJ_colind': out[127],
+      '_impl.efc__iJ_rowadr': out[128],
+      '_impl.efc__iJ_rownnz': out[129],
+      '_impl.efc__iaref': out[130],
+      '_impl.efc__id': out[131],
+      '_impl.efc__iforce': out[132],
+      '_impl.efc__ifrictionloss': out[133],
+      '_impl.efc__iid': out[134],
+      '_impl.efc__island': out[135],
+      '_impl.efc__istate': out[136],
+      '_impl.efc__itype': out[137],
+      '_impl.efc__margin': out[138],
+      '_impl.efc__pos': out[139],
+      '_impl.efc__state': out[140],
+      '_impl.efc__type': out[141],
+      '_impl.efc__vel': out[142],
   })
   return d
 
@@ -1808,217 +2287,261 @@ def _forward_jax_impl(m: types.Model, d: types.Data):
 @ffi.marshal_jax_warp_callable
 def forward(m: types.Model, d: types.Data):
   return _forward_jax_impl(m, d)
+
+
 @forward.def_vmap
 @ffi.marshal_custom_vmap
-def forward_vmap(unused_axis_size, is_batched, m, d):
+def forward_vmap(unused_axis_size, is_batched, m: types.Model, d: types.Data):
   d = forward(m, d)
   return d, is_batched[1]
-
-
-_m = mjwarp.Model(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Model) if f.init}
-)
-_d = mjwarp.Data(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Data) if f.init}
-)
-_o = mjwarp.Option(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Option) if f.init}
-)
-_s = mjwarp.Statistic(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Statistic) if f.init}
-)
-_c = mjwarp.Contact(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Contact) if f.init}
-)
-_e = mjwarp.Constraint(
-    **{f.name: None for f in dataclasses.fields(mjwarp.Constraint) if f.init}
-)
 
 
 @ffi.format_args_for_warp
 def _step_shim(
     # Model
     nworld: int,
-    M_rowadr: wp.array(dtype=int),
-    M_rownnz: wp.array(dtype=int),
-    actuator_acc0: wp.array(dtype=float),
-    actuator_actadr: wp.array(dtype=int),
-    actuator_actearly: wp.array(dtype=bool),
-    actuator_actlimited: wp.array(dtype=bool),
-    actuator_actnum: wp.array(dtype=int),
-    actuator_actrange: wp.array2d(dtype=wp.vec2),
-    actuator_biasprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_biastype: wp.array(dtype=int),
-    actuator_cranklength: wp.array(dtype=float),
-    actuator_ctrllimited: wp.array(dtype=bool),
-    actuator_ctrlrange: wp.array2d(dtype=wp.vec2),
-    actuator_dynprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_dyntype: wp.array(dtype=int),
-    actuator_forcelimited: wp.array(dtype=bool),
-    actuator_forcerange: wp.array2d(dtype=wp.vec2),
-    actuator_gainprm: wp.array2d(dtype=mjwp_types.vec10f),
-    actuator_gaintype: wp.array(dtype=int),
-    actuator_gear: wp.array2d(dtype=wp.spatial_vector),
-    actuator_lengthrange: wp.array(dtype=wp.vec2),
-    actuator_trnid: wp.array(dtype=wp.vec2i),
-    actuator_trntype: wp.array(dtype=int),
-    actuator_trntype_body_adr: wp.array(dtype=int),
+    D_colind: wp.array[int],
+    D_diag: wp.array[int],
+    D_rowadr: wp.array[int],
+    D_rownnz: wp.array[int],
+    M_elemid: wp.array2d[int],
+    M_fullm_i: wp.array[int],
+    M_fullm_j: wp.array[int],
+    M_mulm_col: wp.array[int],
+    M_mulm_madr: wp.array[int],
+    M_mulm_rowadr: wp.array[int],
+    M_rowadr: wp.array[int],
+    M_rownnz: wp.array[int],
+    M_tiles: tuple[mjwp_types.TileSet, ...],
+    actuator_acc0: wp.array2d[float],
+    actuator_actadr: wp.array[int],
+    actuator_actearly: wp.array[bool],
+    actuator_actlimited: wp.array[bool],
+    actuator_actnum: wp.array[int],
+    actuator_actrange: wp.array2d[wp.vec2],
+    actuator_biasprm: wp.array2d[mjwp_types.vec10f],
+    actuator_biastype: wp.array[int],
+    actuator_cranklength: wp.array2d[float],
+    actuator_ctrllimited: wp.array[bool],
+    actuator_ctrlrange: wp.array2d[wp.vec2],
+    actuator_delay: wp.array[float],
+    actuator_dynprm: wp.array2d[mjwp_types.vec10f],
+    actuator_dyntype: wp.array[int],
+    actuator_forcelimited: wp.array[bool],
+    actuator_forcerange: wp.array2d[wp.vec2],
+    actuator_gainprm: wp.array2d[mjwp_types.vec10f],
+    actuator_gaintype: wp.array[int],
+    actuator_gear: wp.array2d[wp.spatial_vector],
+    actuator_history: wp.array[wp.vec2i],
+    actuator_historyadr: wp.array[int],
+    actuator_lengthrange: wp.array2d[wp.vec2],
+    actuator_trnid: wp.array[wp.vec2i],
+    actuator_trntype: wp.array[int],
+    actuator_trntype_body_adr: wp.array[int],
     block_dim: mjwp_types.BlockDim,
-    body_dofadr: wp.array(dtype=int),
-    body_dofnum: wp.array(dtype=int),
-    body_fluid_ellipsoid: wp.array(dtype=bool),
-    body_geomadr: wp.array(dtype=int),
-    body_geomnum: wp.array(dtype=int),
-    body_gravcomp: wp.array2d(dtype=float),
-    body_inertia: wp.array2d(dtype=wp.vec3),
-    body_invweight0: wp.array2d(dtype=wp.vec2),
-    body_ipos: wp.array2d(dtype=wp.vec3),
-    body_iquat: wp.array2d(dtype=wp.quat),
-    body_jntadr: wp.array(dtype=int),
-    body_jntnum: wp.array(dtype=int),
-    body_mass: wp.array2d(dtype=float),
-    body_mocapid: wp.array(dtype=int),
-    body_parentid: wp.array(dtype=int),
-    body_pos: wp.array2d(dtype=wp.vec3),
-    body_quat: wp.array2d(dtype=wp.quat),
-    body_rootid: wp.array(dtype=int),
-    body_subtreemass: wp.array2d(dtype=float),
-    body_tree: tuple[wp.array(dtype=int), ...],
-    body_weldid: wp.array(dtype=int),
-    cam_bodyid: wp.array(dtype=int),
-    cam_fovy: wp.array(dtype=float),
-    cam_intrinsic: wp.array(dtype=wp.vec4),
-    cam_mat0: wp.array2d(dtype=wp.mat33),
-    cam_mode: wp.array(dtype=int),
-    cam_pos: wp.array2d(dtype=wp.vec3),
-    cam_pos0: wp.array2d(dtype=wp.vec3),
-    cam_poscom0: wp.array2d(dtype=wp.vec3),
-    cam_quat: wp.array2d(dtype=wp.quat),
-    cam_resolution: wp.array(dtype=wp.vec2i),
-    cam_sensorsize: wp.array(dtype=wp.vec2),
-    cam_targetbodyid: wp.array(dtype=int),
-    collision_sensor_adr: wp.array(dtype=int),
-    dof_Madr: wp.array(dtype=int),
-    dof_armature: wp.array2d(dtype=float),
-    dof_bodyid: wp.array(dtype=int),
-    dof_damping: wp.array2d(dtype=float),
-    dof_frictionloss: wp.array2d(dtype=float),
-    dof_invweight0: wp.array2d(dtype=float),
-    dof_jntid: wp.array(dtype=int),
-    dof_parentid: wp.array(dtype=int),
-    dof_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    dof_solref: wp.array2d(dtype=wp.vec2),
-    dof_tri_col: wp.array(dtype=int),
-    dof_tri_row: wp.array(dtype=int),
-    eq_connect_adr: wp.array(dtype=int),
-    eq_data: wp.array2d(dtype=mjwp_types.vec11),
-    eq_jnt_adr: wp.array(dtype=int),
-    eq_obj1id: wp.array(dtype=int),
-    eq_obj2id: wp.array(dtype=int),
-    eq_objtype: wp.array(dtype=int),
-    eq_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    eq_solref: wp.array2d(dtype=wp.vec2),
-    eq_ten_adr: wp.array(dtype=int),
-    eq_wld_adr: wp.array(dtype=int),
-    flex_bending: wp.array2d(dtype=float),
-    flex_damping: wp.array(dtype=float),
-    flex_dim: wp.array(dtype=int),
-    flex_edge: wp.array(dtype=wp.vec2i),
-    flex_edgeadr: wp.array(dtype=int),
-    flex_edgeflap: wp.array(dtype=wp.vec2i),
-    flex_elem: wp.array(dtype=int),
-    flex_elemedge: wp.array(dtype=int),
-    flex_elemedgeadr: wp.array(dtype=int),
-    flex_stiffness: wp.array2d(dtype=float),
-    flex_vertadr: wp.array(dtype=int),
-    flex_vertbodyid: wp.array(dtype=int),
-    flexedge_length0: wp.array(dtype=float),
-    geom_aabb: wp.array3d(dtype=wp.vec3),
-    geom_bodyid: wp.array(dtype=int),
-    geom_condim: wp.array(dtype=int),
-    geom_dataid: wp.array(dtype=int),
-    geom_fluid: wp.array2d(dtype=float),
-    geom_friction: wp.array2d(dtype=wp.vec3),
-    geom_gap: wp.array2d(dtype=float),
-    geom_group: wp.array(dtype=int),
-    geom_margin: wp.array2d(dtype=float),
-    geom_matid: wp.array2d(dtype=int),
+    body_branch_start: wp.array[int],
+    body_branches: wp.array[int],
+    body_dofadr: wp.array[int],
+    body_dofnum: wp.array[int],
+    body_fluid_ellipsoid: wp.array[bool],
+    body_geomadr: wp.array[int],
+    body_geomnum: wp.array[int],
+    body_gravcomp: wp.array2d[float],
+    body_inertia: wp.array2d[wp.vec3],
+    body_invweight0: wp.array2d[wp.vec2],
+    body_ipos: wp.array2d[wp.vec3],
+    body_iquat: wp.array2d[wp.quat],
+    body_isdofancestor: wp.array2d[int],
+    body_jntadr: wp.array[int],
+    body_jntnum: wp.array[int],
+    body_mass: wp.array2d[float],
+    body_mocapid: wp.array[int],
+    body_parentid: wp.array[int],
+    body_pos: wp.array2d[wp.vec3],
+    body_quat: wp.array2d[wp.quat],
+    body_rootid: wp.array[int],
+    body_subtreemass: wp.array2d[float],
+    body_tree: tuple[wp.array[int], ...],
+    body_treeid: wp.array[int],
+    body_weldid: wp.array[int],
+    cam_bodyid: wp.array[int],
+    cam_fovy: wp.array2d[float],
+    cam_intrinsic: wp.array2d[wp.vec4],
+    cam_mat0: wp.array2d[wp.mat33],
+    cam_mode: wp.array[int],
+    cam_pos: wp.array2d[wp.vec3],
+    cam_pos0: wp.array2d[wp.vec3],
+    cam_poscom0: wp.array2d[wp.vec3],
+    cam_quat: wp.array2d[wp.quat],
+    cam_resolution: wp.array[wp.vec2i],
+    cam_sensorsize: wp.array[wp.vec2],
+    cam_targetbodyid: wp.array[int],
+    dof_armature: wp.array2d[float],
+    dof_bodyid: wp.array[int],
+    dof_damping: wp.array2d[float],
+    dof_dampingpoly: wp.array2d[wp.vec2],
+    dof_frictionloss: wp.array2d[float],
+    dof_invweight0: wp.array2d[float],
+    dof_jntid: wp.array[int],
+    dof_length: wp.array[float],
+    dof_parentid: wp.array[int],
+    dof_solimp: wp.array2d[mjwp_types.vec5],
+    dof_solref: wp.array2d[wp.vec2],
+    dof_treeid: wp.array[int],
+    dof_tri_col: wp.array[int],
+    dof_tri_row: wp.array[int],
+    eq_connect_adr: wp.array[int],
+    eq_data: wp.array2d[mjwp_types.vec11],
+    eq_flex_adr: wp.array[int],
+    eq_jnt_adr: wp.array[int],
+    eq_obj1id: wp.array[int],
+    eq_obj2id: wp.array[int],
+    eq_objtype: wp.array[int],
+    eq_solimp: wp.array2d[mjwp_types.vec5],
+    eq_solref: wp.array2d[wp.vec2],
+    eq_ten_adr: wp.array[int],
+    eq_type: wp.array[int],
+    eq_wld_adr: wp.array[int],
+    flex_bending: wp.array[float],
+    flex_bendingadr: wp.array[int],
+    flex_centered: wp.array[bool],
+    flex_conaffinity: wp.array[int],
+    flex_condim: wp.array[int],
+    flex_contype: wp.array[int],
+    flex_damping: wp.array[float],
+    flex_dim: wp.array[int],
+    flex_edge: wp.array[wp.vec2i],
+    flex_edgeadr: wp.array[int],
+    flex_edgeflap: wp.array[wp.vec2i],
+    flex_edgenum: wp.array[int],
+    flex_elem: wp.array[int],
+    flex_elemadr: wp.array[int],
+    flex_elemdataadr: wp.array[int],
+    flex_elemedge: wp.array[int],
+    flex_elemedgeadr: wp.array[int],
+    flex_elemnum: wp.array[int],
+    flex_friction: wp.array[wp.vec3],
+    flex_gap: wp.array[float],
+    flex_margin: wp.array[float],
+    flex_priority: wp.array[int],
+    flex_radius: wp.array[float],
+    flex_shell: wp.array[int],
+    flex_shelldataadr: wp.array[int],
+    flex_shellnum: wp.array[int],
+    flex_solimp: wp.array[mjwp_types.vec5],
+    flex_solmix: wp.array[float],
+    flex_solref: wp.array[wp.vec2],
+    flex_stiffness: wp.array[float],
+    flex_stiffnessadr: wp.array[int],
+    flex_vert: wp.array[wp.vec3],
+    flex_vertadr: wp.array[int],
+    flex_vertbodyid: wp.array[int],
+    flex_vertflexid: wp.array[int],
+    flex_vertnum: wp.array[int],
+    flexedge_J_colind: wp.array[int],
+    flexedge_J_rowadr: wp.array[int],
+    flexedge_J_rownnz: wp.array[int],
+    flexedge_invweight0: wp.array[float],
+    flexedge_length0: wp.array[float],
+    geom_aabb: wp.array3d[wp.vec3],
+    geom_bodyid: wp.array[int],
+    geom_conaffinity: wp.array[int],
+    geom_condim: wp.array[int],
+    geom_contype: wp.array[int],
+    geom_dataid: wp.array2d[int],
+    geom_fluid: wp.array2d[float],
+    geom_friction: wp.array2d[wp.vec3],
+    geom_gap: wp.array2d[float],
+    geom_group: wp.array[int],
+    geom_margin: wp.array2d[float],
+    geom_matid: wp.array2d[int],
     geom_pair_type_count: tuple[int, ...],
-    geom_plugin_index: wp.array(dtype=int),
-    geom_pos: wp.array2d(dtype=wp.vec3),
-    geom_priority: wp.array(dtype=int),
-    geom_quat: wp.array2d(dtype=wp.quat),
-    geom_rbound: wp.array2d(dtype=float),
-    geom_rgba: wp.array2d(dtype=wp.vec4),
-    geom_size: wp.array2d(dtype=wp.vec3),
-    geom_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    geom_solmix: wp.array2d(dtype=float),
-    geom_solref: wp.array2d(dtype=wp.vec2),
-    geom_type: wp.array(dtype=int),
+    geom_plugin_index: wp.array[int],
+    geom_pos: wp.array2d[wp.vec3],
+    geom_priority: wp.array[int],
+    geom_quat: wp.array2d[wp.quat],
+    geom_rbound: wp.array2d[float],
+    geom_rgba: wp.array2d[wp.vec4],
+    geom_size: wp.array2d[wp.vec3],
+    geom_solimp: wp.array2d[mjwp_types.vec5],
+    geom_solmix: wp.array2d[float],
+    geom_solref: wp.array2d[wp.vec2],
+    geom_type: wp.array[int],
+    has_fluid: bool,
     has_sdf_geom: bool,
-    hfield_adr: wp.array(dtype=int),
-    hfield_data: wp.array(dtype=float),
-    hfield_ncol: wp.array(dtype=int),
-    hfield_nrow: wp.array(dtype=int),
-    hfield_size: wp.array(dtype=wp.vec4),
-    jnt_actfrclimited: wp.array(dtype=bool),
-    jnt_actfrcrange: wp.array2d(dtype=wp.vec2),
-    jnt_actgravcomp: wp.array(dtype=int),
-    jnt_axis: wp.array2d(dtype=wp.vec3),
-    jnt_bodyid: wp.array(dtype=int),
-    jnt_dofadr: wp.array(dtype=int),
-    jnt_limited_ball_adr: wp.array(dtype=int),
-    jnt_limited_slide_hinge_adr: wp.array(dtype=int),
-    jnt_margin: wp.array2d(dtype=float),
-    jnt_pos: wp.array2d(dtype=wp.vec3),
-    jnt_qposadr: wp.array(dtype=int),
-    jnt_range: wp.array2d(dtype=wp.vec2),
-    jnt_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    jnt_solref: wp.array2d(dtype=wp.vec2),
-    jnt_stiffness: wp.array2d(dtype=float),
-    jnt_type: wp.array(dtype=int),
-    light_bodyid: wp.array(dtype=int),
-    light_dir: wp.array2d(dtype=wp.vec3),
-    light_dir0: wp.array2d(dtype=wp.vec3),
-    light_mode: wp.array(dtype=int),
-    light_pos: wp.array2d(dtype=wp.vec3),
-    light_pos0: wp.array2d(dtype=wp.vec3),
-    light_poscom0: wp.array2d(dtype=wp.vec3),
-    light_targetbodyid: wp.array(dtype=int),
-    mapM2M: wp.array(dtype=int),
-    mat_rgba: wp.array2d(dtype=wp.vec4),
-    mesh_face: wp.array(dtype=wp.vec3i),
-    mesh_faceadr: wp.array(dtype=int),
-    mesh_graph: wp.array(dtype=int),
-    mesh_graphadr: wp.array(dtype=int),
-    mesh_normal: wp.array(dtype=wp.vec3),
-    mesh_normaladr: wp.array(dtype=int),
-    mesh_polyadr: wp.array(dtype=int),
-    mesh_polymap: wp.array(dtype=int),
-    mesh_polymapadr: wp.array(dtype=int),
-    mesh_polymapnum: wp.array(dtype=int),
-    mesh_polynormal: wp.array(dtype=wp.vec3),
-    mesh_polynum: wp.array(dtype=int),
-    mesh_polyvert: wp.array(dtype=int),
-    mesh_polyvertadr: wp.array(dtype=int),
-    mesh_polyvertnum: wp.array(dtype=int),
-    mesh_quat: wp.array(dtype=wp.quat),
-    mesh_vert: wp.array(dtype=wp.vec3),
-    mesh_vertadr: wp.array(dtype=int),
-    mesh_vertnum: wp.array(dtype=int),
-    mocap_bodyid: wp.array(dtype=int),
+    hfield_adr: wp.array[int],
+    hfield_data: wp.array[float],
+    hfield_ncol: wp.array[int],
+    hfield_nrow: wp.array[int],
+    hfield_size: wp.array[wp.vec4],
+    is_sparse: bool,
+    jnt_actfrclimited: wp.array[bool],
+    jnt_actfrcrange: wp.array2d[wp.vec2],
+    jnt_actgravcomp: wp.array[int],
+    jnt_axis: wp.array2d[wp.vec3],
+    jnt_bodyid: wp.array[int],
+    jnt_dofadr: wp.array[int],
+    jnt_limited_ball_adr: wp.array[int],
+    jnt_limited_slide_hinge_adr: wp.array[int],
+    jnt_margin: wp.array2d[float],
+    jnt_pos: wp.array2d[wp.vec3],
+    jnt_qposadr: wp.array[int],
+    jnt_range: wp.array2d[wp.vec2],
+    jnt_solimp: wp.array2d[mjwp_types.vec5],
+    jnt_solref: wp.array2d[wp.vec2],
+    jnt_stiffness: wp.array2d[float],
+    jnt_stiffnesspoly: wp.array2d[wp.vec2],
+    jnt_type: wp.array[int],
+    jtcj_max_pairs: int,
+    light_bodyid: wp.array[int],
+    light_dir: wp.array2d[wp.vec3],
+    light_dir0: wp.array2d[wp.vec3],
+    light_mode: wp.array[int],
+    light_pos: wp.array2d[wp.vec3],
+    light_pos0: wp.array2d[wp.vec3],
+    light_poscom0: wp.array2d[wp.vec3],
+    light_targetbodyid: wp.array[int],
+    mapM2D: wp.array[int],
+    mat_rgba: wp.array2d[wp.vec4],
+    max_ten_J_rownnz: int,
+    mesh_face: wp.array[wp.vec3i],
+    mesh_faceadr: wp.array[int],
+    mesh_graph: wp.array[int],
+    mesh_graphadr: wp.array[int],
+    mesh_normal: wp.array[wp.vec3],
+    mesh_normaladr: wp.array[int],
+    mesh_normalnum: wp.array[int],
+    mesh_octadr: wp.array[int],
+    mesh_polyadr: wp.array[int],
+    mesh_polymap: wp.array[int],
+    mesh_polymapadr: wp.array[int],
+    mesh_polymapnum: wp.array[int],
+    mesh_polynormal: wp.array[wp.vec3],
+    mesh_polynum: wp.array[int],
+    mesh_polyvert: wp.array[int],
+    mesh_polyvertadr: wp.array[int],
+    mesh_polyvertnum: wp.array[int],
+    mesh_quat: wp.array[wp.quat],
+    mesh_vert: wp.array[wp.vec3],
+    mesh_vertadr: wp.array[int],
+    mesh_vertnum: wp.array[int],
     nC: int,
-    nM: int,
+    nD: int,
+    nJten: int,
     na: int,
     nacttrnbody: int,
     nbody: int,
+    nbranch: int,
     ncam: int,
     neq: int,
+    nflex: int,
     nflexedge: int,
     nflexelem: int,
+    nflexshelldata: int,
     nflexvert: int,
     ngeom: int,
     ngravcomp: int,
+    nhistory: int,
     njnt: int,
     nlight: int,
     nmaxcondim: int,
@@ -2026,274 +2549,319 @@ def _step_shim(
     nmaxpolygon: int,
     nmaxpyramid: int,
     nmeshface: int,
-    nmocap: int,
     nrangefinder: int,
     nsensorcollision: int,
     nsensorcontact: int,
     nsensortaxel: int,
     nsite: int,
     ntendon: int,
+    ntree: int,
     nu: int,
     nv: int,
+    nv_pad: int,
     nwrap: int,
-    nxn_geom_pair_filtered: wp.array(dtype=wp.vec2i),
-    nxn_pairid: wp.array(dtype=wp.vec2i),
-    nxn_pairid_filtered: wp.array(dtype=wp.vec2i),
-    oct_aabb: wp.array2d(dtype=wp.vec3),
-    oct_child: wp.array(dtype=mjwp_types.vec8i),
-    oct_coeff: wp.array(dtype=mjwp_types.vec8),
-    pair_dim: wp.array(dtype=int),
-    pair_friction: wp.array2d(dtype=mjwp_types.vec5),
-    pair_gap: wp.array2d(dtype=float),
-    pair_margin: wp.array2d(dtype=float),
-    pair_solimp: wp.array2d(dtype=mjwp_types.vec5),
-    pair_solref: wp.array2d(dtype=wp.vec2),
-    pair_solreffriction: wp.array2d(dtype=wp.vec2),
-    plugin: wp.array(dtype=int),
-    plugin_attr: wp.array(dtype=wp.vec3f),
-    qLD_updates: tuple[wp.array(dtype=wp.vec3i), ...],
-    qM_fullm_i: wp.array(dtype=int),
-    qM_fullm_j: wp.array(dtype=int),
-    qM_madr_ij: wp.array(dtype=int),
-    qM_mulm_i: wp.array(dtype=int),
-    qM_mulm_j: wp.array(dtype=int),
-    qM_tiles: tuple[mjwp_types.TileSet, ...],
-    qpos0: wp.array2d(dtype=float),
-    qpos_spring: wp.array2d(dtype=float),
-    rangefinder_sensor_adr: wp.array(dtype=int),
-    sensor_acc_adr: wp.array(dtype=int),
-    sensor_adr: wp.array(dtype=int),
-    sensor_adr_to_contact_adr: wp.array(dtype=int),
-    sensor_collision_start_adr: wp.array(dtype=int),
-    sensor_contact_adr: wp.array(dtype=int),
-    sensor_cutoff: wp.array(dtype=float),
-    sensor_datatype: wp.array(dtype=int),
-    sensor_dim: wp.array(dtype=int),
+    nxn_geom_pair_filtered: wp.array[wp.vec2i],
+    nxn_pairid: wp.array[wp.vec2i],
+    nxn_pairid_filtered: wp.array[wp.vec2i],
+    oct_aabb: wp.array2d[wp.vec3],
+    oct_child: wp.array[mjwp_types.vec8i],
+    oct_coeff: wp.array[mjwp_types.vec8],
+    pair_dim: wp.array[int],
+    pair_friction: wp.array2d[mjwp_types.vec5],
+    pair_gap: wp.array2d[float],
+    pair_margin: wp.array2d[float],
+    pair_solimp: wp.array2d[mjwp_types.vec5],
+    pair_solref: wp.array2d[wp.vec2],
+    pair_solreffriction: wp.array2d[wp.vec2],
+    plugin: wp.array[int],
+    plugin_attr: wp.array[mjwp_types.vec_pluginattr],
+    qD_fullm_i: wp.array[int],
+    qD_fullm_j: wp.array[int],
+    qLD_all_updates: wp.array[wp.vec3i],
+    qLD_level_offsets: wp.array[int],
+    qLD_updates: tuple[wp.array[wp.vec3i], ...],
+    qpos0: wp.array2d[float],
+    qpos_spring: wp.array2d[float],
+    rangefinder_sensor_adr: wp.array[int],
+    sensor_acc_adr: wp.array[int],
+    sensor_adr: wp.array[int],
+    sensor_adr_to_contact_adr: wp.array[int],
+    sensor_contact_adr: wp.array[int],
+    sensor_cutoff: wp.array[float],
+    sensor_datatype: wp.array[int],
+    sensor_delay: wp.array[float],
+    sensor_dim: wp.array[int],
     sensor_e_kinetic: bool,
     sensor_e_potential: bool,
-    sensor_intprm: wp.array2d(dtype=int),
-    sensor_limitfrc_adr: wp.array(dtype=int),
-    sensor_limitpos_adr: wp.array(dtype=int),
-    sensor_limitvel_adr: wp.array(dtype=int),
-    sensor_objid: wp.array(dtype=int),
-    sensor_objtype: wp.array(dtype=int),
-    sensor_pos_adr: wp.array(dtype=int),
-    sensor_rangefinder_adr: wp.array(dtype=int),
-    sensor_rangefinder_bodyid: wp.array(dtype=int),
-    sensor_refid: wp.array(dtype=int),
-    sensor_reftype: wp.array(dtype=int),
+    sensor_history: wp.array[wp.vec2i],
+    sensor_historyadr: wp.array[int],
+    sensor_interval: wp.array[wp.vec2],
+    sensor_intprm: wp.array2d[int],
+    sensor_limitfrc_adr: wp.array[int],
+    sensor_limitpos_adr: wp.array[int],
+    sensor_limitvel_adr: wp.array[int],
+    sensor_objid: wp.array[int],
+    sensor_objtype: wp.array[int],
+    sensor_pos_adr: wp.array[int],
+    sensor_rangefinder_adr: wp.array[int],
+    sensor_rangefinder_bodyid: wp.array[int],
+    sensor_refid: wp.array[int],
+    sensor_reftype: wp.array[int],
     sensor_rne_postconstraint: bool,
     sensor_subtree_vel: bool,
-    sensor_tendonactfrc_adr: wp.array(dtype=int),
-    sensor_touch_adr: wp.array(dtype=int),
-    sensor_type: wp.array(dtype=int),
-    sensor_vel_adr: wp.array(dtype=int),
-    site_bodyid: wp.array(dtype=int),
-    site_pos: wp.array2d(dtype=wp.vec3),
-    site_quat: wp.array2d(dtype=wp.quat),
-    site_size: wp.array(dtype=wp.vec3),
-    site_type: wp.array(dtype=int),
-    taxel_sensorid: wp.array(dtype=int),
-    taxel_vertadr: wp.array(dtype=int),
-    tendon_actfrclimited: wp.array(dtype=bool),
-    tendon_actfrcrange: wp.array2d(dtype=wp.vec2),
-    tendon_adr: wp.array(dtype=int),
-    tendon_armature: wp.array2d(dtype=float),
-    tendon_damping: wp.array2d(dtype=float),
-    tendon_frictionloss: wp.array2d(dtype=float),
-    tendon_geom_adr: wp.array(dtype=int),
-    tendon_invweight0: wp.array2d(dtype=float),
-    tendon_jnt_adr: wp.array(dtype=int),
-    tendon_length0: wp.array2d(dtype=float),
-    tendon_lengthspring: wp.array2d(dtype=wp.vec2),
-    tendon_limited_adr: wp.array(dtype=int),
-    tendon_margin: wp.array2d(dtype=float),
-    tendon_num: wp.array(dtype=int),
-    tendon_range: wp.array2d(dtype=wp.vec2),
-    tendon_site_pair_adr: wp.array(dtype=int),
-    tendon_solimp_fri: wp.array2d(dtype=mjwp_types.vec5),
-    tendon_solimp_lim: wp.array2d(dtype=mjwp_types.vec5),
-    tendon_solref_fri: wp.array2d(dtype=wp.vec2),
-    tendon_solref_lim: wp.array2d(dtype=wp.vec2),
-    tendon_stiffness: wp.array2d(dtype=float),
-    wrap_geom_adr: wp.array(dtype=int),
-    wrap_jnt_adr: wp.array(dtype=int),
-    wrap_objid: wp.array(dtype=int),
-    wrap_prm: wp.array(dtype=float),
-    wrap_pulley_scale: wp.array(dtype=float),
-    wrap_site_pair_adr: wp.array(dtype=int),
-    wrap_type: wp.array(dtype=int),
+    sensor_tendonactfrc_adr: wp.array[int],
+    sensor_touch_adr: wp.array[int],
+    sensor_type: wp.array[int],
+    sensor_vel_adr: wp.array[int],
+    site_bodyid: wp.array[int],
+    site_pos: wp.array2d[wp.vec3],
+    site_quat: wp.array2d[wp.quat],
+    site_size: wp.array[wp.vec3],
+    site_type: wp.array[int],
+    taxel_sensorid: wp.array[int],
+    taxel_vertadr: wp.array[int],
+    ten_J_colind: wp.array[int],
+    ten_J_rowadr: wp.array[int],
+    ten_J_rownnz: wp.array[int],
+    tendon_actfrclimited: wp.array[bool],
+    tendon_actfrcrange: wp.array2d[wp.vec2],
+    tendon_adr: wp.array[int],
+    tendon_armature: wp.array2d[float],
+    tendon_damping: wp.array2d[float],
+    tendon_dampingpoly: wp.array2d[wp.vec2],
+    tendon_frictionloss: wp.array2d[float],
+    tendon_geom_adr: wp.array[int],
+    tendon_invweight0: wp.array2d[float],
+    tendon_jnt_adr: wp.array[int],
+    tendon_length0: wp.array2d[float],
+    tendon_lengthspring: wp.array2d[wp.vec2],
+    tendon_limited: wp.array[int],
+    tendon_limited_adr: wp.array[int],
+    tendon_margin: wp.array2d[float],
+    tendon_num: wp.array[int],
+    tendon_range: wp.array2d[wp.vec2],
+    tendon_site_pair_adr: wp.array[int],
+    tendon_solimp_fri: wp.array2d[mjwp_types.vec5],
+    tendon_solimp_lim: wp.array2d[mjwp_types.vec5],
+    tendon_solref_fri: wp.array2d[wp.vec2],
+    tendon_solref_lim: wp.array2d[wp.vec2],
+    tendon_stiffness: wp.array2d[float],
+    tendon_stiffnesspoly: wp.array2d[wp.vec2],
+    tree_dofadr: wp.array[int],
+    tree_dofnum: wp.array[int],
+    tree_sleep_policy: wp.array[int],
+    wrap_geom_adr: wp.array[int],
+    wrap_jnt_adr: wp.array[int],
+    wrap_objid: wp.array[int],
+    wrap_prm: wp.array[float],
+    wrap_pulley_scale: wp.array[float],
+    wrap_site_pair_adr: wp.array[int],
+    wrap_type: wp.array[int],
     opt__broadphase: int,
     opt__broadphase_filter: int,
     opt__ccd_iterations: int,
-    opt__ccd_tolerance: wp.array(dtype=float),
+    opt__ccd_tolerance: wp.array[float],
     opt__cone: int,
     opt__contact_sensor_maxmatch: int,
-    opt__density: wp.array(dtype=float),
+    opt__density: wp.array[float],
     opt__disableflags: int,
     opt__enableflags: int,
     opt__graph_conditional: bool,
-    opt__gravity: wp.array(dtype=wp.vec3),
-    opt__has_fluid: bool,
-    opt__impratio: wp.array(dtype=float),
+    opt__gravity: wp.array[wp.vec3],
+    opt__impratio_invsqrt: wp.array[float],
     opt__integrator: int,
-    opt__is_sparse: bool,
     opt__iterations: int,
     opt__ls_iterations: int,
-    opt__ls_parallel: bool,
-    opt__ls_parallel_min_step: float,
-    opt__ls_tolerance: wp.array(dtype=float),
-    opt__magnetic: wp.array(dtype=wp.vec3),
+    opt__ls_tolerance: wp.array[float],
+    opt__magnetic: wp.array[wp.vec3],
     opt__run_collision_detection: bool,
     opt__sdf_initpoints: int,
     opt__sdf_iterations: int,
+    opt__sleep_tolerance: wp.array[float],
     opt__solver: int,
-    opt__timestep: wp.array(dtype=float),
-    opt__tolerance: wp.array(dtype=float),
-    opt__viscosity: wp.array(dtype=float),
-    opt__wind: wp.array(dtype=wp.vec3),
-    stat__meaninertia: float,
+    opt__timestep: wp.array[float],
+    opt__tolerance: wp.array[float],
+    opt__viscosity: wp.array[float],
+    opt__wind: wp.array[wp.vec3],
+    stat__meaninertia: wp.array[float],
     # Data
+    naccdmax: int,
     naconmax: int,
     njmax: int,
-    act: wp.array2d(dtype=float),
-    act_dot: wp.array2d(dtype=float),
-    actuator_force: wp.array2d(dtype=float),
-    actuator_length: wp.array2d(dtype=float),
-    actuator_moment: wp.array3d(dtype=float),
-    actuator_velocity: wp.array2d(dtype=float),
-    cacc: wp.array2d(dtype=wp.spatial_vector),
-    cam_xmat: wp.array2d(dtype=wp.mat33),
-    cam_xpos: wp.array2d(dtype=wp.vec3),
-    cdof: wp.array2d(dtype=wp.spatial_vector),
-    cdof_dot: wp.array2d(dtype=wp.spatial_vector),
-    cfrc_ext: wp.array2d(dtype=wp.spatial_vector),
-    cfrc_int: wp.array2d(dtype=wp.spatial_vector),
-    cinert: wp.array2d(dtype=mjwp_types.vec10),
-    collision_pair: wp.array(dtype=wp.vec2i),
-    collision_pairid: wp.array(dtype=wp.vec2i),
-    collision_worldid: wp.array(dtype=int),
-    crb: wp.array2d(dtype=mjwp_types.vec10),
-    ctrl: wp.array2d(dtype=float),
-    cvel: wp.array2d(dtype=wp.spatial_vector),
-    energy: wp.array(dtype=wp.vec2),
-    eq_active: wp.array2d(dtype=bool),
-    flexedge_length: wp.array2d(dtype=float),
-    flexedge_velocity: wp.array2d(dtype=float),
-    flexvert_xpos: wp.array2d(dtype=wp.vec3),
-    geom_xmat: wp.array2d(dtype=wp.mat33),
-    geom_xpos: wp.array2d(dtype=wp.vec3),
-    light_xdir: wp.array2d(dtype=wp.vec3),
-    light_xpos: wp.array2d(dtype=wp.vec3),
-    mocap_pos: wp.array2d(dtype=wp.vec3),
-    mocap_quat: wp.array2d(dtype=wp.quat),
-    nacon: wp.array(dtype=int),
-    ncollision: wp.array(dtype=int),
-    ne: wp.array(dtype=int),
-    ne_connect: wp.array(dtype=int),
-    ne_jnt: wp.array(dtype=int),
-    ne_ten: wp.array(dtype=int),
-    ne_weld: wp.array(dtype=int),
-    nefc: wp.array(dtype=int),
-    nf: wp.array(dtype=int),
-    nl: wp.array(dtype=int),
-    nsolving: wp.array(dtype=int),
-    qLD: wp.array3d(dtype=float),
-    qLDiagInv: wp.array2d(dtype=float),
-    qM: wp.array3d(dtype=float),
-    qacc: wp.array2d(dtype=float),
-    qacc_smooth: wp.array2d(dtype=float),
-    qacc_warmstart: wp.array2d(dtype=float),
-    qfrc_actuator: wp.array2d(dtype=float),
-    qfrc_applied: wp.array2d(dtype=float),
-    qfrc_bias: wp.array2d(dtype=float),
-    qfrc_constraint: wp.array2d(dtype=float),
-    qfrc_damper: wp.array2d(dtype=float),
-    qfrc_fluid: wp.array2d(dtype=float),
-    qfrc_gravcomp: wp.array2d(dtype=float),
-    qfrc_passive: wp.array2d(dtype=float),
-    qfrc_smooth: wp.array2d(dtype=float),
-    qfrc_spring: wp.array2d(dtype=float),
-    qpos: wp.array2d(dtype=float),
-    qvel: wp.array2d(dtype=float),
-    sensordata: wp.array2d(dtype=float),
-    site_xmat: wp.array2d(dtype=wp.mat33),
-    site_xpos: wp.array2d(dtype=wp.vec3),
-    solver_niter: wp.array(dtype=int),
-    subtree_angmom: wp.array2d(dtype=wp.vec3),
-    subtree_bodyvel: wp.array2d(dtype=wp.spatial_vector),
-    subtree_com: wp.array2d(dtype=wp.vec3),
-    subtree_linvel: wp.array2d(dtype=wp.vec3),
-    ten_J: wp.array3d(dtype=float),
-    ten_length: wp.array2d(dtype=float),
-    ten_velocity: wp.array2d(dtype=float),
-    ten_wrapadr: wp.array2d(dtype=int),
-    ten_wrapnum: wp.array2d(dtype=int),
-    time: wp.array(dtype=float),
-    wrap_obj: wp.array2d(dtype=wp.vec2i),
-    wrap_xpos: wp.array2d(dtype=wp.spatial_vector),
-    xanchor: wp.array2d(dtype=wp.vec3),
-    xaxis: wp.array2d(dtype=wp.vec3),
-    xfrc_applied: wp.array2d(dtype=wp.spatial_vector),
-    ximat: wp.array2d(dtype=wp.mat33),
-    xipos: wp.array2d(dtype=wp.vec3),
-    xmat: wp.array2d(dtype=wp.mat33),
-    xpos: wp.array2d(dtype=wp.vec3),
-    xquat: wp.array2d(dtype=wp.quat),
-    contact__dim: wp.array(dtype=int),
-    contact__dist: wp.array(dtype=float),
-    contact__efc_address: wp.array2d(dtype=int),
-    contact__frame: wp.array(dtype=wp.mat33),
-    contact__friction: wp.array(dtype=mjwp_types.vec5),
-    contact__geom: wp.array(dtype=wp.vec2i),
-    contact__geomcollisionid: wp.array(dtype=int),
-    contact__includemargin: wp.array(dtype=float),
-    contact__pos: wp.array(dtype=wp.vec3),
-    contact__solimp: wp.array(dtype=mjwp_types.vec5),
-    contact__solref: wp.array(dtype=wp.vec2),
-    contact__solreffriction: wp.array(dtype=wp.vec2),
-    contact__type: wp.array(dtype=int),
-    contact__worldid: wp.array(dtype=int),
-    efc__D: wp.array2d(dtype=float),
-    efc__J: wp.array3d(dtype=float),
-    efc__Jaref: wp.array2d(dtype=float),
-    efc__Ma: wp.array2d(dtype=float),
-    efc__Mgrad: wp.array2d(dtype=float),
-    efc__alpha: wp.array(dtype=float),
-    efc__aref: wp.array2d(dtype=float),
-    efc__beta: wp.array(dtype=float),
-    efc__cholesky_L_tmp: wp.array3d(dtype=float),
-    efc__cholesky_y_tmp: wp.array2d(dtype=float),
-    efc__cost: wp.array(dtype=float),
-    efc__done: wp.array(dtype=bool),
-    efc__force: wp.array2d(dtype=float),
-    efc__frictionloss: wp.array2d(dtype=float),
-    efc__gauss: wp.array(dtype=float),
-    efc__grad: wp.array2d(dtype=float),
-    efc__grad_dot: wp.array(dtype=float),
-    efc__h: wp.array3d(dtype=float),
-    efc__id: wp.array2d(dtype=int),
-    efc__jv: wp.array2d(dtype=float),
-    efc__margin: wp.array2d(dtype=float),
-    efc__mv: wp.array2d(dtype=float),
-    efc__pos: wp.array2d(dtype=float),
-    efc__prev_Mgrad: wp.array2d(dtype=float),
-    efc__prev_cost: wp.array(dtype=float),
-    efc__prev_grad: wp.array2d(dtype=float),
-    efc__quad: wp.array2d(dtype=wp.vec3),
-    efc__quad_gauss: wp.array(dtype=wp.vec3),
-    efc__search: wp.array2d(dtype=float),
-    efc__search_dot: wp.array(dtype=float),
-    efc__state: wp.array2d(dtype=int),
-    efc__type: wp.array2d(dtype=int),
-    efc__vel: wp.array2d(dtype=float),
+    njmax_nnz: int,
+    M: wp.array3d[float],
+    act: wp.array2d[float],
+    act_dot: wp.array2d[float],
+    actuator_force: wp.array2d[float],
+    actuator_length: wp.array2d[float],
+    actuator_moment: wp.array2d[float],
+    actuator_velocity: wp.array2d[float],
+    body_awake: wp.array2d[int],
+    body_awake_ind: wp.array2d[int],
+    cacc: wp.array2d[wp.spatial_vector],
+    cam_xmat: wp.array2d[wp.mat33],
+    cam_xpos: wp.array2d[wp.vec3],
+    cdof: wp.array2d[wp.spatial_vector],
+    cdof_dot: wp.array2d[wp.spatial_vector],
+    cfrc_ext: wp.array2d[wp.spatial_vector],
+    cfrc_int: wp.array2d[wp.spatial_vector],
+    cinert: wp.array2d[mjwp_types.vec10],
+    crb: wp.array2d[mjwp_types.vec10],
+    ctrl: wp.array2d[float],
+    cvel: wp.array2d[wp.spatial_vector],
+    dof_awake_ind: wp.array2d[int],
+    dof_island: wp.array2d[int],
+    dof_islandid: wp.array2d[int],
+    efc_islandid: wp.array2d[int],
+    energy: wp.array[wp.vec2],
+    eq_active: wp.array2d[bool],
+    flexedge_J: wp.array2d[float],
+    flexedge_length: wp.array2d[float],
+    flexedge_velocity: wp.array2d[float],
+    flexvert_xpos: wp.array2d[wp.vec3],
+    geom_xmat: wp.array2d[wp.mat33],
+    geom_xpos: wp.array2d[wp.vec3],
+    history: wp.array2d[float],
+    iqacc: wp.array2d[float],
+    iqacc_smooth: wp.array2d[float],
+    iqfrc_constraint: wp.array2d[float],
+    iqfrc_smooth: wp.array2d[float],
+    island_dofadr: wp.array2d[int],
+    island_efcadr: wp.array2d[int],
+    island_idofadr: wp.array2d[int],
+    island_ne: wp.array2d[int],
+    island_nefc: wp.array2d[int],
+    island_nf: wp.array2d[int],
+    island_nv: wp.array2d[int],
+    light_xdir: wp.array2d[wp.vec3],
+    light_xpos: wp.array2d[wp.vec3],
+    map_dof2idof: wp.array2d[int],
+    map_efc2iefc: wp.array2d[int],
+    map_idof2dof: wp.array2d[int],
+    map_iefc2efc: wp.array2d[int],
+    mocap_pos: wp.array2d[wp.vec3],
+    mocap_quat: wp.array2d[wp.quat],
+    moment_colind: wp.array2d[int],
+    moment_rowadr: wp.array2d[int],
+    moment_rownnz: wp.array2d[int],
+    nacon: wp.array[int],
+    nbody_awake: wp.array[int],
+    ncollision: wp.array[int],
+    ne: wp.array[int],
+    nefc: wp.array[int],
+    nf: wp.array[int],
+    nidof: wp.array[int],
+    nisland: wp.array[int],
+    nl: wp.array[int],
+    ntree_awake: wp.array[int],
+    nv_awake: wp.array[int],
+    qLD: wp.array3d[float],
+    qLDiagInv: wp.array2d[float],
+    qLU: wp.array3d[float],
+    qacc: wp.array2d[float],
+    qacc_smooth: wp.array2d[float],
+    qacc_warmstart: wp.array2d[float],
+    qfrc_actuator: wp.array2d[float],
+    qfrc_applied: wp.array2d[float],
+    qfrc_bias: wp.array2d[float],
+    qfrc_constraint: wp.array2d[float],
+    qfrc_damper: wp.array2d[float],
+    qfrc_fluid: wp.array2d[float],
+    qfrc_gravcomp: wp.array2d[float],
+    qfrc_passive: wp.array2d[float],
+    qfrc_smooth: wp.array2d[float],
+    qfrc_spring: wp.array2d[float],
+    qpos: wp.array2d[float],
+    qvel: wp.array2d[float],
+    sensordata: wp.array2d[float],
+    site_xmat: wp.array2d[wp.mat33],
+    site_xpos: wp.array2d[wp.vec3],
+    solver_niter: wp.array[int],
+    subtree_angmom: wp.array2d[wp.vec3],
+    subtree_com: wp.array2d[wp.vec3],
+    subtree_linvel: wp.array2d[wp.vec3],
+    ten_J: wp.array2d[float],
+    ten_length: wp.array2d[float],
+    ten_velocity: wp.array2d[float],
+    ten_wrapadr: wp.array2d[int],
+    ten_wrapnum: wp.array2d[int],
+    time: wp.array[float],
+    tree_asleep: wp.array2d[int],
+    tree_awake: wp.array2d[int],
+    tree_island: wp.array2d[int],
+    wrap_obj: wp.array2d[wp.vec2i],
+    wrap_xpos: wp.array2d[wp.spatial_vector],
+    xanchor: wp.array2d[wp.vec3],
+    xaxis: wp.array2d[wp.vec3],
+    xfrc_applied: wp.array2d[wp.spatial_vector],
+    ximat: wp.array2d[wp.mat33],
+    xipos: wp.array2d[wp.vec3],
+    xmat: wp.array2d[wp.mat33],
+    xpos: wp.array2d[wp.vec3],
+    xquat: wp.array2d[wp.quat],
+    contact__dim: wp.array[int],
+    contact__dist: wp.array[float],
+    contact__efc_address: wp.array2d[int],
+    contact__flex: wp.array[wp.vec2i],
+    contact__frame: wp.array[wp.mat33],
+    contact__friction: wp.array[mjwp_types.vec5],
+    contact__geom: wp.array[wp.vec2i],
+    contact__geomcollisionid: wp.array[int],
+    contact__includemargin: wp.array[float],
+    contact__pos: wp.array[wp.vec3],
+    contact__solimp: wp.array[mjwp_types.vec5],
+    contact__solref: wp.array[wp.vec2],
+    contact__solreffriction: wp.array[wp.vec2],
+    contact__type: wp.array[int],
+    contact__vert: wp.array[wp.vec2i],
+    contact__worldid: wp.array[int],
+    efc__D: wp.array2d[float],
+    efc__J: wp.array3d[float],
+    efc__J_colind: wp.array3d[int],
+    efc__J_rowadr: wp.array2d[int],
+    efc__J_rownnz: wp.array2d[int],
+    efc__Jqvel: wp.array2d[float],
+    efc__Ma: wp.array2d[float],
+    efc__aref: wp.array2d[float],
+    efc__force: wp.array2d[float],
+    efc__frictionloss: wp.array2d[float],
+    efc__iD: wp.array2d[float],
+    efc__iJ: wp.array3d[float],
+    efc__iJ_colind: wp.array3d[int],
+    efc__iJ_rowadr: wp.array2d[int],
+    efc__iJ_rownnz: wp.array2d[int],
+    efc__iaref: wp.array2d[float],
+    efc__id: wp.array2d[int],
+    efc__iforce: wp.array2d[float],
+    efc__ifrictionloss: wp.array2d[float],
+    efc__iid: wp.array2d[int],
+    efc__island: wp.array2d[int],
+    efc__istate: wp.array2d[int],
+    efc__itype: wp.array2d[int],
+    efc__margin: wp.array2d[float],
+    efc__pos: wp.array2d[float],
+    efc__state: wp.array2d[int],
+    efc__type: wp.array2d[int],
+    efc__vel: wp.array2d[float],
 ):
   _m.stat = _s
   _m.opt = _o
+  _m.callback = _cb
   _d.efc = _e
   _d.contact = _c
+  _m.D_colind = D_colind
+  _m.D_diag = D_diag
+  _m.D_rowadr = D_rowadr
+  _m.D_rownnz = D_rownnz
+  _m.M_elemid = M_elemid
+  _m.M_fullm_i = M_fullm_i
+  _m.M_fullm_j = M_fullm_j
+  _m.M_mulm_col = M_mulm_col
+  _m.M_mulm_madr = M_mulm_madr
+  _m.M_mulm_rowadr = M_mulm_rowadr
   _m.M_rowadr = M_rowadr
   _m.M_rownnz = M_rownnz
+  _m.M_tiles = M_tiles
   _m.actuator_acc0 = actuator_acc0
   _m.actuator_actadr = actuator_actadr
   _m.actuator_actearly = actuator_actearly
@@ -2305,6 +2873,7 @@ def _step_shim(
   _m.actuator_cranklength = actuator_cranklength
   _m.actuator_ctrllimited = actuator_ctrllimited
   _m.actuator_ctrlrange = actuator_ctrlrange
+  _m.actuator_delay = actuator_delay
   _m.actuator_dynprm = actuator_dynprm
   _m.actuator_dyntype = actuator_dyntype
   _m.actuator_forcelimited = actuator_forcelimited
@@ -2312,11 +2881,15 @@ def _step_shim(
   _m.actuator_gainprm = actuator_gainprm
   _m.actuator_gaintype = actuator_gaintype
   _m.actuator_gear = actuator_gear
+  _m.actuator_history = actuator_history
+  _m.actuator_historyadr = actuator_historyadr
   _m.actuator_lengthrange = actuator_lengthrange
   _m.actuator_trnid = actuator_trnid
   _m.actuator_trntype = actuator_trntype
   _m.actuator_trntype_body_adr = actuator_trntype_body_adr
   _m.block_dim = block_dim
+  _m.body_branch_start = body_branch_start
+  _m.body_branches = body_branches
   _m.body_dofadr = body_dofadr
   _m.body_dofnum = body_dofnum
   _m.body_fluid_ellipsoid = body_fluid_ellipsoid
@@ -2327,6 +2900,7 @@ def _step_shim(
   _m.body_invweight0 = body_invweight0
   _m.body_ipos = body_ipos
   _m.body_iquat = body_iquat
+  _m.body_isdofancestor = body_isdofancestor
   _m.body_jntadr = body_jntadr
   _m.body_jntnum = body_jntnum
   _m.body_mass = body_mass
@@ -2337,6 +2911,7 @@ def _step_shim(
   _m.body_rootid = body_rootid
   _m.body_subtreemass = body_subtreemass
   _m.body_tree = body_tree
+  _m.body_treeid = body_treeid
   _m.body_weldid = body_weldid
   _m.cam_bodyid = cam_bodyid
   _m.cam_fovy = cam_fovy
@@ -2350,21 +2925,23 @@ def _step_shim(
   _m.cam_resolution = cam_resolution
   _m.cam_sensorsize = cam_sensorsize
   _m.cam_targetbodyid = cam_targetbodyid
-  _m.collision_sensor_adr = collision_sensor_adr
-  _m.dof_Madr = dof_Madr
   _m.dof_armature = dof_armature
   _m.dof_bodyid = dof_bodyid
   _m.dof_damping = dof_damping
+  _m.dof_dampingpoly = dof_dampingpoly
   _m.dof_frictionloss = dof_frictionloss
   _m.dof_invweight0 = dof_invweight0
   _m.dof_jntid = dof_jntid
+  _m.dof_length = dof_length
   _m.dof_parentid = dof_parentid
   _m.dof_solimp = dof_solimp
   _m.dof_solref = dof_solref
+  _m.dof_treeid = dof_treeid
   _m.dof_tri_col = dof_tri_col
   _m.dof_tri_row = dof_tri_row
   _m.eq_connect_adr = eq_connect_adr
   _m.eq_data = eq_data
+  _m.eq_flex_adr = eq_flex_adr
   _m.eq_jnt_adr = eq_jnt_adr
   _m.eq_obj1id = eq_obj1id
   _m.eq_obj2id = eq_obj2id
@@ -2372,23 +2949,54 @@ def _step_shim(
   _m.eq_solimp = eq_solimp
   _m.eq_solref = eq_solref
   _m.eq_ten_adr = eq_ten_adr
+  _m.eq_type = eq_type
   _m.eq_wld_adr = eq_wld_adr
   _m.flex_bending = flex_bending
+  _m.flex_bendingadr = flex_bendingadr
+  _m.flex_centered = flex_centered
+  _m.flex_conaffinity = flex_conaffinity
+  _m.flex_condim = flex_condim
+  _m.flex_contype = flex_contype
   _m.flex_damping = flex_damping
   _m.flex_dim = flex_dim
   _m.flex_edge = flex_edge
   _m.flex_edgeadr = flex_edgeadr
   _m.flex_edgeflap = flex_edgeflap
+  _m.flex_edgenum = flex_edgenum
   _m.flex_elem = flex_elem
+  _m.flex_elemadr = flex_elemadr
+  _m.flex_elemdataadr = flex_elemdataadr
   _m.flex_elemedge = flex_elemedge
   _m.flex_elemedgeadr = flex_elemedgeadr
+  _m.flex_elemnum = flex_elemnum
+  _m.flex_friction = flex_friction
+  _m.flex_gap = flex_gap
+  _m.flex_margin = flex_margin
+  _m.flex_priority = flex_priority
+  _m.flex_radius = flex_radius
+  _m.flex_shell = flex_shell
+  _m.flex_shelldataadr = flex_shelldataadr
+  _m.flex_shellnum = flex_shellnum
+  _m.flex_solimp = flex_solimp
+  _m.flex_solmix = flex_solmix
+  _m.flex_solref = flex_solref
   _m.flex_stiffness = flex_stiffness
+  _m.flex_stiffnessadr = flex_stiffnessadr
+  _m.flex_vert = flex_vert
   _m.flex_vertadr = flex_vertadr
   _m.flex_vertbodyid = flex_vertbodyid
+  _m.flex_vertflexid = flex_vertflexid
+  _m.flex_vertnum = flex_vertnum
+  _m.flexedge_J_colind = flexedge_J_colind
+  _m.flexedge_J_rowadr = flexedge_J_rowadr
+  _m.flexedge_J_rownnz = flexedge_J_rownnz
+  _m.flexedge_invweight0 = flexedge_invweight0
   _m.flexedge_length0 = flexedge_length0
   _m.geom_aabb = geom_aabb
   _m.geom_bodyid = geom_bodyid
+  _m.geom_conaffinity = geom_conaffinity
   _m.geom_condim = geom_condim
+  _m.geom_contype = geom_contype
   _m.geom_dataid = geom_dataid
   _m.geom_fluid = geom_fluid
   _m.geom_friction = geom_friction
@@ -2408,12 +3016,14 @@ def _step_shim(
   _m.geom_solmix = geom_solmix
   _m.geom_solref = geom_solref
   _m.geom_type = geom_type
+  _m.has_fluid = has_fluid
   _m.has_sdf_geom = has_sdf_geom
   _m.hfield_adr = hfield_adr
   _m.hfield_data = hfield_data
   _m.hfield_ncol = hfield_ncol
   _m.hfield_nrow = hfield_nrow
   _m.hfield_size = hfield_size
+  _m.is_sparse = is_sparse
   _m.jnt_actfrclimited = jnt_actfrclimited
   _m.jnt_actfrcrange = jnt_actfrcrange
   _m.jnt_actgravcomp = jnt_actgravcomp
@@ -2429,7 +3039,9 @@ def _step_shim(
   _m.jnt_solimp = jnt_solimp
   _m.jnt_solref = jnt_solref
   _m.jnt_stiffness = jnt_stiffness
+  _m.jnt_stiffnesspoly = jnt_stiffnesspoly
   _m.jnt_type = jnt_type
+  _m.jtcj_max_pairs = jtcj_max_pairs
   _m.light_bodyid = light_bodyid
   _m.light_dir = light_dir
   _m.light_dir0 = light_dir0
@@ -2438,14 +3050,17 @@ def _step_shim(
   _m.light_pos0 = light_pos0
   _m.light_poscom0 = light_poscom0
   _m.light_targetbodyid = light_targetbodyid
-  _m.mapM2M = mapM2M
+  _m.mapM2D = mapM2D
   _m.mat_rgba = mat_rgba
+  _m.max_ten_J_rownnz = max_ten_J_rownnz
   _m.mesh_face = mesh_face
   _m.mesh_faceadr = mesh_faceadr
   _m.mesh_graph = mesh_graph
   _m.mesh_graphadr = mesh_graphadr
   _m.mesh_normal = mesh_normal
   _m.mesh_normaladr = mesh_normaladr
+  _m.mesh_normalnum = mesh_normalnum
+  _m.mesh_octadr = mesh_octadr
   _m.mesh_polyadr = mesh_polyadr
   _m.mesh_polymap = mesh_polymap
   _m.mesh_polymapadr = mesh_polymapadr
@@ -2459,19 +3074,23 @@ def _step_shim(
   _m.mesh_vert = mesh_vert
   _m.mesh_vertadr = mesh_vertadr
   _m.mesh_vertnum = mesh_vertnum
-  _m.mocap_bodyid = mocap_bodyid
   _m.nC = nC
-  _m.nM = nM
+  _m.nD = nD
+  _m.nJten = nJten
   _m.na = na
   _m.nacttrnbody = nacttrnbody
   _m.nbody = nbody
+  _m.nbranch = nbranch
   _m.ncam = ncam
   _m.neq = neq
+  _m.nflex = nflex
   _m.nflexedge = nflexedge
   _m.nflexelem = nflexelem
+  _m.nflexshelldata = nflexshelldata
   _m.nflexvert = nflexvert
   _m.ngeom = ngeom
   _m.ngravcomp = ngravcomp
+  _m.nhistory = nhistory
   _m.njnt = njnt
   _m.nlight = nlight
   _m.nmaxcondim = nmaxcondim
@@ -2479,15 +3098,16 @@ def _step_shim(
   _m.nmaxpolygon = nmaxpolygon
   _m.nmaxpyramid = nmaxpyramid
   _m.nmeshface = nmeshface
-  _m.nmocap = nmocap
   _m.nrangefinder = nrangefinder
   _m.nsensorcollision = nsensorcollision
   _m.nsensorcontact = nsensorcontact
   _m.nsensortaxel = nsensortaxel
   _m.nsite = nsite
   _m.ntendon = ntendon
+  _m.ntree = ntree
   _m.nu = nu
   _m.nv = nv
+  _m.nv_pad = nv_pad
   _m.nwrap = nwrap
   _m.nxn_geom_pair_filtered = nxn_geom_pair_filtered
   _m.nxn_pairid = nxn_pairid
@@ -2506,19 +3126,16 @@ def _step_shim(
   _m.opt.enableflags = opt__enableflags
   _m.opt.graph_conditional = opt__graph_conditional
   _m.opt.gravity = opt__gravity
-  _m.opt.has_fluid = opt__has_fluid
-  _m.opt.impratio = opt__impratio
+  _m.opt.impratio_invsqrt = opt__impratio_invsqrt
   _m.opt.integrator = opt__integrator
-  _m.opt.is_sparse = opt__is_sparse
   _m.opt.iterations = opt__iterations
   _m.opt.ls_iterations = opt__ls_iterations
-  _m.opt.ls_parallel = opt__ls_parallel
-  _m.opt.ls_parallel_min_step = opt__ls_parallel_min_step
   _m.opt.ls_tolerance = opt__ls_tolerance
   _m.opt.magnetic = opt__magnetic
   _m.opt.run_collision_detection = opt__run_collision_detection
   _m.opt.sdf_initpoints = opt__sdf_initpoints
   _m.opt.sdf_iterations = opt__sdf_iterations
+  _m.opt.sleep_tolerance = opt__sleep_tolerance
   _m.opt.solver = opt__solver
   _m.opt.timestep = opt__timestep
   _m.opt.tolerance = opt__tolerance
@@ -2533,26 +3150,27 @@ def _step_shim(
   _m.pair_solreffriction = pair_solreffriction
   _m.plugin = plugin
   _m.plugin_attr = plugin_attr
+  _m.qD_fullm_i = qD_fullm_i
+  _m.qD_fullm_j = qD_fullm_j
+  _m.qLD_all_updates = qLD_all_updates
+  _m.qLD_level_offsets = qLD_level_offsets
   _m.qLD_updates = qLD_updates
-  _m.qM_fullm_i = qM_fullm_i
-  _m.qM_fullm_j = qM_fullm_j
-  _m.qM_madr_ij = qM_madr_ij
-  _m.qM_mulm_i = qM_mulm_i
-  _m.qM_mulm_j = qM_mulm_j
-  _m.qM_tiles = qM_tiles
   _m.qpos0 = qpos0
   _m.qpos_spring = qpos_spring
   _m.rangefinder_sensor_adr = rangefinder_sensor_adr
   _m.sensor_acc_adr = sensor_acc_adr
   _m.sensor_adr = sensor_adr
   _m.sensor_adr_to_contact_adr = sensor_adr_to_contact_adr
-  _m.sensor_collision_start_adr = sensor_collision_start_adr
   _m.sensor_contact_adr = sensor_contact_adr
   _m.sensor_cutoff = sensor_cutoff
   _m.sensor_datatype = sensor_datatype
+  _m.sensor_delay = sensor_delay
   _m.sensor_dim = sensor_dim
   _m.sensor_e_kinetic = sensor_e_kinetic
   _m.sensor_e_potential = sensor_e_potential
+  _m.sensor_history = sensor_history
+  _m.sensor_historyadr = sensor_historyadr
+  _m.sensor_interval = sensor_interval
   _m.sensor_intprm = sensor_intprm
   _m.sensor_limitfrc_adr = sensor_limitfrc_adr
   _m.sensor_limitpos_adr = sensor_limitpos_adr
@@ -2578,17 +3196,22 @@ def _step_shim(
   _m.stat.meaninertia = stat__meaninertia
   _m.taxel_sensorid = taxel_sensorid
   _m.taxel_vertadr = taxel_vertadr
+  _m.ten_J_colind = ten_J_colind
+  _m.ten_J_rowadr = ten_J_rowadr
+  _m.ten_J_rownnz = ten_J_rownnz
   _m.tendon_actfrclimited = tendon_actfrclimited
   _m.tendon_actfrcrange = tendon_actfrcrange
   _m.tendon_adr = tendon_adr
   _m.tendon_armature = tendon_armature
   _m.tendon_damping = tendon_damping
+  _m.tendon_dampingpoly = tendon_dampingpoly
   _m.tendon_frictionloss = tendon_frictionloss
   _m.tendon_geom_adr = tendon_geom_adr
   _m.tendon_invweight0 = tendon_invweight0
   _m.tendon_jnt_adr = tendon_jnt_adr
   _m.tendon_length0 = tendon_length0
   _m.tendon_lengthspring = tendon_lengthspring
+  _m.tendon_limited = tendon_limited
   _m.tendon_limited_adr = tendon_limited_adr
   _m.tendon_margin = tendon_margin
   _m.tendon_num = tendon_num
@@ -2599,6 +3222,10 @@ def _step_shim(
   _m.tendon_solref_fri = tendon_solref_fri
   _m.tendon_solref_lim = tendon_solref_lim
   _m.tendon_stiffness = tendon_stiffness
+  _m.tendon_stiffnesspoly = tendon_stiffnesspoly
+  _m.tree_dofadr = tree_dofadr
+  _m.tree_dofnum = tree_dofnum
+  _m.tree_sleep_policy = tree_sleep_policy
   _m.wrap_geom_adr = wrap_geom_adr
   _m.wrap_jnt_adr = wrap_jnt_adr
   _m.wrap_objid = wrap_objid
@@ -2606,12 +3233,15 @@ def _step_shim(
   _m.wrap_pulley_scale = wrap_pulley_scale
   _m.wrap_site_pair_adr = wrap_site_pair_adr
   _m.wrap_type = wrap_type
+  _d.M = M
   _d.act = act
   _d.act_dot = act_dot
   _d.actuator_force = actuator_force
   _d.actuator_length = actuator_length
   _d.actuator_moment = actuator_moment
   _d.actuator_velocity = actuator_velocity
+  _d.body_awake = body_awake
+  _d.body_awake_ind = body_awake_ind
   _d.cacc = cacc
   _d.cam_xmat = cam_xmat
   _d.cam_xpos = cam_xpos
@@ -2620,12 +3250,10 @@ def _step_shim(
   _d.cfrc_ext = cfrc_ext
   _d.cfrc_int = cfrc_int
   _d.cinert = cinert
-  _d.collision_pair = collision_pair
-  _d.collision_pairid = collision_pairid
-  _d.collision_worldid = collision_worldid
   _d.contact.dim = contact__dim
   _d.contact.dist = contact__dist
   _d.contact.efc_address = contact__efc_address
+  _d.contact.flex = contact__flex
   _d.contact.frame = contact__frame
   _d.contact.friction = contact__friction
   _d.contact.geom = contact__geom
@@ -2636,70 +3264,92 @@ def _step_shim(
   _d.contact.solref = contact__solref
   _d.contact.solreffriction = contact__solreffriction
   _d.contact.type = contact__type
+  _d.contact.vert = contact__vert
   _d.contact.worldid = contact__worldid
   _d.crb = crb
   _d.ctrl = ctrl
   _d.cvel = cvel
+  _d.dof_awake_ind = dof_awake_ind
+  _d.dof_island = dof_island
+  _d.dof_islandid = dof_islandid
   _d.efc.D = efc__D
   _d.efc.J = efc__J
-  _d.efc.Jaref = efc__Jaref
+  _d.efc.J_colind = efc__J_colind
+  _d.efc.J_rowadr = efc__J_rowadr
+  _d.efc.J_rownnz = efc__J_rownnz
+  _d.efc.Jqvel = efc__Jqvel
   _d.efc.Ma = efc__Ma
-  _d.efc.Mgrad = efc__Mgrad
-  _d.efc.alpha = efc__alpha
   _d.efc.aref = efc__aref
-  _d.efc.beta = efc__beta
-  _d.efc.cholesky_L_tmp = efc__cholesky_L_tmp
-  _d.efc.cholesky_y_tmp = efc__cholesky_y_tmp
-  _d.efc.cost = efc__cost
-  _d.efc.done = efc__done
   _d.efc.force = efc__force
   _d.efc.frictionloss = efc__frictionloss
-  _d.efc.gauss = efc__gauss
-  _d.efc.grad = efc__grad
-  _d.efc.grad_dot = efc__grad_dot
-  _d.efc.h = efc__h
+  _d.efc.iD = efc__iD
+  _d.efc.iJ = efc__iJ
+  _d.efc.iJ_colind = efc__iJ_colind
+  _d.efc.iJ_rowadr = efc__iJ_rowadr
+  _d.efc.iJ_rownnz = efc__iJ_rownnz
+  _d.efc.iaref = efc__iaref
   _d.efc.id = efc__id
-  _d.efc.jv = efc__jv
+  _d.efc.iforce = efc__iforce
+  _d.efc.ifrictionloss = efc__ifrictionloss
+  _d.efc.iid = efc__iid
+  _d.efc.island = efc__island
+  _d.efc.istate = efc__istate
+  _d.efc.itype = efc__itype
   _d.efc.margin = efc__margin
-  _d.efc.mv = efc__mv
   _d.efc.pos = efc__pos
-  _d.efc.prev_Mgrad = efc__prev_Mgrad
-  _d.efc.prev_cost = efc__prev_cost
-  _d.efc.prev_grad = efc__prev_grad
-  _d.efc.quad = efc__quad
-  _d.efc.quad_gauss = efc__quad_gauss
-  _d.efc.search = efc__search
-  _d.efc.search_dot = efc__search_dot
   _d.efc.state = efc__state
   _d.efc.type = efc__type
   _d.efc.vel = efc__vel
+  _d.efc_islandid = efc_islandid
   _d.energy = energy
   _d.eq_active = eq_active
+  _d.flexedge_J = flexedge_J
   _d.flexedge_length = flexedge_length
   _d.flexedge_velocity = flexedge_velocity
   _d.flexvert_xpos = flexvert_xpos
   _d.geom_xmat = geom_xmat
   _d.geom_xpos = geom_xpos
+  _d.history = history
+  _d.iqacc = iqacc
+  _d.iqacc_smooth = iqacc_smooth
+  _d.iqfrc_constraint = iqfrc_constraint
+  _d.iqfrc_smooth = iqfrc_smooth
+  _d.island_dofadr = island_dofadr
+  _d.island_efcadr = island_efcadr
+  _d.island_idofadr = island_idofadr
+  _d.island_ne = island_ne
+  _d.island_nefc = island_nefc
+  _d.island_nf = island_nf
+  _d.island_nv = island_nv
   _d.light_xdir = light_xdir
   _d.light_xpos = light_xpos
+  _d.map_dof2idof = map_dof2idof
+  _d.map_efc2iefc = map_efc2iefc
+  _d.map_idof2dof = map_idof2dof
+  _d.map_iefc2efc = map_iefc2efc
   _d.mocap_pos = mocap_pos
   _d.mocap_quat = mocap_quat
+  _d.moment_colind = moment_colind
+  _d.moment_rowadr = moment_rowadr
+  _d.moment_rownnz = moment_rownnz
+  _d.naccdmax = naccdmax
   _d.nacon = nacon
   _d.naconmax = naconmax
+  _d.nbody_awake = nbody_awake
   _d.ncollision = ncollision
   _d.ne = ne
-  _d.ne_connect = ne_connect
-  _d.ne_jnt = ne_jnt
-  _d.ne_ten = ne_ten
-  _d.ne_weld = ne_weld
   _d.nefc = nefc
   _d.nf = nf
+  _d.nidof = nidof
+  _d.nisland = nisland
   _d.njmax = njmax
+  _d.njmax_nnz = njmax_nnz
   _d.nl = nl
-  _d.nsolving = nsolving
+  _d.ntree_awake = ntree_awake
+  _d.nv_awake = nv_awake
   _d.qLD = qLD
   _d.qLDiagInv = qLDiagInv
-  _d.qM = qM
+  _d.qLU = qLU
   _d.qacc = qacc
   _d.qacc_smooth = qacc_smooth
   _d.qacc_warmstart = qacc_warmstart
@@ -2720,7 +3370,6 @@ def _step_shim(
   _d.site_xpos = site_xpos
   _d.solver_niter = solver_niter
   _d.subtree_angmom = subtree_angmom
-  _d.subtree_bodyvel = subtree_bodyvel
   _d.subtree_com = subtree_com
   _d.subtree_linvel = subtree_linvel
   _d.ten_J = ten_J
@@ -2729,6 +3378,9 @@ def _step_shim(
   _d.ten_wrapadr = ten_wrapadr
   _d.ten_wrapnum = ten_wrapnum
   _d.time = time
+  _d.tree_asleep = tree_asleep
+  _d.tree_awake = tree_awake
+  _d.tree_island = tree_island
   _d.wrap_obj = wrap_obj
   _d.wrap_xpos = wrap_xpos
   _d.xanchor = xanchor
@@ -2745,56 +3397,75 @@ def _step_shim(
 
 def _step_jax_impl(m: types.Model, d: types.Data):
   output_dims = {
+      'M': d._impl.M.shape,
       'act': d.act.shape,
       'act_dot': d.act_dot.shape,
       'actuator_force': d.actuator_force.shape,
-      'actuator_length': d._impl.actuator_length.shape,
+      'actuator_length': d.actuator_length.shape,
       'actuator_moment': d._impl.actuator_moment.shape,
       'actuator_velocity': d._impl.actuator_velocity.shape,
+      'body_awake': d._impl.body_awake.shape,
+      'body_awake_ind': d._impl.body_awake_ind.shape,
       'cacc': d._impl.cacc.shape,
       'cam_xmat': d.cam_xmat.shape,
       'cam_xpos': d.cam_xpos.shape,
-      'cdof': d._impl.cdof.shape,
-      'cdof_dot': d._impl.cdof_dot.shape,
+      'cdof': d.cdof.shape,
+      'cdof_dot': d.cdof_dot.shape,
       'cfrc_ext': d._impl.cfrc_ext.shape,
       'cfrc_int': d._impl.cfrc_int.shape,
       'cinert': d._impl.cinert.shape,
-      'collision_pair': d._impl.collision_pair.shape,
-      'collision_pairid': d._impl.collision_pairid.shape,
-      'collision_worldid': d._impl.collision_worldid.shape,
       'crb': d._impl.crb.shape,
-      'ctrl': d.ctrl.shape,
       'cvel': d.cvel.shape,
+      'dof_awake_ind': d._impl.dof_awake_ind.shape,
+      'dof_island': d._impl.dof_island.shape,
+      'dof_islandid': d._impl.dof_islandid.shape,
+      'efc_islandid': d._impl.efc_islandid.shape,
       'energy': d._impl.energy.shape,
-      'eq_active': d.eq_active.shape,
+      'flexedge_J': d._impl.flexedge_J.shape,
       'flexedge_length': d._impl.flexedge_length.shape,
       'flexedge_velocity': d._impl.flexedge_velocity.shape,
       'flexvert_xpos': d._impl.flexvert_xpos.shape,
       'geom_xmat': d.geom_xmat.shape,
       'geom_xpos': d.geom_xpos.shape,
+      'history': d.history.shape,
+      'iqacc': d._impl.iqacc.shape,
+      'iqacc_smooth': d._impl.iqacc_smooth.shape,
+      'iqfrc_constraint': d._impl.iqfrc_constraint.shape,
+      'iqfrc_smooth': d._impl.iqfrc_smooth.shape,
+      'island_dofadr': d._impl.island_dofadr.shape,
+      'island_efcadr': d._impl.island_efcadr.shape,
+      'island_idofadr': d._impl.island_idofadr.shape,
+      'island_ne': d._impl.island_ne.shape,
+      'island_nefc': d._impl.island_nefc.shape,
+      'island_nf': d._impl.island_nf.shape,
+      'island_nv': d._impl.island_nv.shape,
       'light_xdir': d._impl.light_xdir.shape,
       'light_xpos': d._impl.light_xpos.shape,
-      'mocap_pos': d.mocap_pos.shape,
-      'mocap_quat': d.mocap_quat.shape,
+      'map_dof2idof': d._impl.map_dof2idof.shape,
+      'map_efc2iefc': d._impl.map_efc2iefc.shape,
+      'map_idof2dof': d._impl.map_idof2dof.shape,
+      'map_iefc2efc': d._impl.map_iefc2efc.shape,
+      'moment_colind': d._impl.moment_colind.shape,
+      'moment_rowadr': d._impl.moment_rowadr.shape,
+      'moment_rownnz': d._impl.moment_rownnz.shape,
       'nacon': d._impl.nacon.shape,
+      'nbody_awake': d._impl.nbody_awake.shape,
       'ncollision': d._impl.ncollision.shape,
       'ne': d._impl.ne.shape,
-      'ne_connect': d._impl.ne_connect.shape,
-      'ne_jnt': d._impl.ne_jnt.shape,
-      'ne_ten': d._impl.ne_ten.shape,
-      'ne_weld': d._impl.ne_weld.shape,
       'nefc': d._impl.nefc.shape,
       'nf': d._impl.nf.shape,
+      'nidof': d._impl.nidof.shape,
+      'nisland': d._impl.nisland.shape,
       'nl': d._impl.nl.shape,
-      'nsolving': d._impl.nsolving.shape,
+      'ntree_awake': d._impl.ntree_awake.shape,
+      'nv_awake': d._impl.nv_awake.shape,
       'qLD': d._impl.qLD.shape,
       'qLDiagInv': d._impl.qLDiagInv.shape,
-      'qM': d._impl.qM.shape,
+      'qLU': d._impl.qLU.shape,
       'qacc': d.qacc.shape,
       'qacc_smooth': d.qacc_smooth.shape,
       'qacc_warmstart': d.qacc_warmstart.shape,
       'qfrc_actuator': d.qfrc_actuator.shape,
-      'qfrc_applied': d.qfrc_applied.shape,
       'qfrc_bias': d.qfrc_bias.shape,
       'qfrc_constraint': d.qfrc_constraint.shape,
       'qfrc_damper': d._impl.qfrc_damper.shape,
@@ -2810,7 +3481,6 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       'site_xpos': d.site_xpos.shape,
       'solver_niter': d._impl.solver_niter.shape,
       'subtree_angmom': d._impl.subtree_angmom.shape,
-      'subtree_bodyvel': d._impl.subtree_bodyvel.shape,
       'subtree_com': d.subtree_com.shape,
       'subtree_linvel': d._impl.subtree_linvel.shape,
       'ten_J': d._impl.ten_J.shape,
@@ -2819,11 +3489,13 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       'ten_wrapadr': d._impl.ten_wrapadr.shape,
       'ten_wrapnum': d._impl.ten_wrapnum.shape,
       'time': d.time.shape,
+      'tree_asleep': d._impl.tree_asleep.shape,
+      'tree_awake': d._impl.tree_awake.shape,
+      'tree_island': d._impl.tree_island.shape,
       'wrap_obj': d._impl.wrap_obj.shape,
       'wrap_xpos': d._impl.wrap_xpos.shape,
       'xanchor': d.xanchor.shape,
       'xaxis': d.xaxis.shape,
-      'xfrc_applied': d.xfrc_applied.shape,
       'ximat': d.ximat.shape,
       'xipos': d.xipos.shape,
       'xmat': d.xmat.shape,
@@ -2832,6 +3504,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       'contact__dim': d._impl.contact__dim.shape,
       'contact__dist': d._impl.contact__dist.shape,
       'contact__efc_address': d._impl.contact__efc_address.shape,
+      'contact__flex': d._impl.contact__flex.shape,
       'contact__frame': d._impl.contact__frame.shape,
       'contact__friction': d._impl.contact__friction.shape,
       'contact__geom': d._impl.contact__geom.shape,
@@ -2842,53 +3515,52 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       'contact__solref': d._impl.contact__solref.shape,
       'contact__solreffriction': d._impl.contact__solreffriction.shape,
       'contact__type': d._impl.contact__type.shape,
+      'contact__vert': d._impl.contact__vert.shape,
       'contact__worldid': d._impl.contact__worldid.shape,
       'efc__D': d._impl.efc__D.shape,
       'efc__J': d._impl.efc__J.shape,
-      'efc__Jaref': d._impl.efc__Jaref.shape,
+      'efc__J_colind': d._impl.efc__J_colind.shape,
+      'efc__J_rowadr': d._impl.efc__J_rowadr.shape,
+      'efc__J_rownnz': d._impl.efc__J_rownnz.shape,
+      'efc__Jqvel': d._impl.efc__Jqvel.shape,
       'efc__Ma': d._impl.efc__Ma.shape,
-      'efc__Mgrad': d._impl.efc__Mgrad.shape,
-      'efc__alpha': d._impl.efc__alpha.shape,
       'efc__aref': d._impl.efc__aref.shape,
-      'efc__beta': d._impl.efc__beta.shape,
-      'efc__cholesky_L_tmp': d._impl.efc__cholesky_L_tmp.shape,
-      'efc__cholesky_y_tmp': d._impl.efc__cholesky_y_tmp.shape,
-      'efc__cost': d._impl.efc__cost.shape,
-      'efc__done': d._impl.efc__done.shape,
       'efc__force': d._impl.efc__force.shape,
       'efc__frictionloss': d._impl.efc__frictionloss.shape,
-      'efc__gauss': d._impl.efc__gauss.shape,
-      'efc__grad': d._impl.efc__grad.shape,
-      'efc__grad_dot': d._impl.efc__grad_dot.shape,
-      'efc__h': d._impl.efc__h.shape,
+      'efc__iD': d._impl.efc__iD.shape,
+      'efc__iJ': d._impl.efc__iJ.shape,
+      'efc__iJ_colind': d._impl.efc__iJ_colind.shape,
+      'efc__iJ_rowadr': d._impl.efc__iJ_rowadr.shape,
+      'efc__iJ_rownnz': d._impl.efc__iJ_rownnz.shape,
+      'efc__iaref': d._impl.efc__iaref.shape,
       'efc__id': d._impl.efc__id.shape,
-      'efc__jv': d._impl.efc__jv.shape,
+      'efc__iforce': d._impl.efc__iforce.shape,
+      'efc__ifrictionloss': d._impl.efc__ifrictionloss.shape,
+      'efc__iid': d._impl.efc__iid.shape,
+      'efc__island': d._impl.efc__island.shape,
+      'efc__istate': d._impl.efc__istate.shape,
+      'efc__itype': d._impl.efc__itype.shape,
       'efc__margin': d._impl.efc__margin.shape,
-      'efc__mv': d._impl.efc__mv.shape,
       'efc__pos': d._impl.efc__pos.shape,
-      'efc__prev_Mgrad': d._impl.efc__prev_Mgrad.shape,
-      'efc__prev_cost': d._impl.efc__prev_cost.shape,
-      'efc__prev_grad': d._impl.efc__prev_grad.shape,
-      'efc__quad': d._impl.efc__quad.shape,
-      'efc__quad_gauss': d._impl.efc__quad_gauss.shape,
-      'efc__search': d._impl.efc__search.shape,
-      'efc__search_dot': d._impl.efc__search_dot.shape,
       'efc__state': d._impl.efc__state.shape,
       'efc__type': d._impl.efc__type.shape,
       'efc__vel': d._impl.efc__vel.shape,
   }
   jf = ffi.jax_callable_variadic_tuple(
       _step_shim,
-      num_outputs=131,
+      num_outputs=148,
       output_dims=output_dims,
       vmap_method=None,
-      in_out_argnames={
+      in_out_argnames=set([
+          'M',
           'act',
           'act_dot',
           'actuator_force',
           'actuator_length',
           'actuator_moment',
           'actuator_velocity',
+          'body_awake',
+          'body_awake_ind',
           'cacc',
           'cam_xmat',
           'cam_xpos',
@@ -2897,42 +3569,58 @@ def _step_jax_impl(m: types.Model, d: types.Data):
           'cfrc_ext',
           'cfrc_int',
           'cinert',
-          'collision_pair',
-          'collision_pairid',
-          'collision_worldid',
           'crb',
-          'ctrl',
           'cvel',
+          'dof_awake_ind',
+          'dof_island',
+          'dof_islandid',
+          'efc_islandid',
           'energy',
-          'eq_active',
+          'flexedge_J',
           'flexedge_length',
           'flexedge_velocity',
           'flexvert_xpos',
           'geom_xmat',
           'geom_xpos',
+          'history',
+          'iqacc',
+          'iqacc_smooth',
+          'iqfrc_constraint',
+          'iqfrc_smooth',
+          'island_dofadr',
+          'island_efcadr',
+          'island_idofadr',
+          'island_ne',
+          'island_nefc',
+          'island_nf',
+          'island_nv',
           'light_xdir',
           'light_xpos',
-          'mocap_pos',
-          'mocap_quat',
+          'map_dof2idof',
+          'map_efc2iefc',
+          'map_idof2dof',
+          'map_iefc2efc',
+          'moment_colind',
+          'moment_rowadr',
+          'moment_rownnz',
           'nacon',
+          'nbody_awake',
           'ncollision',
           'ne',
-          'ne_connect',
-          'ne_jnt',
-          'ne_ten',
-          'ne_weld',
           'nefc',
           'nf',
+          'nidof',
+          'nisland',
           'nl',
-          'nsolving',
+          'ntree_awake',
+          'nv_awake',
           'qLD',
           'qLDiagInv',
-          'qM',
+          'qLU',
           'qacc',
           'qacc_smooth',
           'qacc_warmstart',
           'qfrc_actuator',
-          'qfrc_applied',
           'qfrc_bias',
           'qfrc_constraint',
           'qfrc_damper',
@@ -2948,7 +3636,6 @@ def _step_jax_impl(m: types.Model, d: types.Data):
           'site_xpos',
           'solver_niter',
           'subtree_angmom',
-          'subtree_bodyvel',
           'subtree_com',
           'subtree_linvel',
           'ten_J',
@@ -2957,11 +3644,13 @@ def _step_jax_impl(m: types.Model, d: types.Data):
           'ten_wrapadr',
           'ten_wrapnum',
           'time',
+          'tree_asleep',
+          'tree_awake',
+          'tree_island',
           'wrap_obj',
           'wrap_xpos',
           'xanchor',
           'xaxis',
-          'xfrc_applied',
           'ximat',
           'xipos',
           'xmat',
@@ -2970,6 +3659,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
           'contact__dim',
           'contact__dist',
           'contact__efc_address',
+          'contact__flex',
           'contact__frame',
           'contact__friction',
           'contact__geom',
@@ -2980,46 +3670,238 @@ def _step_jax_impl(m: types.Model, d: types.Data):
           'contact__solref',
           'contact__solreffriction',
           'contact__type',
+          'contact__vert',
           'contact__worldid',
           'efc__D',
           'efc__J',
-          'efc__Jaref',
+          'efc__J_colind',
+          'efc__J_rowadr',
+          'efc__J_rownnz',
+          'efc__Jqvel',
           'efc__Ma',
-          'efc__Mgrad',
-          'efc__alpha',
           'efc__aref',
-          'efc__beta',
-          'efc__cholesky_L_tmp',
-          'efc__cholesky_y_tmp',
-          'efc__cost',
-          'efc__done',
           'efc__force',
           'efc__frictionloss',
-          'efc__gauss',
-          'efc__grad',
-          'efc__grad_dot',
-          'efc__h',
+          'efc__iD',
+          'efc__iJ',
+          'efc__iJ_colind',
+          'efc__iJ_rowadr',
+          'efc__iJ_rownnz',
+          'efc__iaref',
           'efc__id',
-          'efc__jv',
+          'efc__iforce',
+          'efc__ifrictionloss',
+          'efc__iid',
+          'efc__island',
+          'efc__istate',
+          'efc__itype',
           'efc__margin',
-          'efc__mv',
           'efc__pos',
-          'efc__prev_Mgrad',
-          'efc__prev_cost',
-          'efc__prev_grad',
-          'efc__quad',
-          'efc__quad_gauss',
-          'efc__search',
-          'efc__search_dot',
           'efc__state',
           'efc__type',
           'efc__vel',
-      },
+      ]),
+      stage_in_argnames=set([
+          'act',
+          'act_dot',
+          'actuator_acc0',
+          'actuator_actrange',
+          'actuator_biasprm',
+          'actuator_cranklength',
+          'actuator_ctrlrange',
+          'actuator_dynprm',
+          'actuator_force',
+          'actuator_forcerange',
+          'actuator_gainprm',
+          'actuator_gear',
+          'actuator_length',
+          'actuator_lengthrange',
+          'body_gravcomp',
+          'body_inertia',
+          'body_invweight0',
+          'body_ipos',
+          'body_iquat',
+          'body_mass',
+          'body_pos',
+          'body_quat',
+          'body_subtreemass',
+          'cam_fovy',
+          'cam_intrinsic',
+          'cam_mat0',
+          'cam_pos',
+          'cam_pos0',
+          'cam_poscom0',
+          'cam_quat',
+          'cam_xmat',
+          'cam_xpos',
+          'cdof',
+          'cdof_dot',
+          'ctrl',
+          'cvel',
+          'dof_armature',
+          'dof_damping',
+          'dof_dampingpoly',
+          'dof_frictionloss',
+          'dof_invweight0',
+          'dof_solimp',
+          'dof_solref',
+          'eq_active',
+          'eq_data',
+          'eq_solimp',
+          'eq_solref',
+          'geom_aabb',
+          'geom_friction',
+          'geom_gap',
+          'geom_margin',
+          'geom_matid',
+          'geom_pos',
+          'geom_quat',
+          'geom_rbound',
+          'geom_rgba',
+          'geom_size',
+          'geom_solimp',
+          'geom_solmix',
+          'geom_solref',
+          'geom_xmat',
+          'geom_xpos',
+          'hfield_data',
+          'history',
+          'jnt_actfrcrange',
+          'jnt_axis',
+          'jnt_margin',
+          'jnt_pos',
+          'jnt_range',
+          'jnt_solimp',
+          'jnt_solref',
+          'jnt_stiffness',
+          'jnt_stiffnesspoly',
+          'light_dir',
+          'light_dir0',
+          'light_pos',
+          'light_pos0',
+          'light_poscom0',
+          'mat_rgba',
+          'mocap_pos',
+          'mocap_quat',
+          'opt__density',
+          'opt__gravity',
+          'opt__ls_tolerance',
+          'opt__magnetic',
+          'opt__timestep',
+          'opt__tolerance',
+          'opt__viscosity',
+          'opt__wind',
+          'pair_friction',
+          'pair_gap',
+          'pair_margin',
+          'pair_solimp',
+          'pair_solref',
+          'pair_solreffriction',
+          'qacc',
+          'qacc_smooth',
+          'qacc_warmstart',
+          'qfrc_actuator',
+          'qfrc_applied',
+          'qfrc_bias',
+          'qfrc_constraint',
+          'qfrc_fluid',
+          'qfrc_gravcomp',
+          'qfrc_passive',
+          'qfrc_smooth',
+          'qpos',
+          'qpos0',
+          'qpos_spring',
+          'qvel',
+          'sensordata',
+          'site_pos',
+          'site_quat',
+          'site_xmat',
+          'site_xpos',
+          'subtree_com',
+          'ten_length',
+          'tendon_actfrcrange',
+          'tendon_armature',
+          'tendon_damping',
+          'tendon_dampingpoly',
+          'tendon_frictionloss',
+          'tendon_invweight0',
+          'tendon_length0',
+          'tendon_lengthspring',
+          'tendon_margin',
+          'tendon_range',
+          'tendon_solimp_fri',
+          'tendon_solimp_lim',
+          'tendon_solref_fri',
+          'tendon_solref_lim',
+          'tendon_stiffness',
+          'tendon_stiffnesspoly',
+          'time',
+          'xanchor',
+          'xaxis',
+          'xfrc_applied',
+          'ximat',
+          'xipos',
+          'xmat',
+          'xpos',
+          'xquat',
+      ]),
+      stage_out_argnames=set([
+          'act',
+          'act_dot',
+          'actuator_force',
+          'actuator_length',
+          'cam_xmat',
+          'cam_xpos',
+          'cdof',
+          'cdof_dot',
+          'cvel',
+          'geom_xmat',
+          'geom_xpos',
+          'history',
+          'qacc',
+          'qacc_smooth',
+          'qacc_warmstart',
+          'qfrc_actuator',
+          'qfrc_bias',
+          'qfrc_constraint',
+          'qfrc_fluid',
+          'qfrc_gravcomp',
+          'qfrc_passive',
+          'qfrc_smooth',
+          'qpos',
+          'qvel',
+          'sensordata',
+          'site_xmat',
+          'site_xpos',
+          'subtree_com',
+          'ten_length',
+          'time',
+          'xanchor',
+          'xaxis',
+          'ximat',
+          'xipos',
+          'xmat',
+          'xpos',
+          'xquat',
+      ]),
+      graph_mode=m.opt._impl.graph_mode,
+      has_side_effect=False,
   )
   out = jf(
       d.qpos.shape[0],
+      m._impl.D_colind,
+      m._impl.D_diag,
+      m._impl.D_rowadr,
+      m._impl.D_rownnz,
+      m._impl.M_elemid,
+      m._impl.M_fullm_i,
+      m._impl.M_fullm_j,
+      m._impl.M_mulm_col,
+      m._impl.M_mulm_madr,
+      m._impl.M_mulm_rowadr,
       m._impl.M_rowadr,
       m._impl.M_rownnz,
+      m._impl.M_tiles,
       m.actuator_acc0,
       m.actuator_actadr,
       m.actuator_actearly,
@@ -3031,6 +3913,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.actuator_cranklength,
       m.actuator_ctrllimited,
       m.actuator_ctrlrange,
+      m._impl.actuator_delay,
       m.actuator_dynprm,
       m.actuator_dyntype,
       m.actuator_forcelimited,
@@ -3038,11 +3921,15 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.actuator_gainprm,
       m.actuator_gaintype,
       m.actuator_gear,
+      m._impl.actuator_history,
+      m._impl.actuator_historyadr,
       m.actuator_lengthrange,
       m.actuator_trnid,
       m.actuator_trntype,
       m._impl.actuator_trntype_body_adr,
       m._impl.block_dim,
+      m._impl.body_branch_start,
+      m._impl.body_branches,
       m.body_dofadr,
       m.body_dofnum,
       m._impl.body_fluid_ellipsoid,
@@ -3053,6 +3940,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.body_invweight0,
       m.body_ipos,
       m.body_iquat,
+      m._impl.body_isdofancestor,
       m.body_jntadr,
       m.body_jntnum,
       m.body_mass,
@@ -3063,6 +3951,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.body_rootid,
       m.body_subtreemass,
       m._impl.body_tree,
+      m.body_treeid,
       m.body_weldid,
       m.cam_bodyid,
       m.cam_fovy,
@@ -3076,21 +3965,23 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.cam_resolution,
       m.cam_sensorsize,
       m.cam_targetbodyid,
-      m._impl.collision_sensor_adr,
-      m.dof_Madr,
       m.dof_armature,
       m.dof_bodyid,
       m.dof_damping,
+      m.dof_dampingpoly,
       m.dof_frictionloss,
       m.dof_invweight0,
       m.dof_jntid,
+      m._impl.dof_length,
       m.dof_parentid,
       m.dof_solimp,
       m.dof_solref,
+      m.dof_treeid,
       m._impl.dof_tri_col,
       m._impl.dof_tri_row,
       m._impl.eq_connect_adr,
       m.eq_data,
+      m._impl.eq_flex_adr,
       m._impl.eq_jnt_adr,
       m.eq_obj1id,
       m.eq_obj2id,
@@ -3098,24 +3989,55 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.eq_solimp,
       m.eq_solref,
       m._impl.eq_ten_adr,
+      m.eq_type,
       m._impl.eq_wld_adr,
       m._impl.flex_bending,
+      m._impl.flex_bendingadr,
+      m._impl.flex_centered,
+      m._impl.flex_conaffinity,
+      m._impl.flex_condim,
+      m._impl.flex_contype,
       m._impl.flex_damping,
       m._impl.flex_dim,
       m._impl.flex_edge,
       m._impl.flex_edgeadr,
       m._impl.flex_edgeflap,
+      m._impl.flex_edgenum,
       m._impl.flex_elem,
+      m._impl.flex_elemadr,
+      m._impl.flex_elemdataadr,
       m._impl.flex_elemedge,
       m._impl.flex_elemedgeadr,
+      m._impl.flex_elemnum,
+      m._impl.flex_friction,
+      m._impl.flex_gap,
+      m._impl.flex_margin,
+      m._impl.flex_priority,
+      m._impl.flex_radius,
+      m._impl.flex_shell,
+      m._impl.flex_shelldataadr,
+      m._impl.flex_shellnum,
+      m._impl.flex_solimp,
+      m._impl.flex_solmix,
+      m._impl.flex_solref,
       m._impl.flex_stiffness,
-      m._impl.flex_vertadr,
+      m._impl.flex_stiffnessadr,
+      m._impl.flex_vert,
+      m.flex_vertadr,
       m._impl.flex_vertbodyid,
+      m._impl.flex_vertflexid,
+      m.flex_vertnum,
+      m._impl.flexedge_J_colind,
+      m._impl.flexedge_J_rowadr,
+      m._impl.flexedge_J_rownnz,
+      m._impl.flexedge_invweight0,
       m._impl.flexedge_length0,
       m.geom_aabb,
       m.geom_bodyid,
+      m.geom_conaffinity,
       m.geom_condim,
-      m.geom_dataid,
+      m.geom_contype,
+      jax.numpy.expand_dims(m.geom_dataid, 0),
       m.geom_fluid,
       m.geom_friction,
       m.geom_gap,
@@ -3134,12 +4056,14 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.geom_solmix,
       m.geom_solref,
       m.geom_type,
+      m._impl.has_fluid,
       m._impl.has_sdf_geom,
       m.hfield_adr,
       m.hfield_data,
       m.hfield_ncol,
       m.hfield_nrow,
       m.hfield_size,
+      m._impl.is_sparse,
       m.jnt_actfrclimited,
       m.jnt_actfrcrange,
       m.jnt_actgravcomp,
@@ -3155,7 +4079,9 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.jnt_solimp,
       m.jnt_solref,
       m.jnt_stiffness,
+      m.jnt_stiffnesspoly,
       m.jnt_type,
+      m._impl.jtcj_max_pairs,
       m._impl.light_bodyid,
       m.light_dir,
       m.light_dir0,
@@ -3164,14 +4090,17 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.light_pos0,
       m.light_poscom0,
       m._impl.light_targetbodyid,
-      m._impl.mapM2M,
+      m._impl.mapM2D,
       m.mat_rgba,
+      m._impl.max_ten_J_rownnz,
       m.mesh_face,
       m.mesh_faceadr,
       m.mesh_graph,
       m.mesh_graphadr,
       m.mesh_normal,
       m.mesh_normaladr,
+      m.mesh_normalnum,
+      m.mesh_octadr,
       m._impl.mesh_polyadr,
       m._impl.mesh_polymap,
       m._impl.mesh_polymapadr,
@@ -3185,19 +4114,23 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.mesh_vert,
       m.mesh_vertadr,
       m.mesh_vertnum,
-      m._impl.mocap_bodyid,
       m.nC,
-      m.nM,
+      m.nD,
+      m.nJten,
       m.na,
       m._impl.nacttrnbody,
       m.nbody,
+      m._impl.nbranch,
       m.ncam,
       m.neq,
+      m.nflex,
       m._impl.nflexedge,
       m._impl.nflexelem,
+      m._impl.nflexshelldata,
       m._impl.nflexvert,
       m.ngeom,
       m.ngravcomp,
+      m.nhistory,
       m.njnt,
       m.nlight,
       m._impl.nmaxcondim,
@@ -3205,15 +4138,16 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m._impl.nmaxpolygon,
       m._impl.nmaxpyramid,
       m.nmeshface,
-      m.nmocap,
       m._impl.nrangefinder,
       m._impl.nsensorcollision,
       m._impl.nsensorcontact,
       m._impl.nsensortaxel,
       m.nsite,
       m.ntendon,
+      m._impl.ntree,
       m.nu,
       m.nv,
+      m._impl.nv_pad,
       m.nwrap,
       m._impl.nxn_geom_pair_filtered,
       m._impl.nxn_pairid,
@@ -3230,26 +4164,27 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.pair_solreffriction,
       m._impl.plugin,
       m._impl.plugin_attr,
+      m._impl.qD_fullm_i,
+      m._impl.qD_fullm_j,
+      m._impl.qLD_all_updates,
+      m._impl.qLD_level_offsets,
       m._impl.qLD_updates,
-      m._impl.qM_fullm_i,
-      m._impl.qM_fullm_j,
-      m._impl.qM_madr_ij,
-      m._impl.qM_mulm_i,
-      m._impl.qM_mulm_j,
-      m._impl.qM_tiles,
       m.qpos0,
       m.qpos_spring,
       m._impl.rangefinder_sensor_adr,
       m._impl.sensor_acc_adr,
       m.sensor_adr,
       m._impl.sensor_adr_to_contact_adr,
-      m._impl.sensor_collision_start_adr,
       m._impl.sensor_contact_adr,
       m.sensor_cutoff,
       m.sensor_datatype,
+      m._impl.sensor_delay,
       m.sensor_dim,
       m._impl.sensor_e_kinetic,
       m._impl.sensor_e_potential,
+      m._impl.sensor_history,
+      m._impl.sensor_historyadr,
+      m._impl.sensor_interval,
       m.sensor_intprm,
       m._impl.sensor_limitfrc_adr,
       m._impl.sensor_limitpos_adr,
@@ -3274,17 +4209,22 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.site_type,
       m._impl.taxel_sensorid,
       m._impl.taxel_vertadr,
+      m._impl.ten_J_colind,
+      m._impl.ten_J_rowadr,
+      m._impl.ten_J_rownnz,
       m.tendon_actfrclimited,
       m.tendon_actfrcrange,
       m.tendon_adr,
       m.tendon_armature,
       m.tendon_damping,
+      m.tendon_dampingpoly,
       m.tendon_frictionloss,
       m._impl.tendon_geom_adr,
       m.tendon_invweight0,
       m._impl.tendon_jnt_adr,
       m.tendon_length0,
       m.tendon_lengthspring,
+      m.tendon_limited,
       m._impl.tendon_limited_adr,
       m.tendon_margin,
       m.tendon_num,
@@ -3295,6 +4235,10 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.tendon_solref_fri,
       m.tendon_solref_lim,
       m.tendon_stiffness,
+      m.tendon_stiffnesspoly,
+      m._impl.tree_dofadr,
+      m._impl.tree_dofnum,
+      m._impl.tree_sleep_policy,
       m._impl.wrap_geom_adr,
       m._impl.wrap_jnt_adr,
       m.wrap_objid,
@@ -3313,72 +4257,95 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       m.opt.enableflags,
       m.opt._impl.graph_conditional,
       m.opt.gravity,
-      m.opt._impl.has_fluid,
-      m.opt.impratio,
+      m.opt._impl.impratio_invsqrt,
       m.opt.integrator,
-      m.opt._impl.is_sparse,
       m.opt.iterations,
       m.opt.ls_iterations,
-      m.opt._impl.ls_parallel,
-      m.opt._impl.ls_parallel_min_step,
       m.opt.ls_tolerance,
       m.opt.magnetic,
       m.opt._impl.run_collision_detection,
       m.opt._impl.sdf_initpoints,
       m.opt._impl.sdf_iterations,
+      m.opt._impl.sleep_tolerance,
       m.opt.solver,
       m.opt.timestep,
       m.opt.tolerance,
       m.opt.viscosity,
       m.opt.wind,
       m.stat.meaninertia,
+      d._impl.naccdmax,
       d._impl.naconmax,
       d._impl.njmax,
+      d._impl.njmax_nnz,
+      d._impl.M,
       d.act,
       d.act_dot,
       d.actuator_force,
-      d._impl.actuator_length,
+      d.actuator_length,
       d._impl.actuator_moment,
       d._impl.actuator_velocity,
+      d._impl.body_awake,
+      d._impl.body_awake_ind,
       d._impl.cacc,
       d.cam_xmat,
       d.cam_xpos,
-      d._impl.cdof,
-      d._impl.cdof_dot,
+      d.cdof,
+      d.cdof_dot,
       d._impl.cfrc_ext,
       d._impl.cfrc_int,
       d._impl.cinert,
-      d._impl.collision_pair,
-      d._impl.collision_pairid,
-      d._impl.collision_worldid,
       d._impl.crb,
       d.ctrl,
       d.cvel,
+      d._impl.dof_awake_ind,
+      d._impl.dof_island,
+      d._impl.dof_islandid,
+      d._impl.efc_islandid,
       d._impl.energy,
       d.eq_active,
+      d._impl.flexedge_J,
       d._impl.flexedge_length,
       d._impl.flexedge_velocity,
       d._impl.flexvert_xpos,
       d.geom_xmat,
       d.geom_xpos,
+      d.history,
+      d._impl.iqacc,
+      d._impl.iqacc_smooth,
+      d._impl.iqfrc_constraint,
+      d._impl.iqfrc_smooth,
+      d._impl.island_dofadr,
+      d._impl.island_efcadr,
+      d._impl.island_idofadr,
+      d._impl.island_ne,
+      d._impl.island_nefc,
+      d._impl.island_nf,
+      d._impl.island_nv,
       d._impl.light_xdir,
       d._impl.light_xpos,
+      d._impl.map_dof2idof,
+      d._impl.map_efc2iefc,
+      d._impl.map_idof2dof,
+      d._impl.map_iefc2efc,
       d.mocap_pos,
       d.mocap_quat,
+      d._impl.moment_colind,
+      d._impl.moment_rowadr,
+      d._impl.moment_rownnz,
       d._impl.nacon,
+      d._impl.nbody_awake,
       d._impl.ncollision,
       d._impl.ne,
-      d._impl.ne_connect,
-      d._impl.ne_jnt,
-      d._impl.ne_ten,
-      d._impl.ne_weld,
       d._impl.nefc,
       d._impl.nf,
+      d._impl.nidof,
+      d._impl.nisland,
       d._impl.nl,
-      d._impl.nsolving,
+      d._impl.ntree_awake,
+      d._impl.nv_awake,
       d._impl.qLD,
       d._impl.qLDiagInv,
-      d._impl.qM,
+      d._impl.qLU,
       d.qacc,
       d.qacc_smooth,
       d.qacc_warmstart,
@@ -3399,7 +4366,6 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       d.site_xpos,
       d._impl.solver_niter,
       d._impl.subtree_angmom,
-      d._impl.subtree_bodyvel,
       d.subtree_com,
       d._impl.subtree_linvel,
       d._impl.ten_J,
@@ -3408,6 +4374,9 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       d._impl.ten_wrapadr,
       d._impl.ten_wrapnum,
       d.time,
+      d._impl.tree_asleep,
+      d._impl.tree_awake,
+      d._impl.tree_island,
       d._impl.wrap_obj,
       d._impl.wrap_xpos,
       d.xanchor,
@@ -3421,6 +4390,7 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       d._impl.contact__dim,
       d._impl.contact__dist,
       d._impl.contact__efc_address,
+      d._impl.contact__flex,
       d._impl.contact__frame,
       d._impl.contact__friction,
       d._impl.contact__geom,
@@ -3431,173 +4401,186 @@ def _step_jax_impl(m: types.Model, d: types.Data):
       d._impl.contact__solref,
       d._impl.contact__solreffriction,
       d._impl.contact__type,
+      d._impl.contact__vert,
       d._impl.contact__worldid,
       d._impl.efc__D,
       d._impl.efc__J,
-      d._impl.efc__Jaref,
+      d._impl.efc__J_colind,
+      d._impl.efc__J_rowadr,
+      d._impl.efc__J_rownnz,
+      d._impl.efc__Jqvel,
       d._impl.efc__Ma,
-      d._impl.efc__Mgrad,
-      d._impl.efc__alpha,
       d._impl.efc__aref,
-      d._impl.efc__beta,
-      d._impl.efc__cholesky_L_tmp,
-      d._impl.efc__cholesky_y_tmp,
-      d._impl.efc__cost,
-      d._impl.efc__done,
       d._impl.efc__force,
       d._impl.efc__frictionloss,
-      d._impl.efc__gauss,
-      d._impl.efc__grad,
-      d._impl.efc__grad_dot,
-      d._impl.efc__h,
+      d._impl.efc__iD,
+      d._impl.efc__iJ,
+      d._impl.efc__iJ_colind,
+      d._impl.efc__iJ_rowadr,
+      d._impl.efc__iJ_rownnz,
+      d._impl.efc__iaref,
       d._impl.efc__id,
-      d._impl.efc__jv,
+      d._impl.efc__iforce,
+      d._impl.efc__ifrictionloss,
+      d._impl.efc__iid,
+      d._impl.efc__island,
+      d._impl.efc__istate,
+      d._impl.efc__itype,
       d._impl.efc__margin,
-      d._impl.efc__mv,
       d._impl.efc__pos,
-      d._impl.efc__prev_Mgrad,
-      d._impl.efc__prev_cost,
-      d._impl.efc__prev_grad,
-      d._impl.efc__quad,
-      d._impl.efc__quad_gauss,
-      d._impl.efc__search,
-      d._impl.efc__search_dot,
       d._impl.efc__state,
       d._impl.efc__type,
       d._impl.efc__vel,
   )
   d = d.tree_replace({
-      'act': out[0],
-      'act_dot': out[1],
-      'actuator_force': out[2],
-      '_impl.actuator_length': out[3],
-      '_impl.actuator_moment': out[4],
-      '_impl.actuator_velocity': out[5],
-      '_impl.cacc': out[6],
-      'cam_xmat': out[7],
-      'cam_xpos': out[8],
-      '_impl.cdof': out[9],
-      '_impl.cdof_dot': out[10],
-      '_impl.cfrc_ext': out[11],
-      '_impl.cfrc_int': out[12],
-      '_impl.cinert': out[13],
-      '_impl.collision_pair': out[14],
-      '_impl.collision_pairid': out[15],
-      '_impl.collision_worldid': out[16],
+      '_impl.M': out[0],
+      'act': out[1],
+      'act_dot': out[2],
+      'actuator_force': out[3],
+      'actuator_length': out[4],
+      '_impl.actuator_moment': out[5],
+      '_impl.actuator_velocity': out[6],
+      '_impl.body_awake': out[7],
+      '_impl.body_awake_ind': out[8],
+      '_impl.cacc': out[9],
+      'cam_xmat': out[10],
+      'cam_xpos': out[11],
+      'cdof': out[12],
+      'cdof_dot': out[13],
+      '_impl.cfrc_ext': out[14],
+      '_impl.cfrc_int': out[15],
+      '_impl.cinert': out[16],
       '_impl.crb': out[17],
-      'ctrl': out[18],
-      'cvel': out[19],
-      '_impl.energy': out[20],
-      'eq_active': out[21],
-      '_impl.flexedge_length': out[22],
-      '_impl.flexedge_velocity': out[23],
-      '_impl.flexvert_xpos': out[24],
-      'geom_xmat': out[25],
-      'geom_xpos': out[26],
-      '_impl.light_xdir': out[27],
-      '_impl.light_xpos': out[28],
-      'mocap_pos': out[29],
-      'mocap_quat': out[30],
-      '_impl.nacon': out[31],
-      '_impl.ncollision': out[32],
-      '_impl.ne': out[33],
-      '_impl.ne_connect': out[34],
-      '_impl.ne_jnt': out[35],
-      '_impl.ne_ten': out[36],
-      '_impl.ne_weld': out[37],
-      '_impl.nefc': out[38],
-      '_impl.nf': out[39],
-      '_impl.nl': out[40],
-      '_impl.nsolving': out[41],
-      '_impl.qLD': out[42],
-      '_impl.qLDiagInv': out[43],
-      '_impl.qM': out[44],
-      'qacc': out[45],
-      'qacc_smooth': out[46],
-      'qacc_warmstart': out[47],
-      'qfrc_actuator': out[48],
-      'qfrc_applied': out[49],
-      'qfrc_bias': out[50],
-      'qfrc_constraint': out[51],
-      '_impl.qfrc_damper': out[52],
-      'qfrc_fluid': out[53],
-      'qfrc_gravcomp': out[54],
-      'qfrc_passive': out[55],
-      'qfrc_smooth': out[56],
-      '_impl.qfrc_spring': out[57],
-      'qpos': out[58],
-      'qvel': out[59],
-      'sensordata': out[60],
-      'site_xmat': out[61],
-      'site_xpos': out[62],
-      '_impl.solver_niter': out[63],
-      '_impl.subtree_angmom': out[64],
-      '_impl.subtree_bodyvel': out[65],
-      'subtree_com': out[66],
-      '_impl.subtree_linvel': out[67],
-      '_impl.ten_J': out[68],
-      'ten_length': out[69],
-      '_impl.ten_velocity': out[70],
-      '_impl.ten_wrapadr': out[71],
-      '_impl.ten_wrapnum': out[72],
-      'time': out[73],
-      '_impl.wrap_obj': out[74],
-      '_impl.wrap_xpos': out[75],
-      'xanchor': out[76],
-      'xaxis': out[77],
-      'xfrc_applied': out[78],
-      'ximat': out[79],
-      'xipos': out[80],
-      'xmat': out[81],
-      'xpos': out[82],
-      'xquat': out[83],
-      '_impl.contact__dim': out[84],
-      '_impl.contact__dist': out[85],
-      '_impl.contact__efc_address': out[86],
-      '_impl.contact__frame': out[87],
-      '_impl.contact__friction': out[88],
-      '_impl.contact__geom': out[89],
-      '_impl.contact__geomcollisionid': out[90],
-      '_impl.contact__includemargin': out[91],
-      '_impl.contact__pos': out[92],
-      '_impl.contact__solimp': out[93],
-      '_impl.contact__solref': out[94],
-      '_impl.contact__solreffriction': out[95],
-      '_impl.contact__type': out[96],
-      '_impl.contact__worldid': out[97],
-      '_impl.efc__D': out[98],
-      '_impl.efc__J': out[99],
-      '_impl.efc__Jaref': out[100],
-      '_impl.efc__Ma': out[101],
-      '_impl.efc__Mgrad': out[102],
-      '_impl.efc__alpha': out[103],
-      '_impl.efc__aref': out[104],
-      '_impl.efc__beta': out[105],
-      '_impl.efc__cholesky_L_tmp': out[106],
-      '_impl.efc__cholesky_y_tmp': out[107],
-      '_impl.efc__cost': out[108],
-      '_impl.efc__done': out[109],
-      '_impl.efc__force': out[110],
-      '_impl.efc__frictionloss': out[111],
-      '_impl.efc__gauss': out[112],
-      '_impl.efc__grad': out[113],
-      '_impl.efc__grad_dot': out[114],
-      '_impl.efc__h': out[115],
-      '_impl.efc__id': out[116],
-      '_impl.efc__jv': out[117],
-      '_impl.efc__margin': out[118],
-      '_impl.efc__mv': out[119],
-      '_impl.efc__pos': out[120],
-      '_impl.efc__prev_Mgrad': out[121],
-      '_impl.efc__prev_cost': out[122],
-      '_impl.efc__prev_grad': out[123],
-      '_impl.efc__quad': out[124],
-      '_impl.efc__quad_gauss': out[125],
-      '_impl.efc__search': out[126],
-      '_impl.efc__search_dot': out[127],
-      '_impl.efc__state': out[128],
-      '_impl.efc__type': out[129],
-      '_impl.efc__vel': out[130],
+      'cvel': out[18],
+      '_impl.dof_awake_ind': out[19],
+      '_impl.dof_island': out[20],
+      '_impl.dof_islandid': out[21],
+      '_impl.efc_islandid': out[22],
+      '_impl.energy': out[23],
+      '_impl.flexedge_J': out[24],
+      '_impl.flexedge_length': out[25],
+      '_impl.flexedge_velocity': out[26],
+      '_impl.flexvert_xpos': out[27],
+      'geom_xmat': out[28],
+      'geom_xpos': out[29],
+      'history': out[30],
+      '_impl.iqacc': out[31],
+      '_impl.iqacc_smooth': out[32],
+      '_impl.iqfrc_constraint': out[33],
+      '_impl.iqfrc_smooth': out[34],
+      '_impl.island_dofadr': out[35],
+      '_impl.island_efcadr': out[36],
+      '_impl.island_idofadr': out[37],
+      '_impl.island_ne': out[38],
+      '_impl.island_nefc': out[39],
+      '_impl.island_nf': out[40],
+      '_impl.island_nv': out[41],
+      '_impl.light_xdir': out[42],
+      '_impl.light_xpos': out[43],
+      '_impl.map_dof2idof': out[44],
+      '_impl.map_efc2iefc': out[45],
+      '_impl.map_idof2dof': out[46],
+      '_impl.map_iefc2efc': out[47],
+      '_impl.moment_colind': out[48],
+      '_impl.moment_rowadr': out[49],
+      '_impl.moment_rownnz': out[50],
+      '_impl.nacon': out[51],
+      '_impl.nbody_awake': out[52],
+      '_impl.ncollision': out[53],
+      '_impl.ne': out[54],
+      '_impl.nefc': out[55],
+      '_impl.nf': out[56],
+      '_impl.nidof': out[57],
+      '_impl.nisland': out[58],
+      '_impl.nl': out[59],
+      '_impl.ntree_awake': out[60],
+      '_impl.nv_awake': out[61],
+      '_impl.qLD': out[62],
+      '_impl.qLDiagInv': out[63],
+      '_impl.qLU': out[64],
+      'qacc': out[65],
+      'qacc_smooth': out[66],
+      'qacc_warmstart': out[67],
+      'qfrc_actuator': out[68],
+      'qfrc_bias': out[69],
+      'qfrc_constraint': out[70],
+      '_impl.qfrc_damper': out[71],
+      'qfrc_fluid': out[72],
+      'qfrc_gravcomp': out[73],
+      'qfrc_passive': out[74],
+      'qfrc_smooth': out[75],
+      '_impl.qfrc_spring': out[76],
+      'qpos': out[77],
+      'qvel': out[78],
+      'sensordata': out[79],
+      'site_xmat': out[80],
+      'site_xpos': out[81],
+      '_impl.solver_niter': out[82],
+      '_impl.subtree_angmom': out[83],
+      'subtree_com': out[84],
+      '_impl.subtree_linvel': out[85],
+      '_impl.ten_J': out[86],
+      'ten_length': out[87],
+      '_impl.ten_velocity': out[88],
+      '_impl.ten_wrapadr': out[89],
+      '_impl.ten_wrapnum': out[90],
+      'time': out[91],
+      '_impl.tree_asleep': out[92],
+      '_impl.tree_awake': out[93],
+      '_impl.tree_island': out[94],
+      '_impl.wrap_obj': out[95],
+      '_impl.wrap_xpos': out[96],
+      'xanchor': out[97],
+      'xaxis': out[98],
+      'ximat': out[99],
+      'xipos': out[100],
+      'xmat': out[101],
+      'xpos': out[102],
+      'xquat': out[103],
+      '_impl.contact__dim': out[104],
+      '_impl.contact__dist': out[105],
+      '_impl.contact__efc_address': out[106],
+      '_impl.contact__flex': out[107],
+      '_impl.contact__frame': out[108],
+      '_impl.contact__friction': out[109],
+      '_impl.contact__geom': out[110],
+      '_impl.contact__geomcollisionid': out[111],
+      '_impl.contact__includemargin': out[112],
+      '_impl.contact__pos': out[113],
+      '_impl.contact__solimp': out[114],
+      '_impl.contact__solref': out[115],
+      '_impl.contact__solreffriction': out[116],
+      '_impl.contact__type': out[117],
+      '_impl.contact__vert': out[118],
+      '_impl.contact__worldid': out[119],
+      '_impl.efc__D': out[120],
+      '_impl.efc__J': out[121],
+      '_impl.efc__J_colind': out[122],
+      '_impl.efc__J_rowadr': out[123],
+      '_impl.efc__J_rownnz': out[124],
+      '_impl.efc__Jqvel': out[125],
+      '_impl.efc__Ma': out[126],
+      '_impl.efc__aref': out[127],
+      '_impl.efc__force': out[128],
+      '_impl.efc__frictionloss': out[129],
+      '_impl.efc__iD': out[130],
+      '_impl.efc__iJ': out[131],
+      '_impl.efc__iJ_colind': out[132],
+      '_impl.efc__iJ_rowadr': out[133],
+      '_impl.efc__iJ_rownnz': out[134],
+      '_impl.efc__iaref': out[135],
+      '_impl.efc__id': out[136],
+      '_impl.efc__iforce': out[137],
+      '_impl.efc__ifrictionloss': out[138],
+      '_impl.efc__iid': out[139],
+      '_impl.efc__island': out[140],
+      '_impl.efc__istate': out[141],
+      '_impl.efc__itype': out[142],
+      '_impl.efc__margin': out[143],
+      '_impl.efc__pos': out[144],
+      '_impl.efc__state': out[145],
+      '_impl.efc__type': out[146],
+      '_impl.efc__vel': out[147],
   })
   return d
 
@@ -3606,8 +4589,10 @@ def _step_jax_impl(m: types.Model, d: types.Data):
 @ffi.marshal_jax_warp_callable
 def step(m: types.Model, d: types.Data):
   return _step_jax_impl(m, d)
+
+
 @step.def_vmap
 @ffi.marshal_custom_vmap
-def step_vmap(unused_axis_size, is_batched, m, d):
+def step_vmap(unused_axis_size, is_batched, m: types.Model, d: types.Data):
   d = step(m, d)
   return d, is_batched[1]

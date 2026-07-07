@@ -24,6 +24,7 @@
 #include <mujoco/mjmacro.h>
 #include <mujoco/mjmodel.h>
 #include <mujoco/mjsan.h>  // IWYU pragma: keep
+#include <mujoco/mjtype.h>
 #include <mujoco/mjxmacro.h>
 #include "engine/engine_core_constraint.h"
 #include "engine/engine_core_util.h"
@@ -120,6 +121,51 @@ static void printArray2dInt(const char* str, int nr, int nc, const int* data, FI
 }
 
 
+// print history buffer with semantic labels
+static void printDelayBuffer(const char* name, const mjtNum* buf, int nhistory, int dim,
+                             FILE* fp, const char* float_format) {
+  if (!buf || nhistory <= 0) {
+    return;
+  }
+  fprintf(fp, "  %s:\n", name);
+
+  // user value (first slot)
+  fprintf(fp, "    phase  = ");
+  fprintf(fp, float_format, buf[0]);
+  fprintf(fp, "\n");
+
+  // cursor (second slot, stored as mjtNum but is an integer)
+  fprintf(fp, "    cursor =  %d\n", (int)buf[1]);
+
+  // timestamps
+  const mjtNum* times = buf + 2;
+  fprintf(fp, "    times  = ");
+  for (int i = 0; i < nhistory; i++) {
+    fprintf(fp, float_format, times[i]);
+  }
+  fprintf(fp, "\n");
+
+  // values
+  const mjtNum* values = times + nhistory;
+  if (dim == 1) {
+    fprintf(fp, "    values = ");
+    for (int i = 0; i < nhistory; i++) {
+      fprintf(fp, float_format, values[i]);
+    }
+    fprintf(fp, "\n");
+  } else {
+    fprintf(fp, "    values:\n");
+    for (int i = 0; i < nhistory; i++) {
+      fprintf(fp, "      [%d] =", i);
+      for (int j = 0; j < dim; j++) {
+        fprintf(fp, float_format, values[i*dim + j]);
+      }
+      fprintf(fp, "\n");
+    }
+  }
+}
+
+
 // print sparse matrix
 static void printSparse(const char* str, const mjtNum* mat, int nr,
                         const int* rownnz, const int* rowadr,
@@ -144,11 +190,12 @@ static void printSparse(const char* str, const mjtNum* mat, int nr,
 
 
 // print block-diagonal dense matrix, embedded in a larger matrix
-static void printBlockArray(const char* str, const mjtNum* data, int nr, int nc,
+static void printBlockArray(const char* str, const mjtNum* data, int nc,
                             int nisland, const int* island_nr, const int* island_nc,
                             const int* island_r, const int* island_c,
+                            const int* map_r, const int* map_c,
                             FILE* fp, const char* float_format) {
-  if (!data || !nr || !nc) {
+  if (!data || !nisland) {
     return;
   }
 
@@ -163,7 +210,6 @@ static void printBlockArray(const char* str, const mjtNum* data, int nr, int nc,
     int bnc = island_nc[b];
     int r_start = island_r[b];
     int c_start = island_c[b];
-    const mjtNum* data_ptr = data + r_start * nc;
 
     // print rows for this block
     for (int r_block = 0; r_block < bnr; r_block++) {
@@ -174,10 +220,13 @@ static void printBlockArray(const char* str, const mjtNum* data, int nr, int nc,
         fprintf(fp, " ");
       }
 
+      int row = map_r[r_start + r_block];
+
       // block data
       for (int c = 0; c < bnc; c++) {
+        int col = map_c[c_start + c];
         fprintf(fp, " ");
-        fprintf(fp, float_format, *data_ptr++);
+        fprintf(fp, float_format, data[row * nc + col]);
       }
 
       // trailing dots
@@ -272,6 +321,7 @@ void mj_printBlockSparsity(const char* str, int nr, int nc, int nisland,
                            const int* island_col_offset,
                            const int* entity_island,
                            const int* map_row_to_entity,
+                           const int* map_col_to_entity,
                            const int* rownnz, const int* rowadr, const int* colind,
                            const int* rowsuper, FILE* fp) {
   // if no rows / columns, or too many columns to be visually useful, return
@@ -297,27 +347,25 @@ void mj_printBlockSparsity(const char* str, int nr, int nc, int nisland,
 
     int c_start = island_col_offset[island];
     int bnc = island_block_ncols[island];
-    int current_nnz = 0;
-    int adr = rowadr[r];
+    int adr = rowadr[entity_r];
+    int nnz = rownnz[entity_r];
     char nz_char = (island < 10) ? ('0' + island) : 'x';
 
-    for (int c = 0; c < nc; c++) {  // c is the global column index
+    for (int c = 0; c < nc; c++) {  // c is the block-space column index
       bool nonzero = false;
       if (c >= c_start && c < c_start + bnc) {
-        int c_block = c - c_start;  // c_block is the island-local column index
-
-        // search for c_block in colind for the current row r
-        while (current_nnz < rownnz[r] && colind[adr + current_nnz] < c_block) {
-          current_nnz++;
-        }
-        if (current_nnz < rownnz[r] && colind[adr + current_nnz] == c_block) {
-          nonzero = true;
+        int target_col = map_col_to_entity[c];
+        for (int i = 0; i < nnz; i++) {
+          if (colind[adr + i] == target_col) {
+            nonzero = true;
+            break;
+          }
         }
       }
       fprintf(fp, "%c", nonzero ? nz_char : ' ');
     }
     fprintf(fp, " |");
-    if (rowsuper && rowsuper[r] > 0) fprintf(fp, " %d", rowsuper[r]);
+    if (rowsuper && rowsuper[entity_r] > 0) fprintf(fp, " %d", rowsuper[entity_r]);
     fprintf(fp, "\n");
   }
   for (int c = 0; c < nc + 2; c++) fprintf(fp, "-");
@@ -434,7 +482,7 @@ static bool validateFloatFormat(const char* float_format) {
   // flag characters. allow at most one of each flag
   const char flag_characters[] = "-+ #0";
   int flag_character_counts[sizeof(flag_characters)] = { 0 };
-  char* c;
+  const char* c;
   while (c = strchr(flag_characters, float_format[cur_idx]), c != NULL) {
     int flag_idx = (c - flag_characters)/sizeof(char);
     flag_character_counts[flag_idx]++;
@@ -551,38 +599,115 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
     fprintf(fp, "\n");                            \
   }
 
-  MJMODEL_INTS
+  MJMODEL_SIZES
 #undef X
   fprintf(fp, "\n");
 
-  // scalar options
+  // options
   fprintf(fp, "OPTION\n");
-#define X( type, name )                           \
-  fprintf(fp, NAME_FORMAT, "  " #name);           \
-  fprintf(fp, float_format, m->opt.name);         \
+#define X(type, name, sz)                                             \
+  fprintf(fp, NAME_FORMAT, "  " #name);                               \
+  {                                                                   \
+    const char* format =                                              \
+        _Generic(m->opt.name, mjtNum: float_format, int: INT_FORMAT); \
+    fprintf(fp, format, m->opt.name);                                 \
+  }                                                                   \
+  fprintf(fp, "\n");
+#define XVEC(type, name, sz)                                             \
+  fprintf(fp, NAME_FORMAT, "  " #name);                                  \
+  {                                                                      \
+    const char* format =                                                 \
+        _Generic(m->opt.name[0], mjtNum: float_format, int: INT_FORMAT); \
+    for (int i = 0; i < sz; i++) {                                       \
+      fprintf(fp, format, m->opt.name[i]);                               \
+    }                                                                    \
+  }                                                                      \
   fprintf(fp, "\n");
 
-  MJOPTION_FLOATS
+  MJOPTION_FIELDS
+#undef XVEC
 #undef X
-
-#define X( type, name )                           \
-  fprintf(fp, NAME_FORMAT, "  " #name);           \
-  fprintf(fp, INT_FORMAT "\n", m->opt.name);
-
-  MJOPTION_INTS
-#undef X
-
-  // vector options
-#define X( name, sz )                             \
-  fprintf(fp, NAME_FORMAT, "  " #name);           \
-  for (int i=0; i < sz; i++) {                    \
-    fprintf(fp, float_format, m->opt.name[i]);    \
-    fprintf(fp, " ");                             \
-  }                                               \
   fprintf(fp, "\n");
 
-  MJOPTION_VECTORS
+  // visual
+  fprintf(fp, "VISUAL\n");
+
+  fprintf(fp, "  GLOBAL\n");
+#define X(type, name, sz)                                                   \
+  fprintf(fp, NAME_FORMAT, "    " #name);                                   \
+  {                                                                         \
+    const char* format =                                                    \
+        _Generic(m->vis.global.name, float: float_format, int: INT_FORMAT); \
+    fprintf(fp, format, m->vis.global.name);                                \
+  }                                                                         \
+  fprintf(fp, "\n");
+
+  MJVISUAL_GLOBAL_FIELDS
 #undef X
+
+  fprintf(fp, "  QUALITY\n");
+#define X(type, name, sz)                        \
+  fprintf(fp, NAME_FORMAT, "    " #name);        \
+  fprintf(fp, INT_FORMAT, m->vis.quality.name);  \
+  fprintf(fp, "\n");
+
+  MJVISUAL_QUALITY_FIELDS
+#undef X
+
+  fprintf(fp, "  HEADLIGHT\n");
+#define X(type, name, sz)                                                      \
+  fprintf(fp, NAME_FORMAT, "    " #name);                                      \
+  {                                                                            \
+    const char* format =                                                       \
+        _Generic(m->vis.headlight.name, float: float_format, int: INT_FORMAT); \
+    fprintf(fp, format, m->vis.headlight.name);                                \
+  }                                                                            \
+  fprintf(fp, "\n");
+#define XVEC(type, name, sz)                                \
+  fprintf(fp, NAME_FORMAT, "    " #name);                   \
+  {                                                         \
+    const char* format = _Generic(                          \
+        m->vis.headlight.name[0],                           \
+        float: float_format,                                \
+        int: INT_FORMAT);                                   \
+    for (int i = 0; i < sz; i++) {                          \
+      fprintf(fp, format, m->vis.headlight.name[i]);        \
+    }                                                       \
+  }                                                         \
+  fprintf(fp, "\n");
+  MJVISUAL_HEADLIGHT_FIELDS
+#undef XVEC
+#undef X
+
+  fprintf(fp, "  MAP\n");
+#define X(type, name, sz)                      \
+  fprintf(fp, NAME_FORMAT, "    " #name);      \
+  fprintf(fp, float_format, m->vis.map.name);  \
+  fprintf(fp, "\n");
+
+  MJVISUAL_MAP_FIELDS
+#undef X
+
+  fprintf(fp, "  SCALE\n");
+#define X(type, name, sz)                        \
+  fprintf(fp, NAME_FORMAT, "    " #name);        \
+  fprintf(fp, float_format, m->vis.scale.name);  \
+  fprintf(fp, "\n");
+
+  MJVISUAL_SCALE_FIELDS
+#undef X
+
+  fprintf(fp, "  RGBA\n");
+#define XVEC(type, name, sz)                          \
+  fprintf(fp, NAME_FORMAT, "    " #name);             \
+  {                                                   \
+    for (int i = 0; i < sz; i++) {                    \
+      fprintf(fp, float_format, m->vis.rgba.name[i]); \
+    }                                                 \
+  }                                                   \
+  fprintf(fp, "\n");
+  MJVISUAL_RGBA_FIELDS
+#undef XVEC
   fprintf(fp, "\n");
 
   // total mass
@@ -592,23 +717,20 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
 
   // statistics
   fprintf(fp, "STATISTIC\n");
-  fprintf(fp, NAME_FORMAT, "  meaninertia");
-  fprintf(fp, float_format, m->stat.meaninertia);
+#define X(name, sz)                                             \
+  fprintf(fp, NAME_FORMAT, "  " #name);                         \
+  {                                                             \
+    for (int i = 0; i < sz; i++) {                              \
+      fprintf(fp, float_format, ((mjtNum*)(&m->stat.name))[i]); \
+    }                                                           \
+  }                                                             \
   fprintf(fp, "\n");
-  fprintf(fp, NAME_FORMAT, "  meanmass");
-  fprintf(fp, float_format, m->stat.meanmass);
+#define XVEC X
+
+  MJSTATISTIC_FIELDS
+#undef XVEC
+#undef X
   fprintf(fp, "\n");
-  fprintf(fp, NAME_FORMAT, "  meansize");
-  fprintf(fp, float_format, m->stat.meansize);
-  fprintf(fp, "\n");
-  fprintf(fp, NAME_FORMAT, "  extent");
-  fprintf(fp, float_format, m->stat.extent);
-  fprintf(fp, "\n");
-  fprintf(fp, NAME_FORMAT, "  center");
-  fprintf(fp, float_format, m->stat.center[0]);
-  fprintf(fp, float_format, m->stat.center[1]);
-  fprintf(fp, float_format, m->stat.center[2]);
-  fprintf(fp, "\n\n");
 
   // qpos0
   fprintf(fp, NAME_FORMAT, "qpos0");
@@ -636,7 +758,7 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
   (void)nu;
   (void)nmocap;
 
-  const int* object_class;
+  const mjtSize* object_class;
 
 #define X(type, name, num, sz)                                              \
   if (&m->num == object_class && sz > 0) {                                  \
@@ -645,6 +767,8 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
                                   float:   float_format,                    \
                                   int:     INT_FORMAT,                      \
                                   mjtByte: INT_FORMAT,                      \
+                                  mjtBool: INT_FORMAT,                      \
+                                  mjtSize: SIZE_FORMAT,                     \
                                   default: NULL);                           \
     if (format) {                                                           \
       fprintf(fp, "  ");                                                    \
@@ -1070,7 +1194,7 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
 
   // BVHs
   fprintf(fp, "BVH:\n");
-  fprintf(fp, "  %-8s%-8s%-8s%-10s%-s\n","id", "depth", "nodeid", "child[0]" ,"child[1]");
+  fprintf(fp, "  %-8s%-8s%-8s%-10s%-s\n", "id", "depth", "nodeid", "child[0]", "child[1]");
   for (int i=0; i < m->nbvh; i++) {
     fprintf(fp, "  %-8d%-8d% -8d% -10d% -d\n",
             i, m->bvh_depth[i], m->bvh_nodeid[i], m->bvh_child[2*i], m->bvh_child[2*i+1]);
@@ -1081,7 +1205,6 @@ void mj_printFormattedModel(const mjModel* m, const char* filename, const char* 
     fclose(fp);
   }
 }
-
 
 // print mjModel to text file
 void mj_printModel(const mjModel* m, const char* filename) {
@@ -1148,6 +1271,8 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
         d->name,                                                              \
         int : INT_FORMAT,                                                     \
         mjtSize : SIZE_FORMAT,                                                \
+        mjtByte : INT_FORMAT,                                                 \
+        mjtBool : INT_FORMAT,                                                 \
         default : NULL);                                                      \
     if (format) {                                                             \
       fprintf(fp, "  ");                                                      \
@@ -1239,6 +1364,36 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
   printArray2d("QPOS", m->nq, 1, d->qpos, fp, float_format);
   printArray2d("QVEL", m->nv, 1, d->qvel, fp, float_format);
   printArray2d("ACT", m->na, 1, d->act, fp, float_format);
+
+  // print history buffers with semantic structure
+  if (m->nhistory) {
+    fprintf(fp, "DELAY\n");
+
+    // actuator history buffers
+    for (int i = 0; i < m->nu; i++) {
+      int adr = m->actuator_historyadr[i];
+      if (adr >= 0) {
+        char name[100];
+        const char* actuator_name = mj_id2name(m, mjOBJ_ACTUATOR, i);
+        snprintf(name, sizeof(name), "actuator %d '%s'", i, actuator_name ? actuator_name : "");
+        printDelayBuffer(name, d->history + adr, m->actuator_history[2*i], 1, fp, float_format);
+      }
+    }
+
+    // sensor history buffers
+    for (int i = 0; i < m->nsensor; i++) {
+      int adr = m->sensor_historyadr[i];
+      if (adr >= 0) {
+        char name[100];
+        const char* sensor_name = mj_id2name(m, mjOBJ_SENSOR, i);
+        snprintf(name, sizeof(name), "sensor %d  '%s'", i, sensor_name ? sensor_name : "");
+        printDelayBuffer(name, d->history + adr, m->sensor_history[2*i], m->sensor_dim[i],
+                         fp, float_format);
+      }
+    }
+
+    fprintf(fp, "\n");
+  }
   printArray2d("QACC_WARMSTART", m->nv, 1, d->qacc_warmstart, fp, float_format);
   printArray2d("CTRL", m->nu, 1, d->ctrl, fp, float_format);
   printArray2d("QFRC_APPLIED", m->nv, 1, d->qfrc_applied, fp, float_format);
@@ -1280,30 +1435,20 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
 
   printArray2d("FLEXVERT_XPOS", m->nflexvert, 3, d->flexvert_xpos, fp, float_format);
   printArray2d("FLEXELEM_AABB", m->nflexelem, 6, d->flexelem_aabb, fp, float_format);
-  if (!mj_isSparse(m)) {
-    printArray2d("FLEXEDGE_J", m->nflexedge, m->nv, d->flexedge_J, fp, float_format);
-  } else {
-    mj_printSparsity("FLEXEDGE_J: flex edge connectivity", m->nflexedge, m->nv,
-                     d->flexedge_J_rowadr, NULL, d->flexedge_J_rownnz, NULL, d->flexedge_J_colind,
-                     fp);
-    printArray2dInt("FLEXEDGE_J_ROWNNZ", m->nflexedge, 1, d->flexedge_J_rownnz, fp);
-    printArray2dInt("FLEXEDGE_J_ROWADR", m->nflexedge, 1, d->flexedge_J_rowadr, fp);
-    printSparse("FLEXEDGE_J", d->flexedge_J, m->nflexedge, d->flexedge_J_rownnz,
-                              d->flexedge_J_rowadr, d->flexedge_J_colind, fp, float_format);
-  }
+  mj_printSparsity("FLEXEDGE_J: flex edge connectivity", m->nflexedge, m->nv,
+                    m->flexedge_J_rowadr, NULL, m->flexedge_J_rownnz, NULL, m->flexedge_J_colind,
+                    fp);
+  printSparse("FLEXEDGE_J", d->flexedge_J, m->nflexedge, m->flexedge_J_rownnz,
+                            m->flexedge_J_rowadr, m->flexedge_J_colind, fp, float_format);
   printArray2d("FLEXEDGE_LENGTH", m->nflexedge, 1, d->flexedge_length, fp, float_format);
 
   printArray2d("TEN_LENGTH", m->ntendon, 1, d->ten_length, fp, float_format);
-  if (!mj_isSparse(m)) {
-    printArray2d("TEN_MOMENT", m->ntendon, m->nv, d->ten_J, fp, float_format);
-  } else {
-    mj_printSparsity("TEN_J: tendon moments", m->ntendon, m->nv, d->ten_J_rowadr, NULL,
-                     d->ten_J_rownnz, NULL, d->ten_J_colind, fp);
-    printArray2dInt("TEN_J_ROWNNZ", m->ntendon, 1, d->ten_J_rownnz, fp);
-    printArray2dInt("TEN_J_ROWADR", m->ntendon, 1, d->ten_J_rowadr, fp);
-    printSparse("TEN_J", d->ten_J, m->ntendon, d->ten_J_rownnz,
-                d->ten_J_rowadr, d->ten_J_colind, fp, float_format);
-  }
+  mj_printSparsity("TEN_J: tendon moments", m->ntendon, m->nv, m->ten_J_rowadr, NULL,
+                   m->ten_J_rownnz, NULL, m->ten_J_colind, fp);
+  printArray2dInt("TEN_J_ROWNNZ", m->ntendon, 1, m->ten_J_rownnz, fp);
+  printArray2dInt("TEN_J_ROWADR", m->ntendon, 1, m->ten_J_rowadr, fp);
+  printSparse("TEN_J", d->ten_J, m->ntendon, m->ten_J_rownnz,
+              m->ten_J_rowadr, m->ten_J_colind, fp, float_format);
   for (int i=0; i < m->ntendon; i++) {
     fprintf(fp, "TENDON %d: %d wrap points\n", i, d->ten_wrapnum[i]);
     for (int j=0; j < d->ten_wrapnum[i]; j++) {
@@ -1333,8 +1478,8 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
     mj_printBlockSparsity("iM: block-diagonal inertia (nnzs are island ids)",
                           d->nidof, d->nidof, d->nisland,
                           d->island_nv, d->island_idofadr,
-                          d->dof_island, d->map_idof2dof,
-                          d->iM_rownnz, d->iM_rowadr, d->iM_colind, NULL, fp);
+                          d->dof_island, d->map_idof2dof, d->map_idof2dof,
+                          m->M_rownnz, m->M_rowadr, m->M_colind, NULL, fp);
   }
 
   if (!mju_isZero(d->qHDiagInv, m->nv)) {
@@ -1402,7 +1547,6 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
     mjtNum force[6] = {0};
     mj_contactForce(m, d, i, force);
     printVector("     force        ", force, 6, fp, float_format);
-
   }
   if (d->ncon) fprintf(fp, "\n");
 
@@ -1412,9 +1556,10 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
   if (!mj_isSparse(m)) {
     printArray2d("EFC_J", d->nefc, m->nv, d->efc_J, fp, float_format);
     if (d->nisland) {
-      printBlockArray("IEFC_J", d->iefc_J, d->nefc, d->nidof,
+      printBlockArray("IEFC_J", d->efc_J, m->nv,
                       d->nisland, d->island_nefc, d->island_nv,
                       d->island_iefcadr, d->island_idofadr,
+                      d->map_iefc2efc, d->map_idof2dof,
                       fp, float_format);
     }
     printArray2d("EFC_AR", d->nefc, d->nefc, d->efc_AR, fp, float_format);
@@ -1425,13 +1570,18 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
                 d->efc_J_rowadr, d->efc_J_colind, fp, float_format);
     mj_printSparsity("J: constraint Jacobian", d->nefc, m->nv, d->efc_J_rowadr, NULL,
                      d->efc_J_rownnz, d->efc_J_rowsuper, d->efc_J_colind, fp);
+    if (d->nY) {
+      mj_printSparsity("EFC_Y: inverse constraint inertia square root", d->nefc, m->nv,
+                       d->efc_Y_rowadr, NULL, d->efc_Y_rownnz, d->efc_J_rowsuper,
+                       d->efc_Y_colind, fp);
+    }
     if (d->nisland) {
       mj_printBlockSparsity("IEFC_J: block-diagonalized constraint Jacobian (nnzs are island ids)",
                             d->nefc, d->nidof, d->nisland,
                             d->island_nv, d->island_idofadr,
-                            d->efc_island, d->map_iefc2efc,
-                            d->iefc_J_rownnz, d->iefc_J_rowadr, d->iefc_J_colind,
-                            d->iefc_J_rowsuper, fp);
+                            d->efc_island, d->map_iefc2efc, d->map_idof2dof,
+                            d->efc_J_rownnz, d->efc_J_rowadr, d->efc_J_colind,
+                            d->efc_J_rowsuper, fp);
     }
 
     if (mj_isDual(m)) {
@@ -1439,7 +1589,7 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
       printArray2dInt("EFC_AR_ROWADR", d->nefc, 1, d->efc_AR_rowadr, fp);
       printSparse("EFC_AR", d->efc_AR, d->nefc, d->efc_AR_rownnz,
                   d->efc_AR_rowadr, d->efc_AR_colind, fp, float_format);
-      mj_printSparsity("efc_AR: inverse constraint inertia", d->nefc, d->nefc, d->efc_AR_rowadr,
+      mj_printSparsity("EFC_AR: inverse constraint inertia", d->nefc, d->nefc, d->efc_AR_rowadr,
                        NULL, d->efc_AR_rownnz, NULL, d->efc_AR_colind, fp);
     }
   }
@@ -1447,7 +1597,7 @@ void mj_printFormattedData(const mjModel* m, const mjData* d, const char* filena
   printArray2d("EFC_POS", d->nefc, 1, d->efc_pos, fp, float_format);
   printArray2d("EFC_MARGIN", d->nefc, 1, d->efc_margin, fp, float_format);
   printArray2d("EFC_FRICTIONLOSS", d->nefc, 1, d->efc_frictionloss, fp, float_format);
-  printArray2d("EFC_DIAGAPPROX", d->nefc, 1, d->efc_diagApprox, fp, float_format);
+  printArray2d("EFC_DIAGA", d->nefc, 1, d->efc_diagA, fp, float_format);
   printArray2d("EFC_KBIP", d->nefc, 4, d->efc_KBIP, fp, float_format);
   printArray2d("EFC_D", d->nefc, 1, d->efc_D, fp, float_format);
   printArray2d("EFC_R", d->nefc, 1, d->efc_R, fp, float_format);

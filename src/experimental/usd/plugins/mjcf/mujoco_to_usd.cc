@@ -15,6 +15,7 @@
 #include "mjcf/mujoco_to_usd.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <numbers>
 #include <string>
@@ -66,7 +67,6 @@
 #include <pxr/usd/usdPhysics/sphericalJoint.h>
 #include <pxr/usd/usdPhysics/tokens.h>
 #include <pxr/usd/usdShade/tokens.h>
-#include <pxr/usdImaging/usdImaging/tokens.h>
 
 namespace {
 
@@ -117,6 +117,19 @@ TF_DEFINE_PRIVATE_TOKENS(kTokens,
                          ((sourceMesh, pxr::UsdGeomTokens->Mesh))
                          ((inputsNormal, "inputs:normal"))
                          ((joint, "Joint"))
+                         (UsdPrimvarReader_float2)
+                         (UsdUVTexture)
+                         (UsdPreviewSurface)
+                         ((NewtonMaterialAPI, "NewtonMaterialAPI"))
+                         ((NewtonMeshCollisionAPI, "NewtonMeshCollisionAPI"))
+                         ((newtonTorsionalFriction, "newton:torsionalFriction"))
+                         ((newtonRollingFriction, "newton:rollingFriction"))
+                         ((newtonMaxHullVertices, "newton:maxHullVertices"))
+                         ((newtonMaxSolverIterations, "newton:maxSolverIterations"))
+                         ((newtonTimeStepsPerSecond, "newton:timeStepsPerSecond"))
+                         ((newtonGravityEnabled, "newton:gravityEnabled"))
+                         ((newtonContactMargin, "newton:contactMargin"))
+                         ((newtonContactGap, "newton:contactGap"))
                         );
 
 // Using to satisfy TF_REGISTRY_FUNCTION macro below and avoid operating in PXR_NS.
@@ -391,8 +404,11 @@ class ModelWriter {
     WriteUniformAttribute(mesh_spec, pxr::SdfValueTypeNames->Token,
                           MjcPhysicsTokens->mjcInertia, inertia);
 
-    WriteUniformAttribute(mesh_spec, pxr::SdfValueTypeNames->Int,
-                          MjcPhysicsTokens->mjcMaxhullvert, mesh->maxhullvert);
+    // Newton mesh attribute (replaces deprecated mjc:maxhullvert)
+    if (mesh->maxhullvert != -1) {
+      WriteUniformAttribute(mesh_spec, pxr::SdfValueTypeNames->Int,
+                            kTokens->newtonMaxHullVertices, mesh->maxhullvert);
+    }
 
     // NOTE: The geometry data taken from the spec is the post-compilation
     // data after it has been mjCMesh::Compile'd. So don't be surprised if
@@ -498,7 +514,7 @@ class ModelWriter {
 
     const std::vector<std::pair<pxr::TfToken, double>>
         option_double_attributes = {
-            {MjcPhysicsTokens->mjcOptionTimestep, spec_->option.timestep},
+            // mjc:option:timestep deprecated in favor of newton:timeStepsPerSecond
             {MjcPhysicsTokens->mjcOptionTolerance, spec_->option.tolerance},
             {MjcPhysicsTokens->mjcOptionLs_tolerance,
              spec_->option.ls_tolerance},
@@ -517,7 +533,7 @@ class ModelWriter {
     }
 
     const std::vector<std::pair<pxr::TfToken, int>> option_int_attributes = {
-        {MjcPhysicsTokens->mjcOptionIterations, spec_->option.iterations},
+        // mjc:option:iterations deprecated in favor of newton:maxSolverIterations
         {MjcPhysicsTokens->mjcOptionLs_iterations, spec_->option.ls_iterations},
         {MjcPhysicsTokens->mjcOptionNoslip_iterations,
          spec_->option.noslip_iterations},
@@ -647,7 +663,6 @@ class ModelWriter {
     };
 
     const std::vector<std::pair<pxr::TfToken, int>> enable_flags = {
-        {MjcPhysicsTokens->mjcFlagMulticcd, mjENBL_MULTICCD},
         {MjcPhysicsTokens->mjcFlagFwdinv, mjENBL_FWDINV},
         {MjcPhysicsTokens->mjcFlagEnergy, mjENBL_ENERGY},
         {MjcPhysicsTokens->mjcFlagOverride, mjENBL_OVERRIDE},
@@ -664,7 +679,7 @@ class ModelWriter {
         {MjcPhysicsTokens->mjcFlagContact, mjDSBL_CONTACT},
         {MjcPhysicsTokens->mjcFlagSpring, mjDSBL_SPRING},
         {MjcPhysicsTokens->mjcFlagDamper, mjDSBL_DAMPER},
-        {MjcPhysicsTokens->mjcFlagGravity, mjDSBL_GRAVITY},
+        // mjc:flag:gravity deprecated in favor of newton:gravityEnabled
         {MjcPhysicsTokens->mjcFlagClampctrl, mjDSBL_CLAMPCTRL},
         {MjcPhysicsTokens->mjcFlagWarmstart, mjDSBL_WARMSTART},
         {MjcPhysicsTokens->mjcFlagFilterparent, mjDSBL_FILTERPARENT},
@@ -675,7 +690,8 @@ class ModelWriter {
         {MjcPhysicsTokens->mjcFlagEulerdamp, mjDSBL_EULERDAMP},
         {MjcPhysicsTokens->mjcFlagAutoreset, mjDSBL_AUTORESET},
         {MjcPhysicsTokens->mjcFlagNativeccd, mjDSBL_NATIVECCD},
-        {MjcPhysicsTokens->mjcFlagIsland, mjDSBL_ISLAND}};
+        {MjcPhysicsTokens->mjcFlagIsland, mjDSBL_ISLAND},
+        {MjcPhysicsTokens->mjcFlagMulticcd, mjDSBL_MULTICCD}};
     for (const auto &[token, flag] : disable_flags) {
       create_flag_attr(token, flag, false);
     }
@@ -745,6 +761,19 @@ class ModelWriter {
     WriteUniformAttribute(physics_scene_spec, pxr::SdfValueTypeNames->Bool,
                           MjcPhysicsTokens->mjcCompilerSaveInertial,
                           (bool)spec_->compiler.saveinertial);
+
+    // Newton scene attributes (auto-applied via MjcSceneAPI -> NewtonSceneAPI)
+    WriteUniformAttribute(physics_scene_spec, pxr::SdfValueTypeNames->Int,
+                          kTokens->newtonMaxSolverIterations,
+                          spec_->option.iterations);
+    if (spec_->option.timestep > 0) {
+      WriteUniformAttribute(physics_scene_spec, pxr::SdfValueTypeNames->Int,
+                            kTokens->newtonTimeStepsPerSecond,
+                            static_cast<int>(std::round(1.0 / spec_->option.timestep)));
+    }
+    bool gravity_disabled = spec_->option.disableflags & mjDSBL_GRAVITY;
+    WriteUniformAttribute(physics_scene_spec, pxr::SdfValueTypeNames->Bool,
+                          kTokens->newtonGravityEnabled, !gravity_disabled);
   }
 
   void WriteMeshes() {
@@ -775,7 +804,7 @@ class ModelWriter {
         layer_, uvmap_shader_spec, pxr::UsdShadeTokens->infoId,
         pxr::SdfValueTypeNames->Token, pxr::SdfVariabilityUniform);
     SetAttributeDefault(layer_, uvmap_info_id_attr,
-                        pxr::UsdImagingTokens->UsdPrimvarReader_float2);
+                        kTokens->UsdPrimvarReader_float2);
 
     auto uvmap_varname_attr =
         CreateAttributeSpec(layer_, uvmap_shader_spec, kTokens->inputsVarname,
@@ -800,7 +829,7 @@ class ModelWriter {
         layer_, texture_shader_spec, pxr::UsdShadeTokens->infoId,
         pxr::SdfValueTypeNames->Token, pxr::SdfVariabilityUniform);
     SetAttributeDefault(layer_, texture_info_id_attr,
-                        pxr::UsdImagingTokens->UsdUVTexture);
+                        kTokens->UsdUVTexture);
 
     auto texture_file_attr =
         CreateAttributeSpec(layer_, texture_shader_spec, kTokens->inputsFile,
@@ -866,16 +895,13 @@ class ModelWriter {
                             pxr::UsdPhysicsTokens->physicsDynamicFriction,
                             (float)geom->friction[0]);
     }
-    if (geom->friction[1] != geom_default->friction[1]) {
-      WriteUniformAttribute(material_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcTorsionalfriction,
-                            geom->friction[1]);
-    }
-    if (geom->friction[2] != geom_default->friction[2]) {
-      WriteUniformAttribute(material_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcRollingfriction,
-                            geom->friction[2]);
-    }
+    // Newton material attributes (replaces deprecated mjc:torsionalfriction / mjc:rollingfriction)
+    WriteUniformAttribute(material_spec, pxr::SdfValueTypeNames->Float,
+                          kTokens->newtonTorsionalFriction,
+                          (float)geom->friction[1]);
+    WriteUniformAttribute(material_spec, pxr::SdfValueTypeNames->Float,
+                          kTokens->newtonRollingFriction,
+                          (float)geom->friction[2]);
 
     return material_spec;
   }
@@ -899,7 +925,7 @@ class ModelWriter {
         layer_, preview_surface_shader_spec, pxr::UsdShadeTokens->infoId,
         pxr::SdfValueTypeNames->Token, pxr::SdfVariabilityUniform);
     SetAttributeDefault(layer_, info_id_attr,
-                        pxr::UsdImagingTokens->UsdPreviewSurface);
+                        kTokens->UsdPreviewSurface);
 
     // Connect material's surface output to the preview surface's surface
     // output.
@@ -1704,11 +1730,13 @@ class ModelWriter {
           MjcPhysicsTokens->mjcSolimp,
           pxr::VtArray<double>(geom->solimp, geom->solimp + mjNIMP));
 
-      WriteUniformAttribute(geom_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcMargin, geom->margin);
-
-      WriteUniformAttribute(geom_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcGap, geom->gap);
+      // Newton collision attributes (replaces deprecated mjc:margin / mjc:gap)
+      WriteUniformAttribute(geom_spec, pxr::SdfValueTypeNames->Float,
+                            kTokens->newtonContactMargin,
+                            static_cast<float>(geom->margin));
+      WriteUniformAttribute(geom_spec, pxr::SdfValueTypeNames->Float,
+                            kTokens->newtonContactGap,
+                            static_cast<float>(geom->gap));
 
       if (geom->mass >= mjMINVAL || geom->density >= mjMINVAL) {
         ApplyApiSchema(layer_, geom_spec, pxr::UsdPhysicsTokens->PhysicsMassAPI);
@@ -2077,7 +2105,7 @@ class ModelWriter {
                                joint->solimp_friction + mjNIMP));
 
       WriteUniformAttribute(joint_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcStiffness, joint->stiffness);
+                            MjcPhysicsTokens->mjcStiffness, joint->stiffness[0]);
 
       WriteUniformAttribute(joint_spec, pxr::SdfValueTypeNames->Double,
                             MjcPhysicsTokens->mjcActuatorfrcrangeMin,
@@ -2114,7 +2142,7 @@ class ModelWriter {
                             MjcPhysicsTokens->mjcArmature, joint->armature);
 
       WriteUniformAttribute(joint_spec, pxr::SdfValueTypeNames->Double,
-                            MjcPhysicsTokens->mjcDamping, joint->damping);
+                            MjcPhysicsTokens->mjcDamping, joint->damping[0]);
 
       WriteUniformAttribute(joint_spec, pxr::SdfValueTypeNames->Double,
                             MjcPhysicsTokens->mjcFrictionloss,
