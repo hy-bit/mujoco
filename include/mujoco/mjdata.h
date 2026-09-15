@@ -38,7 +38,6 @@ typedef struct mjContact_ {        // result of collision detection functions
   // contact parameters set by narrowphase collision function
   mjtNum  dist;                    // distance between nearest points; neg: penetration
   mjtNum  pos[3];                  // position of contact point: midpoint between geoms     hy: 参考全局系
-
   // hy: 参考全局系,0-2元（行优先下，矩阵的第一行）表示其x轴,即接触法线轴，这与其他矩阵的一列表示一个轴不一致，表明该矩阵取了转置
   // 注释中的points from geom[0] to geom[1]是直观的geom到geom的含义，而非指其上某个点
   mjtNum  frame[9];                // normal is in [0-2], points from geom[0] to geom[1]    
