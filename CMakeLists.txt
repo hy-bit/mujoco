@@ -38,6 +38,7 @@ enable_language(C)
 enable_language(CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(MujocoNatvis)
 
 if(NOT EMSCRIPTEN)
   option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" ON)

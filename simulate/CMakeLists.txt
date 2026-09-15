@@ -139,6 +139,9 @@ if(SIMULATE_BUILD_EXECUTABLE)
   endif()
 
   add_executable(simulate main.cc array_safety.h ${SIMULATE_RESOURCE_FILES})
+  if(MSVC)
+    mujoco_target_add_natvis(simulate)
+  endif()
   target_compile_options(simulate PUBLIC ${MUJOCO_SIMULATE_COMPILE_OPTIONS})
   if(WIN32)
     add_custom_command(
