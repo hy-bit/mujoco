@@ -373,7 +373,7 @@ typedef struct mjModel_ {
   // hy: 每个体的weldid是与其一路fix连接过来（无相对自由度）的、最靠内的那个体的id,
   // 若为0则表示该体与world一路fix连过来，是固定的
   // 若为其本身id，则表示该体与父体不是fix连接
-  // int*      body_weldid;          // top ancestor with no dofs to this body   (nbody x 1)  
+  int*      body_weldid;          // top dof-less ancestor; mocap: own root   (nbody x 1)
   int*      body_mocapid;         // id of mocap data; -1: none               (nbody x 1)
   int*      body_jntnum;          // number of joints for this body           (nbody x 1)
   int*      body_jntadr;          // start addr of joints; -1: no joints      (nbody x 1)
@@ -383,7 +383,7 @@ typedef struct mjModel_ {
   int*      body_geomnum;         // number of geoms                          (nbody x 1)
   int*      body_geomadr;         // start addr of geoms; -1: no geoms        (nbody x 1)
   // hy: worldbody以及其没有自由度的子体被设置为1类simple
-  mjtByte*  body_simple;          // 1: diag M; 2: diag M, sliders only       (nbody x 1)   
+  mjtByte*  body_simple;          // 1: diag M; 2: diag M, sliders only       (nbody x 1)
   mjtByte*  body_sameframe;       // same frame as inertia (mjtSameframe)     (nbody x 1)
   mjtNum*   body_pos;             // position offset rel. to parent body      (nbody x 3)
   mjtNum*   body_quat;            // orientation offset rel. to parent body   (nbody x 4)
@@ -440,7 +440,7 @@ typedef struct mjModel_ {
   int*      dof_jntid;            // id of dof's joint                        (nv x 1)
   // hy: dof_parentid[i]存储每个DOF i的父DOF的ID，对单自由度关节，其父自由度是父体的自由度；对
   // 多自由度关节（如球关节），多个自由度之间是逐次父子关系，而首自由度的父自由度是父体自由度
-  int*      dof_parentid;         // id of dof's parent; -1: none             (nv x 1)          
+  int*      dof_parentid;         // id of dof's parent; -1: none             (nv x 1)
   int*      dof_treeid;           // id of dof's kinematic tree               (nv x 1)
   int*      dof_Madr;             // dof address in M-diagonal                (nv x 1)
   int*      dof_simplenum;        // number of consecutive simple dofs        (nv x 1)
