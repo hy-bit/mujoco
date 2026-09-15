@@ -37,8 +37,11 @@ typedef struct mjPreContact_ {     // contact parameters set by narrowphase coll
 typedef struct mjContact_ {        // result of collision detection functions
   // contact parameters set by narrowphase collision function
   mjtNum  dist;                    // distance between nearest points; neg: penetration
-  mjtNum  pos[3];                  // position of contact point: midpoint between geoms
-  mjtNum  frame[9];                // normal is in [0-2], points from geom[0] to geom[1]
+  mjtNum  pos[3];                  // position of contact point: midpoint between geoms     hy: 参考全局系
+
+  // hy: 参考全局系,0-2元（行优先下，矩阵的第一行）表示其x轴,即接触法线轴，这与其他矩阵的一列表示一个轴不一致，表明该矩阵取了转置
+  // 注释中的points from geom[0] to geom[1]是直观的geom到geom的含义，而非指其上某个点
+  mjtNum  frame[9];                // normal is in [0-2], points from geom[0] to geom[1]    
 
   // contact parameters set by mj_collideGeoms
   mjtNum  includemargin;           // margin for force generation
@@ -97,7 +100,9 @@ typedef struct mjSolverStat_ {  // per-iteration solver statistics
 //---------------------------------- mjData --------------------------------------------------------
 
 typedef struct mjData_ {
-  // constant sizes
+    mjModel* m;  // 指向m的指针，用于可视化debug
+    
+    // constant sizes
   mjtSize narena;            // size of the arena in bytes (inclusive of the stack)
   mjtSize nbuffer;           // size of main buffer in bytes
   int     nplugin;           // number of plugin instances
@@ -229,8 +234,13 @@ typedef struct mjData_ {
   mjtNum* light_xdir;        // Cartesian light direction                        (nlight x 3)
 
   // computed by mj_fwdPosition/mj_comPos
+  // hy：每个体以自身为root的子树的质心，注意每个体的subtree_com都可能不一样，与cdof的参考点不同
   mjtNum* subtree_com;       // center of mass of each subtree                   (nbody x 3)
   mjtNum* cdof;              // com-based motion axis of each dof (rot:lin)      (nv x 6)
+  // hy: 一级子树质心处的空间惯性
+  // cinert[0-5]：体惯性阵的上三角部分
+  // cinert[6 - 8]：体质量乘质心相对于 c - frame 原点的偏移量
+  // cinert[9]：体质量
   mjtNum* cinert;            // com-based body inertia and mass                  (nbody x 10)
 
   // computed by mj_fwdPosition/mj_flex
@@ -260,7 +270,7 @@ typedef struct mjData_ {
 
   // computed by mj_fwdPosition/mj_makeM
   mjtNum* crb;               // com-based composite inertia and mass             (nbody x 10)
-  mjtNum* M;                 // inertia (sparse)                                 (nC x 1)
+  mjtNum* M;                 // inertia (sparse)                                 (nC x 1)	// 无分支时，M存储下三角
 
   // computed by mj_fwdPosition/mj_factorM
   mjtNum* qLD;               // L'*D*L factorization of M (sparse)               (nC x 1)
@@ -284,6 +294,7 @@ typedef struct mjData_ {
   mjtNum* actuator_velocity; // actuator velocities, one per force output        (nout x 1)
 
   // computed by mj_fwdVelocity/mj_comVel
+  // hy：每个体的速度，对于线速度,取所在一级子树质心处的速度(即对同一个链上的所有体的线速度，都取同一个位置的)
   mjtNum* cvel;              // com-based velocity (rot:lin)                     (nbody x 6)
   mjtNum* cdof_dot;          // time-derivative of cdof (rot:lin)                (nv x 6)
 
@@ -341,6 +352,11 @@ typedef struct mjData_ {
 
   // computed by mj_makeConstraint
   int*    efc_type;          // constraint type (mjtConstraint)                  (nefc x 1)
+  // hy: efc_id是每一行约束方程，对应的源对象的id，具体含义根据约束类型有所不同
+  // 等式约束: efc_id是mjModel 里的 equality 索引（0~neq-1）
+  // 摩擦约束的：。。。
+  // 关节限位的：是mjModel 里的 joint 索引（0~njnt-1）
+  // 接触约束：是该行约束对应的约束对Id（在d->contact里面的序号，0~ncon-1）
   int*    efc_id;            // id of object of specified type                   (nefc x 1)
   int*    efc_J_rownnz;      // number of non-zeros in constraint Jacobian row   (nefc x 1)
   int*    efc_J_rowadr;      // row start address in colind array                (nefc x 1)

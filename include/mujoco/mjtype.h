@@ -590,6 +590,21 @@ typedef enum mjtTimer {             // internal timers
   mjTIMER_COL_BROAD,                // broadphase
   mjTIMER_COL_NARROW,               // narrowphase
 
+  // breakdown of fwdConstraint
+  mjTIMER_CONSTRAINT_JAC,           // J*qacc_smooth - aref
+  mjTIMER_CONSTRAINT_WARMSTART,     // warmstart
+  mjTIMER_CONSTRAINT_ISLAND,        // island gather/solve/scatter
+  mjTIMER_CONSTRAINT_SOLVER_PGS,    // monolithic PGS dispatch
+  mjTIMER_CONSTRAINT_SOLVER_CG,     // monolithic CG dispatch
+  mjTIMER_CONSTRAINT_SOLVER_NEWTON, // monolithic Newton dispatch
+
+  // breakdown inside solver functions
+  mjTIMER_SOLVER_PGS,               // mj_solPGS total
+  mjTIMER_SOLVER_CG,                // mj_solCG total
+  mjTIMER_SOLVER_NEWTON,            // mj_solNewton total
+  mjTIMER_SOLVER_CGNEWTON_PREP,     // CG/Newton shared setup + updates
+  mjTIMER_SOLVER_CGNEWTON_LINESEARCH,  // CG/Newton line-search
+
   mjNTIMER                          // number of timers
 } mjtTimer;
 

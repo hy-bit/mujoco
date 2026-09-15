@@ -16,6 +16,9 @@
 
 #include "src/engine/engine_inverse.h"
 
+#include <filesystem>
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -32,13 +35,34 @@ using ::testing::NotNull;
 using InverseTest = MujocoTest;
 
 const int kSteps = 70;
-static const char* const kModelPath = "testdata/model.xml";
+const std::string kModelPath =
+    (std::filesystem::path(__FILE__).parent_path().parent_path() /
+     "testdata" / "model.xml")
+        .string();
+const std::string kPendulumPath =
+    (std::filesystem::path(__FILE__).parent_path().parent_path() /
+     "testdata" / "simple_pendulum.xml")
+        .string();
+const std::string kFreeBodyPath =
+    (std::filesystem::path(__FILE__).parent_path().parent_path() /
+     "testdata" / "free_body.xml")
+        .string();
+
+void PrintVector(std::ostream& os, const mjtNum* v, int n) {
+  os << "(";
+  for (int i = 0; i < n; ++i) {
+    if (i > 0) {
+      os << ", ";
+    }
+    os << v[i];
+  }
+  os << ")";
+}
 
 // test standard continuous-time inverse dynamics
 TEST_F(InverseTest, ForwardInverseMatch) {
-  const std::string xml_path = GetTestDataFilePath(kModelPath);
   char error[1024];
-  mjModel* model = mj_loadXML(xml_path.c_str(), nullptr, error, sizeof(error));
+  mjModel* model = mj_loadXML(kModelPath.c_str(), nullptr, error, sizeof(error));
   ASSERT_THAT(model, NotNull()) << error;
   mjData* data = mj_makeData(model);
 
@@ -96,9 +120,8 @@ TEST_F(InverseTest, ForwardInverseMatch) {
 // test discrete-time inverse dynamics
 TEST_F(InverseTest, DiscreteInverseMatch) {
   // load and allocate
-  const std::string xml_path = GetTestDataFilePath(kModelPath);
   char error[1024];
-  mjModel* model = mj_loadXML(xml_path.c_str(), nullptr, error, sizeof(error));
+  mjModel* model = mj_loadXML(kModelPath.c_str(), nullptr, error, sizeof(error));
   ASSERT_THAT(model, NotNull()) << error;
   int nv = model->nv;
   mjData* data = mj_makeData(model);
@@ -124,21 +147,41 @@ TEST_F(InverseTest, DiscreteInverseMatch) {
         mj_step(model, data);
       }
 
-      // save state
+#if 1  // QACC_FD_FORWARD (default)
+      // forward difference at t: (v_{t+h} - v_t) / h, compare @ t
       mj_getState(model, data, state, mjSTATE_INTEGRATION);
-
-      // call step, save new qvel
       mj_step(model, data);
       mju_copy(qvel_next, data->qvel, nv);
-
-      // reset the state, compute discrete-time (finite-differenced) qacc
       mj_setState(model, data, state, mjSTATE_INTEGRATION);
       mju_sub(qacc_fd, qvel_next, data->qvel, nv);
       mju_scl(qacc_fd, qacc_fd, 1 / model->opt.timestep, nv);
-
-      // call mj_forward, overwrite qacc with qacc_fd
       mj_forward(model, data);
       mju_copy(data->qacc, qacc_fd, nv);
+
+#elif 0 // QACC_FD_BACKWARD
+      // backward difference at t+h: (v_{t+h} - v_t) / h, compare @ t+h
+      mjtNum* qvel_t = (mjtNum*)mju_malloc(nv * sizeof(mjtNum));
+      mju_copy(qvel_t, data->qvel, nv);
+      mj_step(model, data);
+      mju_sub(qacc_fd, data->qvel, qvel_t, nv);
+      mju_scl(qacc_fd, qacc_fd, 1/model->opt.timestep, nv);
+      mj_forward(model, data);
+      mju_copy(data->qacc, qacc_fd, nv);
+      mju_free(qvel_t);
+
+#elif 0  // QACC_FD_CENTRAL
+      // central difference at t+h: (v_{t+2h} - v_t) / (2h), compare @ t+2h
+      mjtNum* qvel_t = (mjtNum*)mju_malloc(nv * sizeof(mjtNum));
+      mju_copy(qvel_t, data->qvel, nv);
+      mj_step(model, data);
+      mj_step(model, data);
+      mju_sub(qacc_fd, data->qvel, qvel_t, nv);
+      mju_scl(qacc_fd, qacc_fd, 1/(2*model->opt.timestep), nv);
+      mj_forward(model, data);
+      mju_copy(data->qacc, qacc_fd, nv);
+      mju_free(qvel_t);
+
+#endif
 
       // call built-in testing function
       mj_compareFwdInv(model, data);
@@ -286,6 +329,89 @@ TEST_F(InverseTest, DiscreteFreeJointInverseConsistency) {
   mjtNum epsilon = MjTol(5e-7, 2e-6);
   EXPECT_LT(d->solver_fwdinv[0], epsilon);
   EXPECT_LT(d->solver_fwdinv[1], epsilon);
+}
+
+// horizontal pendulum at rest: inverse dynamics should yield gravity torque
+TEST_F(InverseTest, PendulumGravityCompensation) {
+  char error[1024];
+  mjModel* model =
+      mj_loadXML(kPendulumPath.c_str(), nullptr, error, sizeof(error));
+  ASSERT_THAT(model, NotNull()) << error;
+  mjData* data = mj_makeData(model);
+
+  mj_resetData(model, data);
+  data->qpos[0] = 0;
+  mju_zero(data->qvel, model->nv);
+  mju_zero(data->qacc, model->nv);
+
+  mj_inverse(model, data);
+
+  std::cout << "\n[PendulumGravityCompensation]\n";
+  std::cout << std::setprecision(16);
+  std::cout << "  target qacc: (" << data->qacc[0] << ")\n";
+  std::cout << "  qfrc_inverse: ";
+  PrintVector(std::cout, data->qfrc_inverse, model->nv);
+  std::cout << "\n";
+
+  // qfrc_inverse equals bias force (gravity torque) at qacc=0; sign follows RNE convention
+  const mjtNum expected_torque = -1.0 * 9.81 * 1.0;
+  EXPECT_NEAR(data->qfrc_inverse[0], expected_torque, MjTol(1e-10, 1e-4));
+
+  data->qfrc_applied[0] = data->qfrc_inverse[0];
+  mj_forward(model, data);
+  std::cout << "  qacc after Forward: ";
+  PrintVector(std::cout, data->qacc, model->nv);
+  std::cout << "\n\n";
+  EXPECT_NEAR(data->qacc[0], 0, MjTol(1e-10, 1e-4));
+
+  mj_deleteData(data);
+  mj_deleteModel(model);
+}
+
+// free rigid body at rest: inverse dynamics should yield gravity compensation force
+TEST_F(InverseTest, FreeBodyGravityCompensation) {
+  char error[1024];
+  mjModel* model =
+      mj_loadXML(kFreeBodyPath.c_str(), nullptr, error, sizeof(error));
+  ASSERT_THAT(model, NotNull()) << error;
+  mjData* data = mj_makeData(model);
+  const int nv = model->nv;
+  ASSERT_EQ(nv, 6);
+
+  mj_resetData(model, data);
+  mju_zero(data->qvel, nv);
+  mju_zero(data->qacc, nv);
+
+  mj_inverse(model, data);
+
+  std::cout << "\n[FreeBodyGravityCompensation]\n";
+  std::cout << std::setprecision(16);
+  std::cout << "  target qacc: ";
+  PrintVector(std::cout, data->qacc, nv);
+  std::cout << "\n  qfrc_inverse: ";
+  PrintVector(std::cout, data->qfrc_inverse, nv);
+  std::cout << "\n";
+
+  // qfrc_inverse equals bias force at qacc=0; Z translation compensates gravity
+  EXPECT_NEAR(data->qfrc_inverse[2], 9.81, MjTol(1e-10, 1e-4));
+  for (int i = 0; i < nv; ++i) {
+    if (i == 2) {
+      continue;
+    }
+    EXPECT_NEAR(data->qfrc_inverse[i], 0, MjTol(1e-10, 1e-4)) << "dof " << i;
+  }
+
+  mju_copy(data->qfrc_applied, data->qfrc_inverse, nv);
+  mj_forward(model, data);
+  std::cout << "  qacc after Forward: ";
+  PrintVector(std::cout, data->qacc, nv);
+  std::cout << "\n\n";
+  for (int i = 0; i < nv; ++i) {
+    EXPECT_NEAR(data->qacc[i], 0, MjTol(1e-10, 1e-4)) << "dof " << i;
+  }
+
+  mj_deleteData(data);
+  mj_deleteModel(model);
 }
 
 }  // namespace

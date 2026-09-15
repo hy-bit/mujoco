@@ -344,6 +344,7 @@ void mji_quat2Vel(mjtNum* restrict res, const mjtNum quat[4], mjtNum dt) {
 
 
 // Subtract quaternions, express as 3D velocity: qb*quat(res) = qa.
+// hy: 返回的res是个旋转向量
 static inline
 void mji_subQuat(mjtNum* restrict res, const mjtNum qa[4], const mjtNum qb[4]) {
   // qdif = neg(qb)*qa

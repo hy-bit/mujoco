@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="_mjCGContext">
+    <DisplayString>
+		{{is_sparse={is_sparse}, is_elliptic={is_elliptic}, island={island}, nv={nv}, ne={ne}, nf={nf}, nefc={nefc}, nJ={nJ}, cost={cost}, scale={scale}}}
+	</DisplayString>
+    <Expand>
+		<!-- dof arrays 
+
+		<Item Name="is_sparse">is_sparse</Item>
+      <Item Name="is_elliptic">is_elliptic</Item>
+      <Item Name="island">island</Item>
+      <Item Name="nv">nv</Item>
+      <Item Name="ne">ne</Item>
+      <Item Name="nf">nf</Item>
+      <Item Name="nefc">nefc</Item>
+      <Item Name="nJ">nJ</Item>
+      <Item Name="cost">cost</Item>
+      <Item Name="scale">scale</Item>
+      <Item Name="nactive">nactive</Item>
+      <Item Name="ncone">ncone</Item>
+      <Item Name="nupdate">nupdate</Item>
+      <Item Name="LSiter">LSiter</Item>
+      <Item Name="LSresult">LSresult</Item>
+      <Item Name="LSslope">LSslope</Item>
+		-->
+		
+		<!-- dof arrays -->
+		<Synthetic Name="qfrc_smooth">
+			<DisplayString>qfrc_smooth[nv]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qfrc_smooth</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+		<Synthetic Name="qacc_smooth">
+			<DisplayString>qacc_smooth[nv]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qacc_smooth</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="qfrc_constraint">
+			<DisplayString>qfrc_constraint[nv]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qfrc_constraint</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="qacc">
+			<DisplayString>qacc[nv]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qacc</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+		<!-- inertia -->
+		<Synthetic Name="M">
+			<DisplayString>M[{M_rowadr[nv-1]+M_rownnz[nv-1]}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>M_rowadr[nv-1]+M_rownnz[nv-1]</Size>
+					<ValuePointer>M</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="qLD">
+			<DisplayString>qLD[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qLD</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="qLDiagInv">
+			<DisplayString>qLDiagInv[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>qLDiagInv</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		
+		
+		<!-- efc arrays -->
+		<Synthetic Name="efc_D">
+			<DisplayString>efc_D[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_D</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_R">
+			<DisplayString>efc_R[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_R</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_frictionloss">
+			<DisplayString>efc_frictionloss[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_frictionloss</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_aref">
+			<DisplayString>efc_aref[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_aref</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_id">
+			<DisplayString>efc_id[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_id</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_type">
+			<DisplayString>efc_type[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_type</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_force">
+			<DisplayString>efc_force[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_force</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="efc_state">
+			<DisplayString>efc_state[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>efc_state</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+		<!-- Jacobians -->
+		<Synthetic Name="J">
+			<DisplayString>J[{nJ}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nJ</Size>
+					<ValuePointer>J</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="JT">
+			<DisplayString>JT[{nJ}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nJ</Size>
+					<ValuePointer>JT</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+
+		<!-- common arrays (CGallocate) -->
+		<Synthetic Name="Jaref">
+			<DisplayString>Jaref[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>Jaref</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="Jv">
+			<DisplayString>Jv[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>Jv</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="Ma">
+			<DisplayString>Ma[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>Ma</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="Mv">
+			<DisplayString>Mv[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>Mv</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="grad">
+			<DisplayString>grad[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>grad</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="Mgrad">
+			<DisplayString>Mgrad[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>Mgrad</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="search">
+			<DisplayString>search[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>search</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="quad">
+			<DisplayString>quad[{nefc}][3]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc*3</Size>
+					<ValuePointer>quad</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+
+		<!-- Newton arrays, known-size (CGallocate) -->
+		<Synthetic Name="L">
+			<DisplayString>L[{nL}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nL</Size>
+					<ValuePointer>L</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+
+		<!-- todo -->
+      <Synthetic Name="quadGauss">
+        <DisplayString>quadGauss[3]</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>3</Size>
+            <ValuePointer>quadGauss</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+		
+      <Synthetic Name="contact">
+        <DisplayString>contact</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>nefc</Size>
+            <ValuePointer>contact</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+
+		<!-- Newton arrays, known-size (CGallocate) -->
+		<Synthetic Name="D">
+			<DisplayString>D[{nefc}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nefc</Size>
+					<ValuePointer>D</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="H_rowadr">
+			<DisplayString>H_rowadr[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>H_rowadr</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="H_rownnz">
+			<DisplayString>H_rownnz[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>H_rownnz</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="H_lowernnz">
+			<DisplayString>H_lowernnz[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>H_lowernnz</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="L_rownnz">
+			<DisplayString>L_rownnz[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>L_rownnz</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="L_rowadr">
+			<DisplayString>L_rowadr[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>L_rowadr</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="buf_ind">
+			<DisplayString>buf_ind[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>buf_ind</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		<Synthetic Name="buf_val">
+			<DisplayString>buf_val[{nv}]</DisplayString>
+			<Expand>
+				<ArrayItems>
+					<Size>nv</Size>
+					<ValuePointer>buf_val</ValuePointer>
+				</ArrayItems>
+			</Expand>
+		</Synthetic>
+		
+		
+		
+    </Expand>
+  </Type>
+</AutoVisualizer>

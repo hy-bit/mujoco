@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <mujoco/mjdata.h>
 #include <mujoco/mjmacro.h>
@@ -34,6 +35,7 @@
 #include "engine/engine_macro.h"
 #include "engine/engine_memory.h"
 #include "engine/engine_passive.h"
+#include "engine/engine_print.h"
 #include "engine/engine_plugin.h"
 #include "engine/engine_sensor.h"
 #include "engine/engine_sleep.h"
@@ -47,7 +49,7 @@
 #include "engine/engine_util_sparse.h"
 #include "engine/engine_thread.h"
 
-
+#define DBG_FLOAT_FMT  "%.10f"
 
 //--------------------------- check values ---------------------------------------------------------
 
@@ -1034,7 +1036,7 @@ void mj_fwdAcceleration(const mjModel* m, mjData* d) {
     mju_addToInd(d->qfrc_smooth, d->qfrc_actuator, index, nv);
   }
 
-  // qfrc_smooth += project(xfrc_applied)
+  // qfrc_smooth += project(xfrc_applied)       // hy: 将xfrc_applied中的外力累加
   mj_xfrcAccumulate(m, d, d->qfrc_smooth);
 
   // implicit effective metric (built in mj_fwdPosition): the smooth acceleration is that of
@@ -1123,6 +1125,8 @@ static void warmstart(const mjModel* m, mjData* d) {
     // non-PGS
     else {
       // add Gauss to cost(qacc_warmstart)
+      // qacc_warmstart的高斯惯性项：
+      // G1(qacc_warmstart) = 0.5*(qacc_warmstart - qacc_smooth)' M (qacc_warmstart - qacc_smooth)
       mjtNum* da = mjSTACKALLOC(d, nv, mjtNum);
       mjtNum* Mda = mjSTACKALLOC(d, nv, mjtNum);
       mju_sub(da, d->qacc_warmstart, d->qacc_smooth, nv);
@@ -1133,6 +1137,8 @@ static void warmstart(const mjModel* m, mjData* d) {
       cost_warmstart += 0.5 * mju_dot(da, Mda, nv);
 
       // cost(qacc_smooth)
+      // qacc_smooth的高斯惯性项为0：
+      // G1 = 0.5 * (qacc_smooth - qacc_smooth)' M (qacc_smooth - qacc_smooth)
       mjtNum cost_smooth;
       mj_constraintUpdate(m, d, d->efc_b, &cost_smooth, 0);
 
@@ -1238,8 +1244,10 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
   }
 
   // compute efc_b = J*qacc_smooth - aref
+  TM_RESTART;
   mj_mulJacVec(m, d, d->efc_b, d->qacc_smooth);
   mju_subFrom(d->efc_b, d->efc_aref, nefc);
+  TM_END(mjTIMER_CONSTRAINT_JAC);
 
   // check for invalid solver type
   if (m->opt.solver != mjSOL_PGS && m->opt.solver != mjSOL_CG && m->opt.solver != mjSOL_NEWTON) {
@@ -1247,7 +1255,9 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
   }
 
   // warmstart solver
+  TM_RESTART;
   warmstart(m, d);
+  TM_END(mjTIMER_CONSTRAINT_WARMSTART);
   mju_zeroInt(d->solver_niter, mjNISLAND);
 
   // check if islands are supported
@@ -1293,21 +1303,28 @@ void mj_fwdConstraint(const mjModel* m, mjData* d) {
         mj_solNoSlip_island(m, d, island, m->opt.noslip_iterations);
       }
     }
+    TM_END(mjTIMER_CONSTRAINT_ISLAND);
   }
 
   // run solver over all constraints (monolithic)
   else {
     switch ((mjtSolver) m->opt.solver) {
     case mjSOL_PGS:                     // PGS
+      TM_RESTART;
       mj_solPGS(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_PGS);
       break;
 
     case mjSOL_CG:                      // CG
+      TM_RESTART;
       mj_solCG(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_CG);
       break;
 
     case mjSOL_NEWTON:                  // Newton
+      TM_RESTART;
       mj_solNewton(m, d, m->opt.iterations);
+      TM_END(mjTIMER_CONSTRAINT_SOLVER_NEWTON);
       break;
     }
 
@@ -1538,7 +1555,7 @@ void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
       mju_add(qfrc, d->qfrc_smooth, d->qfrc_constraint, nv);
       mju_copy(qacc, qfrc, nv);
     }
-    mj_solveLD(qacc, d->qH, d->qHDiagInv, nv, 1,
+    mj_solveLD(qacc, d->qH, d->qHDiagInv, nv, 1,                // 求解(M +h*diag(B)) * qacc = qfrc
                m->M_rownnz, m->M_rowadr, m->M_colind, dof_awake_ind);
   }
 
@@ -1914,6 +1931,22 @@ void mj_forward(const mjModel* m, mjData* d) {
 void mj_step(const mjModel* m, mjData* d) {
   TM_START;
 
+
+  //mjtNum force[3] = {0, 0, 0};      // 力为 0
+  //mjtNum torque[3] = {0, 0.5, 0};  // 力矩 0.5（绕 z 轴）
+  // 给part17施加力矩
+  //d->xfrc_applied[6 * 18 + 0] = 0;              // 力为 0
+  //d->xfrc_applied[6 * 18 + 1] = 0;
+  //d->xfrc_applied[6 * 18 + 2] = 0;
+  //d->xfrc_applied[6 * 19 + 3] = 0;              // 力矩为 0.5（绕 y 轴）
+  //d->xfrc_applied[6 * 19 + 4] = 0.5;
+  //d->xfrc_applied[6 * 19 + 5] = 0;
+  //mj_applyFT(m, d, force, torque, d->xpos + 3*17, 17, d->qfrc_applied);
+  
+  
+  
+  //std::cout << "Simulate time = " << d->time << std::endl;
+  printf("Simulate time = %f\n", d->time);
   // common to all integrators
   mj_checkPos(m, d);
   mj_checkVel(m, d);
@@ -1924,6 +1957,11 @@ void mj_step(const mjModel* m, mjData* d) {
   if (mjENABLED(mjENBL_FWDINV)) {
     mj_compareFwdInv(m, d);
   }
+
+  //OutputResultForDebug(m,d);
+  //OutputDataForDebug(m, d);
+
+  //if(d->time>10){mjERROR("end Time.") }
 
   // use selected integrator
   switch ((mjtIntegrator) m->opt.integrator) {
@@ -2016,4 +2054,231 @@ void mj_step2(const mjModel* m, mjData* d) {
 
   d->timer[mjTIMER_STEP].number--;
   TM_END(mjTIMER_STEP);
+}
+
+
+void OutputDataForDebug(const mjModel* m, mjData* d) {
+  const char* xml_path = m->xml_path;
+  const char* last_slash1 = strrchr(xml_path, '/');
+  const char* last_slash2 = strrchr(xml_path, '\\');
+  const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
+  const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
+
+  char dir[512] = {0};
+  if (last_slash) {
+    size_t dirlen = last_slash - xml_path + 1;
+    strncpy(dir, xml_path, dirlen);
+    dir[dirlen] = '\0';
+  }
+
+  char txt_filename[512] = {0};
+  strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
+  char* dot = strrchr(txt_filename, '.');
+  if (dot) {
+    strcpy(dot, "-mjdata-full.txt");
+  } else {
+    size_t len = strlen(txt_filename);
+    if (len < sizeof(txt_filename) - 20) {
+      strcat(txt_filename, "-mjdata-full.txt");
+    } else {
+      return;
+    }
+  }
+
+  char filename[1024];
+  snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
+  mj_printData(m, d, filename);
+}
+
+
+void OutputResultForDebug(const mjModel* m, mjData* d) {
+#if 1
+
+    // 获取 xml 路径
+    const char* xml_path = m->xml_path;
+    const char* last_slash1 = strrchr(xml_path, '/');
+    const char* last_slash2 = strrchr(xml_path, '\\');
+    const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
+    const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
+
+    // 拷贝目录部分
+    char dir[512] = { 0 };
+    if (last_slash) {
+        size_t dirlen = last_slash - xml_path + 1;
+        strncpy(dir, xml_path, dirlen);
+        dir[dirlen] = '\0';
+    }
+
+    // 拷贝文件名并替换后缀为 .txt
+    char txt_filename[512] = { 0 };
+    strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
+    char* dot = strrchr(txt_filename, '.');
+    if (dot) {
+        strcpy(dot, "-mj.txt");
+    }
+    else {
+        // 没有后缀，直接加.txt
+        size_t len = strlen(txt_filename);
+        if (len < sizeof(txt_filename) - 4) {
+            strcat(txt_filename, "-mj.txt");
+        }
+    }
+
+    // 拼接完整路径
+    char filename[1024];
+    snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
+
+
+    // 检查是否为第一次仿真（time为0），如果是则清空文件内容
+    if (d->time == 0.0) {
+        FILE* fp_clear = fopen(filename, "w");
+
+        if (fp_clear) {
+            OutputTimeForDebug(fp_clear, d, 1);
+            OutputQposForDebug(fp_clear, m, d, 1);
+            OutputQvelForDebug(fp_clear, m, d, 1);
+            OutputQaccForDebug(fp_clear, m, d, 1);
+
+            //OutputEfcPosForDebug(fp_clear, m, d, 1);
+            //OutputEfcVelForDebug(fp_clear, m, d, 1);
+            //OutputEfcArefForDebug(fp_clear, m, d, 1);
+            //
+            //OutputQFrcConstraintForDebug(fp_clear, m, d, 1);
+
+            fprintf(fp_clear, "\n");
+            fclose(fp_clear);
+        }
+    }
+
+    FILE* fp = fopen(filename, "a");
+    if (!fp) return;
+
+    // 仿真时间
+    OutputTimeForDebug(fp, d, 0);
+
+    // 位置(qpos)
+    OutputQposForDebug(fp, m, d, 0);
+
+    // 速度(qvel)
+    OutputQvelForDebug(fp, m, d, 0);
+
+    // 加速度(qacc)
+    OutputQaccForDebug(fp, m, d, 0);
+
+
+	// 约束空间位置(efc_pos  )
+    //OutputEfcPosForDebug(fp, m, d, 0);
+	//// 约束空间速度(efc_vel  )
+	//OutputEfcVelForDebug(fp, m, d, 0);
+ //   // 参考加速度(efc_aref  )
+ //   OutputEfcArefForDebug(fp, m, d, 0);
+
+ //   //// 约束空间约束力(efc_force )
+ //   //OutputQaccForDebug(fp, m, d, 0);
+
+ //   // 广义坐标空间中的约束力(qfrc_constraint  )
+ //   OutputQFrcConstraintForDebug(fp, m, d, 0);
+
+    // 
+    // 
+    // 
+    // impendance相关量
+
+    // R
+    //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_R[i]);
+
+    // D
+    //for (int i = 0; i < d->nefc; ++i) fprintf(fp, "%f\t", d->efc_D[i]);
+
+    // 换行
+    fprintf(fp, "\n");
+
+    fclose(fp);
+#endif
+}
+
+
+void OutputTimeForDebug(FILE* fp, const mjData* d, int header) {
+    if (header)
+        fprintf(fp, "mj-time\t");
+    else
+        fprintf(fp, "%.5f\t", d->time);
+}
+
+void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nq; ++i)
+            fprintf(fp, "mj-qpos[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nq; ++i)
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qpos[i]);
+    }
+}
+
+void OutputQvelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qvel[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qvel[i]);
+    }
+}
+
+void OutputQaccForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qacc[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->qacc[i]);
+    }
+}
+
+void OutputQFrcConstraintForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "mj-qfrc_constraint[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < m->nv; ++i)
+            fprintf(fp, "%f\t", d->qfrc_constraint[i]);
+    }
+}
+
+
+void OutputEfcPosForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_pos[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_pos[i]);
+    }
+}
+
+void OutputEfcVelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_vel[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_vel[i]);
+    }
+}
+
+void OutputEfcArefForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_aref[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "%f\t", d->efc_aref[i]);
+    }
 }
