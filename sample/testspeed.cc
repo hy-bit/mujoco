@@ -578,8 +578,8 @@ int main(int argc, char** argv) {
   std::printf("\n");
 
   // constraint breakdown and solver internals
-  int constraint_number = d[0]->timer[mjTIMER_CONSTRAINT].number;
-  mjtNum tconstraint = constraint_number ? d[0]->timer[mjTIMER_CONSTRAINT].duration/constraint_number : 0.0;
+  int constraint_number = runner.d[0]->timer[mjTIMER_CONSTRAINT].number;
+  mjtNum tconstraint = constraint_number ? runner.d[0]->timer[mjTIMER_CONSTRAINT].duration/constraint_number : 0.0;
   if (tconstraint > 0) {
     std::printf("   constraint total : %6.1f  (%6.2f %%)\n", tconstraint, 100*tconstraint/tstep);
 
@@ -595,9 +595,9 @@ int main(int argc, char** argv) {
 
     mjtNum subtotal = 0;
     for (int timer_id : constraint_breakdown) {
-      int item_number = d[0]->timer[timer_id].number;
+      int item_number = runner.d[0]->timer[timer_id].number;
       if (item_number > 0) {
-        mjtNum avg = d[0]->timer[timer_id].duration / item_number;
+        mjtNum avg = runner.d[0]->timer[timer_id].duration / item_number;
         subtotal += avg;
         std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
                     mjTIMERSTRING[timer_id], avg, 100*avg/tstep);
@@ -610,15 +610,15 @@ int main(int argc, char** argv) {
 
     // Solver internals are shown in a separate layer to avoid double counting.
     int solver_timer_id = -1;
-    if (d[0]->timer[mjTIMER_SOLVER_NEWTON].number > 0) {
+    if (runner.d[0]->timer[mjTIMER_SOLVER_NEWTON].number > 0) {
       solver_timer_id = mjTIMER_SOLVER_NEWTON;
-    } else if (d[0]->timer[mjTIMER_SOLVER_CG].number > 0) {
+    } else if (runner.d[0]->timer[mjTIMER_SOLVER_CG].number > 0) {
       solver_timer_id = mjTIMER_SOLVER_CG;
     }
 
     if (solver_timer_id >= 0) {
-      int solver_number = d[0]->timer[solver_timer_id].number;
-      mjtNum tsolver = solver_number ? d[0]->timer[solver_timer_id].duration/solver_number : 0.0;
+      int solver_number = runner.d[0]->timer[solver_timer_id].number;
+      mjtNum tsolver = solver_number ? runner.d[0]->timer[solver_timer_id].duration/solver_number : 0.0;
       if (tsolver > 0) {
         std::printf("   %-16s : %6.1f  (%6.2f %%)\n",
                     mjTIMERSTRING[solver_timer_id], tsolver, 100*tsolver/tstep);
@@ -629,9 +629,9 @@ int main(int argc, char** argv) {
         };
         mjtNum solver_subtotal = 0;
         for (int timer_id : solver_breakdown) {
-          int item_number = d[0]->timer[timer_id].number;
+          int item_number = runner.d[0]->timer[timer_id].number;
           if (item_number > 0) {
-            mjtNum avg = d[0]->timer[timer_id].duration / item_number;
+            mjtNum avg = runner.d[0]->timer[timer_id].duration / item_number;
             solver_subtotal += avg;
             std::printf("     %-24s : %6.1f  (%6.2f %%)\n",
                         mjTIMERSTRING[timer_id], avg, 100*avg/tstep);
