@@ -85,6 +85,8 @@ set(MUJOCO_ENGINE_SRCS
     engine_support.h
     engine_thread.cc
     engine_thread.h
+    tree_profiler.cc
+    tree_profiler.h
     engine_util_blas.c
     engine_util_blas.h
     engine_util_blas_avx.h

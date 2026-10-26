@@ -33,6 +33,7 @@
 #include "engine/engine_util_misc.h"
 #include "engine/engine_util_sparse.h"
 #include "engine/engine_util_spatial.h"
+#include "engine/tree_profiler.h"
 
 
 //--------------------------- position -------------------------------------------------------------
@@ -1968,15 +1969,18 @@ void mj_crb(const mjModel* m, mjData* d) {
 
 
 void mj_makeM(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_makeM);
   TM_START;
   mj_crb(m, d);
   mj_tendonArmature(m, d);
   TM_END(mjTIMER_POS_INERTIA);
+  PROFILE_END();
 }
 
 
 // sparse L'*D*L factorizaton of the inertia matrix M, assumed spd
 void mj_factorM(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_factorM);
   TM_START;
 
   // sleep filtering
@@ -1999,8 +2003,10 @@ void mj_factorM(const mjModel* m, mjData* d) {
   }
 
   // factorize
+  //PROFILE_START(FactorI);
   int clamped = mj_factorI(d->qLD, d->qLDiagInv, nv, m->M_rownnz, m->M_rowadr, m->M_colind,
                            index);
+  //PROFILE_END();
 
   // near-singular inertia: a pivot was clamped
   if (clamped >= 0) {
@@ -2008,6 +2014,7 @@ void mj_factorM(const mjModel* m, mjData* d) {
   }
 
   TM_ADD(mjTIMER_POS_INERTIA);
+  PROFILE_END();
 }
 
 

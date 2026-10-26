@@ -50,6 +50,7 @@
 #include "engine/engine_util_solve.h"
 #include "engine/engine_util_sparse.h"
 #include "engine/engine_thread.h"
+#include "engine/tree_profiler.h"
 
 #define DBG_FLOAT_FMT  "%.10f"
 
@@ -120,6 +121,7 @@ void mj_checkAcc(const mjModel* m, mjData* d) {
 
 // kinematics-related computations
 void mj_fwdKinematics(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_fwdKinematics);
   mj_kinematics(m, d);
   mj_comPos(m, d);
   mj_camlight(m, d);
@@ -128,10 +130,12 @@ void mj_fwdKinematics(const mjModel* m, mjData* d) {
   if (mj_wakeTendon(m, d)) {
     mj_updateSleep(m, d);
   }
+  PROFILE_END();
 }
 
 // position-dependent computations
 void mj_fwdPosition(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_fwdPosition);
   TM_START1;
 
   // clear position-dependent flags for lazy evaluation
@@ -177,11 +181,13 @@ void mj_fwdPosition(const mjModel* m, mjData* d) {
   mj_effBuild(m, d, mj_isMetric(m), /*flg_factor=*/1);
 
   TM_END1(mjTIMER_POSITION);
+  PROFILE_END();
 }
 
 
 // velocity-dependent computations
 void mj_fwdVelocity(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_fwdVelocity);
   TM_START;
 
   // clear velocity-dependent flags for lazy evaluation
@@ -212,8 +218,12 @@ void mj_fwdVelocity(const mjModel* m, mjData* d) {
   }
 
   // com-based velocities, passive forces, constraint references
+  //PROFILE_START(mj_comVel);
   mj_comVel(m, d);
+  //PROFILE_END();
+  //PROFILE_START(mj_passive);
   mj_passive(m, d);
+  //PROFILE_END();
 
   // under discrete, constraint references are computed at the actuation stage where the
   // metric is final (regularization, then references, which consume R via adhesion);
@@ -221,11 +231,15 @@ void mj_fwdVelocity(const mjModel* m, mjData* d) {
   if (mj_isMetric(m)) {
     mj_velocityConstraint(m, d);
   } else {
+    //PROFILE_START(mj_referenceConstraint);
     mj_referenceConstraint(m, d);
+    //PROFILE_END();
   }
 
   // compute qfrc_bias with abbreviated RNE (without acceleration)
+  //PROFILE_START(mj_rne);
   mj_rne(m, d, 0, d->qfrc_bias);
+  //PROFILE_END();
 
   // add bias force due to tendon armature
   mj_tendonBias(m, d, d->qfrc_bias);
@@ -235,6 +249,7 @@ void mj_fwdVelocity(const mjModel* m, mjData* d) {
 
 
   TM_END(mjTIMER_VELOCITY);
+  PROFILE_END();
 }
 
 
@@ -364,6 +379,7 @@ static mjtNum slewLimit(mjtNum u, mjtNum u_prev, mjtNum slew_s, mjtNum dt,
 
 // (qpos, qvel, ctrl, act) => (qfrc_actuator, actuator_force, act_dot)
 void mj_fwdActuation(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_fwdActuation);
   TM_START;
   int nv = m->nv, nu = m->nu, nactuator = m->nactuator, nout = m->nout, ntendon = m->ntendon;
   mjtNum gain, bias, tau;
@@ -378,6 +394,7 @@ void mj_fwdActuation(const mjModel* m, mjData* d) {
   if (nactuator == 0 || mjDISABLED(mjDSBL_ACTUATION)) {
     mju_zero(d->qfrc_actuator, nv);
     TM_END(mjTIMER_ACTUATION);
+    PROFILE_END();
     return;
   }
 
@@ -1000,11 +1017,13 @@ void mj_fwdActuation(const mjModel* m, mjData* d) {
 
   mj_freeStack(d);
   TM_END(mjTIMER_ACTUATION);
+  PROFILE_END();
 }
 
 
 // add up all non-constraint forces, compute qacc_smooth
 void mj_fwdAcceleration(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_fwdAcceleration);
   int sleep_filter = mjENABLED(mjENBL_SLEEP) && d->nv_awake < m->nv;
   int nv;
   const int* index;
@@ -1053,6 +1072,7 @@ void mj_fwdAcceleration(const mjModel* m, mjData* d) {
       mju_copyInd(d->qacc_smooth, qacc_eff, index, nv);
     }
     mj_freeStack(d);
+    PROFILE_END();
     return;
   }
 
@@ -1066,11 +1086,13 @@ void mj_fwdAcceleration(const mjModel* m, mjData* d) {
   // qacc_smooth = M \ qfrc_smooth
   mj_solveLD(d->qacc_smooth, d->qLD, d->qLDiagInv, nv, 1,
              m->M_rownnz, m->M_rowadr, m->M_colind, index);
+  PROFILE_END();
 }
 
 
 // warmstart/init solver
 static void warmstart(const mjModel* m, mjData* d) {
+  PROFILE_START(warmstart);
   int nv = m->nv, nefc = d->nefc;
 
   // warmstart with best of (qacc_warmstart, qacc_smooth)
@@ -1153,6 +1175,7 @@ static void warmstart(const mjModel* m, mjData* d) {
     mju_copy(d->qacc, d->qacc_smooth, nv);
     mju_zero(d->efc_force, nefc);
   }
+  PROFILE_END();
 }
 
 
@@ -1334,6 +1357,7 @@ void mj_fwdConstraintCG(const mjModel* m, mjData* d) {
 // buffers, activations, sleep
 //   act_dot: activation derivatives
 static void advanceStart(const mjModel* m, mjData* d, const mjtNum* act_dot) {
+  //PROFILE_START(mj_advance);
   int nactuator = m->nactuator, nsensor = m->nsensor;
 
   // advance history buffers
@@ -1484,6 +1508,7 @@ void mj_advance(const mjModel* m, mjData* d,
 
   // save qacc for next step warmstart
   mju_copy(d->qacc_warmstart, d->qacc, m->nv);
+  //PROFILE_END();
 }
 
 
@@ -1507,6 +1532,7 @@ void mj_commit(const mjModel* m, mjData* d, const mjtNum* act_dot,
 
 // Euler integrator, semi-implicit in velocity, possibly skipping factorisation
 void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
+  PROFILE_START(Integrate);
   TM_START;
   mj_markStack(d);
   mjtNum* qfrc = mjSTACKALLOC(d, m->nv, mjtNum);
@@ -1542,6 +1568,7 @@ void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
 
   // damping: integrate implicitly
   else {
+    //PROFILE_START(EulerDamp);
     if (!skipfactor) {
       // qH = M
       if (sleep_filter) {
@@ -1580,6 +1607,7 @@ void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
     }
     mj_solveLD(qacc, d->qH, d->qHDiagInv, nv, 1,                // 求解(M +h*diag(B)) * qacc = qfrc
                m->M_rownnz, m->M_rowadr, m->M_colind, dof_awake_ind);
+    //PROFILE_END();
   }
 
   // advance state and time
@@ -1588,6 +1616,7 @@ void mj_EulerSkip(const mjModel* m, mjData* d, int skipfactor) {
   mj_freeStack(d);
 
   TM_END(mjTIMER_ADVANCE);
+  PROFILE_END();
 }
 
 
@@ -1599,9 +1628,11 @@ void mj_Euler(const mjModel* m, mjData* d) {
 
 // discrete integrator: the solver's qacc is the step map, advance directly
 void mj_discrete(const mjModel* m, mjData* d) {
+  PROFILE_START(Integrate);
   TM_START;
   mj_advance(m, d, d->act_dot, d->qacc, NULL);
   TM_END(mjTIMER_ADVANCE);
+  PROFILE_END();
 }
 
 
@@ -1630,6 +1661,8 @@ void mj_RungeKutta(const mjModel* m, mjData* d, int N) {
   if (!A) {
     mjERROR("supported RK orders: N=4");
   }
+
+  PROFILE_START(Integrate);
 
   // allocate space for intermediate solutions
   mj_markStack(d);
@@ -1707,6 +1740,7 @@ void mj_RungeKutta(const mjModel* m, mjData* d, int N) {
   mj_advance(m, d, dX+2*nv, dX+nv, dX);
 
   mj_freeStack(d);
+  PROFILE_END();
 }
 
 
@@ -1796,6 +1830,7 @@ void mj_checkDiscrete(const mjModel* m) {
 
 // fully implicit in velocity, possibly skipping factorization
 void mj_implicitSkip(const mjModel* m, mjData* d, int skipfactor) {
+  PROFILE_START(Integrate);
   TM_START;
   int nD = m->nD, nC = m->nC, njnt = m->njnt;
 
@@ -1914,6 +1949,7 @@ void mj_implicitSkip(const mjModel* m, mjData* d, int skipfactor) {
   mj_freeStack(d);
 
   TM_END(mjTIMER_ADVANCE);
+  PROFILE_END();
 }
 
 
@@ -1951,6 +1987,7 @@ static void fwdConstraintStage(const mjModel* m, mjData* d) {
 
 // forward dynamics with skip; skipstage is mjtStage
 void mj_forwardSkip(const mjModel* m, mjData* d, int skipstage, int skipsensor) {
+  PROFILE_START(mj_forwardSkip);
   TM_START;
 
   // validate option combinations for the discrete integrator
@@ -1998,13 +2035,16 @@ void mj_forwardSkip(const mjModel* m, mjData* d, int skipstage, int skipsensor) 
     mj_referenceConstraint(m, d);
   }
   mj_fwdAcceleration(m, d);
+  PROFILE_START(mj_fwdConstraint);
   fwdConstraintStage(m, d);
+  PROFILE_END();
   if (!skipsensor) {
     d->flg_rnepost = 0;  // clear flag for lazy evaluation
     mj_sensorAcc(m, d);
   }
 
   TM_END(mjTIMER_FORWARD);
+  PROFILE_END();
 }
 
 
@@ -2016,6 +2056,7 @@ void mj_forward(const mjModel* m, mjData* d) {
 
 // advance simulation using control callback
 void mj_step(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_step);
   TM_START;
 
 
@@ -2048,7 +2089,9 @@ void mj_step(const mjModel* m, mjData* d) {
     mj_compareFwdInv(m, d);
   }
 
-  //OutputResultForDebug(m,d);
+   OutputResultForDebug(m, d);
+   OutputEfcTableForDebug(m, d);
+  //OutputStatTableForDebug(m, d);
   //OutputDataForDebug(m, d);
 
   //if(d->time>10){mjERROR("end Time.") }
@@ -2081,6 +2124,7 @@ void mj_step(const mjModel* m, mjData* d) {
   }
 
   TM_END(mjTIMER_STEP);
+  PROFILE_END();
 }
 
 
@@ -2127,7 +2171,9 @@ void mj_step2(const mjModel* m, mjData* d) {
     mj_referenceConstraint(m, d);
   }
   mj_fwdAcceleration(m, d);
+  PROFILE_START(mj_fwdConstraint);
   fwdConstraintStage(m, d);
+  PROFILE_END();
   d->flg_rnepost = 0;  // clear flag for lazy evaluation
   mj_sensorAcc(m, d);
   mj_checkAcc(m, d);
@@ -2189,43 +2235,43 @@ void OutputDataForDebug(const mjModel* m, mjData* d) {
 }
 
 
+// "<xml dir><stem><suffix>" into filename. Returns 0 if it does not fit.
+static int DebugOutputPath(const char* xml_path, const char* suffix,
+                           char* filename, size_t cap) {
+  if (!xml_path || !suffix || !filename || cap == 0) {
+    return 0;
+  }
+
+  const char* last_slash1 = strrchr(xml_path, '/');
+  const char* last_slash2 = strrchr(xml_path, '\\');
+  const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
+  const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
+
+  size_t dirlen = last_slash ? (size_t)(last_slash - xml_path) + 1 : 0;
+  const char* dot = strrchr(xml_filename, '.');
+  size_t stemlen = dot ? (size_t)(dot - xml_filename) : strlen(xml_filename);
+  size_t suffixlen = strlen(suffix);
+  if (dirlen + stemlen + suffixlen + 1 > cap) {
+    return 0;
+  }
+
+  if (dirlen) {
+    memcpy(filename, xml_path, dirlen);
+  }
+  memcpy(filename + dirlen, xml_filename, stemlen);
+  memcpy(filename + dirlen + stemlen, suffix, suffixlen + 1);
+  return 1;
+}
+
+static void OutputStatForDebug(FILE* fp, const mjData* d, int header);
+
 void OutputResultForDebug(const mjModel* m, mjData* d) {
 #if 1
 
-    // 获取 xml 路径
-    const char* xml_path = m->xml_path;
-    const char* last_slash1 = strrchr(xml_path, '/');
-    const char* last_slash2 = strrchr(xml_path, '\\');
-    const char* last_slash = last_slash1 > last_slash2 ? last_slash1 : last_slash2;
-    const char* xml_filename = last_slash ? last_slash + 1 : xml_path;
-
-    // 拷贝目录部分
-    char dir[512] = { 0 };
-    if (last_slash) {
-        size_t dirlen = last_slash - xml_path + 1;
-        strncpy(dir, xml_path, dirlen);
-        dir[dirlen] = '\0';
-    }
-
-    // 拷贝文件名并替换后缀为 .txt
-    char txt_filename[512] = { 0 };
-    strncpy(txt_filename, xml_filename, sizeof(txt_filename) - 1);
-    char* dot = strrchr(txt_filename, '.');
-    if (dot) {
-        strcpy(dot, "-mj.txt");
-    }
-    else {
-        // 没有后缀，直接加.txt
-        size_t len = strlen(txt_filename);
-        if (len < sizeof(txt_filename) - 4) {
-            strcat(txt_filename, "-mj.txt");
-        }
-    }
-
-    // 拼接完整路径
     char filename[1024];
-    snprintf(filename, sizeof(filename), "%s%s", dir, txt_filename);
-
+    if (!DebugOutputPath(m->xml_path, "-mj.txt", filename, sizeof(filename))) {
+        return;
+    }
 
     // 检查是否为第一次仿真（time为0），如果是则清空文件内容
     if (d->time == 0.0) {
@@ -2237,10 +2283,6 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
             OutputQvelForDebug(fp_clear, m, d, 1);
             OutputQaccForDebug(fp_clear, m, d, 1);
 
-            //OutputEfcPosForDebug(fp_clear, m, d, 1);
-            //OutputEfcVelForDebug(fp_clear, m, d, 1);
-            //OutputEfcArefForDebug(fp_clear, m, d, 1);
-            //
             //OutputQFrcConstraintForDebug(fp_clear, m, d, 1);
 
             fprintf(fp_clear, "\n");
@@ -2263,19 +2305,8 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
     // 加速度(qacc)
     OutputQaccForDebug(fp, m, d, 0);
 
-
-	// 约束空间位置(efc_pos  )
-    //OutputEfcPosForDebug(fp, m, d, 0);
-	//// 约束空间速度(efc_vel  )
-	//OutputEfcVelForDebug(fp, m, d, 0);
- //   // 参考加速度(efc_aref  )
- //   OutputEfcArefForDebug(fp, m, d, 0);
-
- //   //// 约束空间约束力(efc_force )
- //   //OutputQaccForDebug(fp, m, d, 0);
-
- //   // 广义坐标空间中的约束力(qfrc_constraint  )
- //   OutputQFrcConstraintForDebug(fp, m, d, 0);
+    // 广义坐标空间中的约束力(qfrc_constraint  )
+    OutputQFrcConstraintForDebug(fp, m, d, 0);
 
     // 
     // 
@@ -2296,11 +2327,57 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
 }
 
 
+void OutputStatTableForDebug(const mjModel* m, mjData* d) {
+    char filename[1024];
+    if (!DebugOutputPath(m->xml_path, "-mj-stat.txt", filename, sizeof(filename))) {
+        return;
+    }
+
+    if (d->time == 0.0) {
+        FILE* fp = fopen(filename, "w");
+        if (fp) {
+            OutputStatForDebug(fp, d, 1);
+            fprintf(fp, "\n");
+            fclose(fp);
+        }
+    }
+
+    FILE* fp = fopen(filename, "a");
+    if (!fp) return;
+
+    OutputStatForDebug(fp, d, 0);
+    fprintf(fp, "\n");
+    fclose(fp);
+}
+
+
 void OutputTimeForDebug(FILE* fp, const mjData* d, int header) {
     if (header)
         fprintf(fp, "mj-time\t");
     else
         fprintf(fp, "%.5f\t", d->time);
+}
+
+static void OutputStatForDebug(FILE* fp, const mjData* d, int header) {
+    if (header) {
+        fprintf(fp, "mj-time\tncon\tnefc\tne\tnf\tnl\tnJ\tnisland\tniter\tnnz\t");
+        return;
+    }
+
+    int nsum = d->nisland > 0 ? d->nisland : 1;
+    if (nsum > mjNISLAND) {
+        nsum = mjNISLAND;
+    }
+    int niter = 0;
+    int nnz = 0;
+    for (int i = 0; i < nsum; i++) {
+        niter += d->solver_niter[i];
+        nnz += d->solver_nnz[i];
+    }
+
+    fprintf(fp, "%.5f\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t",
+            d->time, d->ncon, d->nefc, d->ne, d->nf, d->nl,
+            d->nJ, d->nisland, niter, nnz);
 }
 
 void OutputQposForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
@@ -2347,36 +2424,81 @@ void OutputQFrcConstraintForDebug(FILE* fp, const mjModel* m, const mjData* d, i
     }
 }
 
-
 void OutputEfcPosForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    (void)m;
     if (header) {
         for (int i = 0; i < d->nefc; ++i)
             fprintf(fp, "mj-efc_pos[%d]\t", i);
     }
     else {
         for (int i = 0; i < d->nefc; ++i)
-            fprintf(fp, "%f\t", d->efc_pos[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->efc_pos[i]);
     }
 }
 
 void OutputEfcVelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    (void)m;
     if (header) {
         for (int i = 0; i < d->nefc; ++i)
             fprintf(fp, "mj-efc_vel[%d]\t", i);
     }
     else {
         for (int i = 0; i < d->nefc; ++i)
-            fprintf(fp, "%f\t", d->efc_vel[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->efc_vel[i]);
     }
 }
 
 void OutputEfcArefForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    (void)m;
     if (header) {
         for (int i = 0; i < d->nefc; ++i)
             fprintf(fp, "mj-efc_aref[%d]\t", i);
     }
     else {
         for (int i = 0; i < d->nefc; ++i)
-            fprintf(fp, "%f\t", d->efc_aref[i]);
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->efc_aref[i]);
     }
+}
+
+void OutputEfcForceForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    (void)m;
+    if (header) {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, "mj-efc_force[%d]\t", i);
+    }
+    else {
+        for (int i = 0; i < d->nefc; ++i)
+            fprintf(fp, DBG_FLOAT_FMT "\t", d->efc_force[i]);
+    }
+}
+
+static void OutputEfcRowForDebug(FILE* fp, const mjModel* m, const mjData* d, int header) {
+    OutputTimeForDebug(fp, d, header);
+    OutputEfcPosForDebug(fp, m, d, header);
+    OutputEfcVelForDebug(fp, m, d, header);
+    OutputEfcArefForDebug(fp, m, d, header);
+    OutputEfcForceForDebug(fp, m, d, header);
+    fprintf(fp, "\n");
+}
+
+// 约束空间量单独成文件。每步一行，列数等于当时的 nefc。
+void OutputEfcTableForDebug(const mjModel* m, mjData* d) {
+    char filename[1024];
+    if (!DebugOutputPath(m->xml_path, "-mj-efc.txt", filename, sizeof(filename))) {
+        return;
+    }
+
+    if (d->time == 0.0) {
+        FILE* fp = fopen(filename, "w");
+        if (fp) {
+            OutputEfcRowForDebug(fp, m, d, 1);
+            fclose(fp);
+        }
+    }
+
+    FILE* fp = fopen(filename, "a");
+    if (!fp) return;
+
+    OutputEfcRowForDebug(fp, m, d, 0);
+    fclose(fp);
 }

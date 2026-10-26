@@ -303,7 +303,7 @@ int main(int argc, char** argv) {
       "Note: If the model has a keyframe named \"test\", it will be loaded prior to simulation\n";
 
   // default values
-  int nstep = /*10000*/100, nthread = 0, nenginethread = 0;
+  int nstep = /*10000*/ /*2000*/ 1000 /*100*/, nthread = 0, nenginethread = 0;
   // inject small noise by default, to avoid fixed contact state
   double noisestd  = 0.01;
   double noiserate = 0.1;
@@ -645,6 +645,13 @@ int main(int argc, char** argv) {
     }
   }
 
+  // hierarchical TreeProfiler (single-threaded rollout only)
+  if (nthread > 1 || nenginethread > 1) {
+    std::printf("\n TreeProfiler skipped: not thread-safe with nthread/nenginethread > 1\n");
+  } else {
+    std::printf("\n");
+    mj_treeProfilerDump();
+  }
 
   // free per-thread data
   for (int id = 0; id < nthread; id++) { mj_deleteData(runner.d[id]); }

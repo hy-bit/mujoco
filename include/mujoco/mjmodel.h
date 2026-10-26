@@ -255,7 +255,7 @@ typedef struct mjModel_ {
   mjtSize nbvhdynamic;            // number of dynamic bounding volumes (aabb stored in mjData)
   mjtSize noct;                   // number of total octree cells in all meshes
   mjtSize njnt;                   // number of joints
-  mjtSize ntree;                  // number of kinematic trees under world body
+  mjtSize ntree;                  // number of kinematic trees under world body     hy：无自由度的（不写 <joint>）不被计入；free关节的体一定会被计入
   mjtSize nM;                     // number of non-zeros in sparse inertia matrix
   mjtSize nB;                     // number of non-zeros in sparse body-dof matrix
   mjtSize nC;                     // number of non-zeros in sparse reduced dof-dof matrix

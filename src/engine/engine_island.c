@@ -26,6 +26,7 @@
 #include "engine/engine_util_errmem.h"
 #include "engine/engine_util_misc.h"
 #include "engine/engine_util_sparse.h"
+#include "engine/tree_profiler.h"
 
 #ifdef MEMORY_SANITIZER
   #include <sanitizer/msan_interface.h>

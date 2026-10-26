@@ -35,6 +35,7 @@
 #include "engine/engine_util_misc.h"
 #include "engine/engine_util_solve.h"
 #include "engine/engine_util_sparse.h"
+#include "engine/tree_profiler.h"
 
 
 //---------------------------------- utility functions ---------------------------------------------
@@ -763,18 +764,22 @@ static void solPGS(const mjModel* m, mjData* d, int island,
 
 // PGS entry point (monolithic, no dualFinish — caller handles it)
 void mj_solPGS(const mjModel* m, mjData* d, int maxiter) {
+  PROFILE_START(mj_solPGS);
   solPGS(m, d, /*island=*/-1, d->ne, d->nf, d->nefc, /*efclist=*/NULL, maxiter);
+  PROFILE_END();
 }
 
 
 // PGS entry point (one island)
 void mj_solPGS_island(const mjModel* m, mjData* d, int island, int maxiter) {
+  PROFILE_START(mj_solPGS_island);
   int ne = d->island_ne[island];
   int nf = d->island_nf[island];
   int nefc = d->island_nefc[island];
   int iefcadr = d->island_iefcadr[island];
 
   solPGS(m, d, island, ne, nf, nefc, d->map_iefc2efc + iefcadr, maxiter);
+  PROFILE_END();
 }
 
 
@@ -932,7 +937,7 @@ static void solNoSlip(const mjModel* m, mjData* d, int island,
           mju_zero(force+i+1, dim-1);
         }
 
-        // QCQP
+        // QCQP 
         else {
           solveQCQP(force, i, dim, Ac, bc, mu);
         }
@@ -1622,12 +1627,16 @@ static void PrimalUpdateMgrad(mjPrimalContext* ctx, int flg_Newton) {
 
   // Newton: Mgrad = H \ grad
   if (flg_Newton) {
+    //PROFILE_START(UpdateMgrad_Newton);
     if (ctx->is_sparse) {
+      PROFILE_START(UpdateMgrad_Newton_Sparse);
       mju_cholSolveSparse(ctx->Mgrad, (ctx->ncone ? ctx->Lcone : ctx->L),
                           ctx->grad, nv, ctx->L_rownnz, ctx->L_rowadr, ctx->L_colind);
+      PROFILE_END();
     } else {
       mju_cholSolve(ctx->Mgrad, (ctx->ncone ? ctx->Lcone : ctx->L), ctx->grad, nv);
     }
+    //PROFILE_END();
   }
 
   // CG monolithic: Mgrad = Mtilde \ grad (approximate metric preconditioner)
@@ -2485,6 +2494,7 @@ static int MakeHessian(mjData* d, mjPrimalContext* ctx) {
 
   // sparse
   if (ctx->is_sparse) {
+    PROFILE_START(MakeH_Sparse);
     if (mj_stackBytesAvailable(d) < cg_bytes + loop_bytes) {
       mj_warning(d, mjWARN_CNSTRFULL, d->narena);
       return 0;
@@ -2600,10 +2610,12 @@ static int MakeHessian(mjData* d, mjPrimalContext* ctx) {
         ctx->Lflops += (mjtSize)nnz * nnz;
       }
     }
+    PROFILE_END();
   }
 
   // dense
   else {
+    PROFILE_START(MakeH_Dense);
     // compute H = M + J'*D*J
     mju_sqrMatTD_impl(ctx->L, ctx->J, ctx->D, nefc, nv, /*flg_upper=*/ 0);
     mju_addToSymSparse(ctx->L, ctx->M, ctx->nv,
@@ -2616,6 +2628,7 @@ static int MakeHessian(mjData* d, mjPrimalContext* ctx) {
                          ctx->S_rownnz, ctx->S_rowadr, ctx->S_colind,
                          /*flg_upper=*/ 0);
     }
+    PROFILE_END();
   }
 
   return 1;
@@ -2641,6 +2654,7 @@ static void FactorizeHessian(mjData* d, mjPrimalContext* ctx, int flg_recompute)
   if (ctx->is_sparse) {
     // maybe compute H = M + J'*D*J
     if (flg_recompute) {
+      PROFILE_START(MakeH_Sparse);
       // compute H = J'*D*J: symbolic phase
       mju_sqrMatTDSparseSymbolic(
           ctx->H_rownnz, ctx->H_rowadr, ctx->H_colind, NULL,
@@ -2663,20 +2677,24 @@ static void FactorizeHessian(mjData* d, mjPrimalContext* ctx, int flg_recompute)
         mju_addToMatSparse(ctx->H, ctx->H_rownnz, ctx->H_rowadr, ctx->H_colind, nv,
                            ctx->S_val, ctx->S_rownnz, ctx->S_rowadr, ctx->S_colind);
       }
+      PROFILE_END();
     }
 
     // numeric sparse factorization: L = chol(H) using pre-computed sparsity pattern
+    PROFILE_START(FactorH_Sparse);
     mju_cholFactorNumeric(
         ctx->L, nv, mjMINVAL,
         ctx->L_rownnz, ctx->L_rowadr, ctx->L_colind,
         ctx->LT_rownnz, ctx->LT_rowadr, ctx->LT_colind, ctx->LT_map,
         ctx->H, ctx->H_rownnz, ctx->H_rowadr, ctx->H_colind, ctx->cholscratch);
+    PROFILE_END();
   }
 
   // dense
   else {
     // maybe compute H = Mtilde + J'*D*J
     if (flg_recompute) {
+      PROFILE_START(MakeH_Dense);
       mju_sqrMatTD_impl(ctx->L, ctx->J, ctx->D, nefc, nv, /*flg_upper=*/ 0);
       mju_addToSymSparse(ctx->L, ctx->M, ctx->nv,
                          ctx->M_rownnz, ctx->M_rowadr, ctx->M_colind,
@@ -2686,10 +2704,13 @@ static void FactorizeHessian(mjData* d, mjPrimalContext* ctx, int flg_recompute)
                            ctx->S_rownnz, ctx->S_rowadr, ctx->S_colind,
                            /*flg_upper=*/ 0);
       }
+      PROFILE_END();
     }
 
     // factorize H
+    PROFILE_START(FactorH_Dense);
     mju_cholFactor(ctx->L, nv, mjMINVAL);
+    PROFILE_END();
   }
 
   // add cones to factor if present
@@ -2985,7 +3006,9 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
     return;
   }
 
+  PROFILE_START(Init_Allocate);
   PrimalAllocate(m, d, &ctx, flg_Newton);
+  PROFILE_END();
 
   // local copies
   int nv   = ctx.nv;
@@ -3030,7 +3053,9 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
   }
 
   // Mgrad = M \ grad: the CG preconditioned gradient, also the convergence certificate
+  PROFILE_START(Init_UpdateMgrad0);
   PrimalUpdateMgrad(&ctx, /*flg_Newton=*/0);
+  PROFILE_END();
 
   // convergence certificate: the cost is strongly convex in the M-norm, bounding the
   // suboptimality by the duality gap at the current constraint forces:
@@ -3049,8 +3074,12 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
   // Newton: compute and factorize Hessian, Mgrad = H \ grad
   if (!flg_done && flg_Newton) {
     if (MakeHessian(d, &ctx)) {
+      PROFILE_START(Init_FactorH);
       FactorizeHessian(d, &ctx, /*flg_recompute=*/0);
+      PROFILE_END();
+      PROFILE_START(Init_UpdateMgrad1);
       PrimalUpdateMgrad(&ctx, /*flg_Newton=*/1);
+      PROFILE_END();
 
       // Newton decrement already below tolerance: converged, skip the first line search
       // (gradient-gated like the certificate: H^-1 suppresses stiff-direction force errors)
@@ -3086,8 +3115,10 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
   while (!flg_done && iter < maxiter) {
     // perform linesearch
     mjtNum ls_improvement;
+    PROFILE_START(Iter_CGsearch);
     alpha = PrimalSearch(&ctx, m->opt.tolerance * m->opt.ls_tolerance, m->opt.ls_iterations,
                          &ls_improvement);
+    PROFILE_END();
     TM_ADD(mjTIMER_SOLVER_CGNEWTON_LINESEARCH);
 
     // no improvement: done
@@ -3110,9 +3141,13 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
     // update
     PrimalUpdateConstraint(&ctx, flg_Newton & (m->opt.cone == mjCONE_ELLIPTIC));
     if (flg_Newton) {
+      PROFILE_START(Iter_Hinc);
       HessianIncremental(d, &ctx, oldstate);
+      PROFILE_END();
     }
+    PROFILE_START(Iter_Solve);
     PrimalUpdateGradient(&ctx, flg_Newton);
+    PROFILE_END();
     TM_ADD(mjTIMER_SOLVER_CGNEWTON_PREP);
 
     // count state changes
@@ -3226,25 +3261,33 @@ static void mj_solPrimal(const mjModel* m, mjData* d, int island, int maxiter, i
 
 // CG entry point
 void mj_solCG(const mjModel* m, mjData* d, int maxiter) {
+  PROFILE_START(mj_solCG);
   TM_START;
   mj_solPrimal(m, d, /*island=*/-1, maxiter, /*flg_Newton=*/0);
   TM_END(mjTIMER_SOLVER_CG);
+  PROFILE_END();
 }
 
 
 // CG entry point (one island)
 void mj_solCG_island(const mjModel* m, mjData* d, int island, int maxiter) {
+  PROFILE_START(mj_solCG_island);
   mj_solPrimal(m, d, island, maxiter, /*flg_Newton=*/0);
+  PROFILE_END();
 }
 
 
 // Newton entry point
 void mj_solNewton(const mjModel* m, mjData* d, int maxiter) {
+  PROFILE_START(mj_solNewton);
   mj_solPrimal(m, d, /*island=*/-1, maxiter, /*flg_Newton=*/1);
+  PROFILE_END();
 }
 
 
 // Newton entry point (one island)
 void mj_solNewton_island(const mjModel* m, mjData* d, int island, int maxiter) {
+  PROFILE_START(mj_solNewton_island);
   mj_solPrimal(m, d, island, maxiter, /*flg_Newton=*/1);
+  PROFILE_END();
 }

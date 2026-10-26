@@ -23,6 +23,7 @@
 extern "C" {
 #endif
 
+// hy DSU是 Disjoint Set Union（并查集，也叫 Union-Find），是一种标准数据结构
 // disjoint-set roots are minimum tree indices; mj_dsuRoot requires parent[tree] >= 0
 MJAPI void mj_dsuMerge(int* parent, int tree1, int tree2);
 MJAPI int mj_dsuRoot(int* parent, int tree);

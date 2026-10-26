@@ -35,6 +35,7 @@
 #include "engine/engine_util_errmem.h"
 #include "engine/engine_util_misc.h"
 #include "engine/engine_util_sparse.h"
+#include "engine/tree_profiler.h"
 
 // position-dependent computations
 void mj_invPosition(const mjModel* m, mjData* d) {
@@ -227,6 +228,7 @@ void mj_invConstraint(const mjModel* m, mjData* d) {
 // inverse dynamics with skip; skipstage is mjtStage
 void mj_inverseSkip(const mjModel* m, mjData* d,
                     int skipstage, int skipsensor) {
+  PROFILE_START(mj_inverseSkip);
   TM_START;
   mj_markStack(d);
   mjtNum* qacc;
@@ -326,6 +328,7 @@ void mj_inverseSkip(const mjModel* m, mjData* d,
 
   mj_freeStack(d);
   TM_END(mjTIMER_INVERSE);
+  PROFILE_END();
 }
 
 

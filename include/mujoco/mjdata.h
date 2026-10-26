@@ -360,8 +360,8 @@ typedef struct mjData_ {
   int*    efc_type;          // constraint type (mjtConstraint)                  (nefc x 1)
   // hy: efc_id是每一行约束方程，对应的源对象的id，具体含义根据约束类型有所不同
   // 等式约束: efc_id是mjModel 里的 equality 索引（0~neq-1）
-  // 摩擦约束的：。。。
-  // 关节限位的：是mjModel 里的 joint 索引（0~njnt-1）
+  // 摩擦约束：。。。
+  // 关节限位：是mjModel 里的 joint 索引（0~njnt-1）
   // 接触约束：是该行约束对应的约束对Id（在d->contact里面的序号，0~ncon-1）
   int*    efc_id;            // id of object of specified type                   (nefc x 1)
   int*    efc_J_rownnz;      // number of non-zeros in constraint Jacobian row   (nefc x 1)

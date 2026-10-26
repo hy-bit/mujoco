@@ -112,6 +112,12 @@ MJAPI void mj_fwdConstraint(const mjModel* m, mjData* d);
 // debug输出
 void OutputResultForDebug(const mjModel* m, mjData* d);
 
+// 每帧接触数、约束数、迭代次数（*-mj-stat.txt）
+void OutputStatTableForDebug(const mjModel* m, mjData* d);
+
+// 约束空间量，每步一行（*-mj-efc.txt）
+void OutputEfcTableForDebug(const mjModel* m, mjData* d);
+
 // debug: full mjData text next to XML (*-mjdata-full.txt)
 void OutputDataForDebug(const mjModel* m, mjData* d);
 
@@ -127,12 +133,13 @@ void OutputQaccForDebug(FILE* fp, const mjModel* m, const mjData* d, int header)
 
 void OutputQFrcConstraintForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
 
-
 void OutputEfcPosForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
 
 void OutputEfcVelForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
 
 void OutputEfcArefForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
+
+void OutputEfcForceForDebug(FILE* fp, const mjModel* m, const mjData* d, int header);
 
 #ifdef __cplusplus
 }

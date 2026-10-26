@@ -32,6 +32,7 @@
 #include "engine/engine_util_misc.h"
 #include "engine/engine_util_sparse.h"
 #include "engine/engine_util_spatial.h"
+#include "engine/tree_profiler.h"
 
 #ifdef MEMORY_SANITIZER
   #include <sanitizer/msan_interface.h>
@@ -420,8 +421,10 @@ static void mj_addConstraint(const mjModel* m, mjData* d,
 
 // multiply Jacobian by vector
 void mj_mulJacVec(const mjModel* m, const mjData* d, mjtNum* res, const mjtNum* vec) {
+  //PROFILE_START(mj_mulJacVec);
   // exit if no constraints
   if (!d->nefc) {
+    //PROFILE_END();
     return;
   }
 
@@ -435,6 +438,7 @@ void mj_mulJacVec(const mjModel* m, const mjData* d, mjtNum* res, const mjtNum* 
   else {
     mju_mulMatVec(res, d->efc_J, vec, d->nefc, m->nv);
   }
+  //PROFILE_END();
 }
 
 
@@ -2773,11 +2777,13 @@ static void computeY_backsub(mjtNum* Y, const int* Y_rownnz, const int* Y_rowadr
 
 // driver: call all functions above
 void mj_makeConstraint(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_makeConstraint);
   // clear sizes
   d->ne = d->nf = d->nl = d->nefc = d->nJ = d->nA = d->nY = 0;
 
   // disabled or Jacobian not allocated: return
   if (mjDISABLED(mjDSBL_CONSTRAINT)) {
+    PROFILE_END();
     return;
   }
 
@@ -2794,7 +2800,11 @@ void mj_makeConstraint(const mjModel* m, mjData* d) {
   d->nefc = nefc_allocated;
 
   // allocate efc arrays on arena
-  if (!arenaAllocEfc(m, d)) {
+  //PROFILE_START(ResetEfcArena);
+  int efc_ok = arenaAllocEfc(m, d);
+  //PROFILE_END();
+  if (!efc_ok) {
+    PROFILE_END();
     return;
   }
 
@@ -2803,10 +2813,18 @@ void mj_makeConstraint(const mjModel* m, mjData* d) {
 
   // reset nefc for the instantiation functions, instantiate all elements of Jacobian
   d->nefc = 0;
+  PROFILE_START(InstantiateEquality);
   mj_instantiateEquality(m, d);
+  PROFILE_END();
+  PROFILE_START(InstantiateFriction);
   mj_instantiateFriction(m, d, 0, NULL);
+  PROFILE_END();
+  PROFILE_START(InstantiateLimit);
   mj_instantiateLimit(m, d, 0, NULL);
+  PROFILE_END();
+  PROFILE_START(InstantiateContact);
   mj_instantiateContact(m, d);
+  PROFILE_END();
 
   // check sparse allocation
   if (mj_isSparse(m)) {
@@ -2844,23 +2862,31 @@ void mj_makeConstraint(const mjModel* m, mjData* d) {
 
   // no constraints: return
   if (!d->nefc) {
+    PROFILE_END();
     return;
   }
 
   // compute supernodes of J
   if (mj_isSparse(m)) {
+    PROFILE_START(FinalizeEfcJacobianSparse);
     mju_superSparse(d->nefc, d->efc_J_rowsuper, d->efc_J_rownnz, d->efc_J_rowadr, d->efc_J_colind);
+    PROFILE_END();
   }
 
   // compute regularization; under the discrete integrator this happens at the
   // actuation stage (mj_regularizeConstraint), where the solve metric is final
   if (!mj_isMetric(m)) {
     // compute diagApprox
+    PROFILE_START(DiagApprox);
     mj_diagApprox(m, d);
+    PROFILE_END();
 
     // compute KBIP, D, R, adjust diagA
+    PROFILE_START(MakeImpedance);
     mj_makeImpedance(m, d);
+    PROFILE_END();
   }
+  PROFILE_END();
 }
 
 

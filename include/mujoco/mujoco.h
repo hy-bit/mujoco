@@ -220,6 +220,12 @@ MJAPI void mj_forwardSkip(const mjModel* m, mjData* d, int skipstage, int skipse
 // Inverse dynamics with skip; skipstage is mjtStage.
 MJAPI void mj_inverseSkip(const mjModel* m, mjData* d, int skipstage, int skipsensor);
 
+// Dump hierarchical TreeProfiler report to stdout (no-op if disabled).
+MJAPI void mj_treeProfilerDump(void);
+
+// Reset TreeProfiler statistics (no-op if disabled).
+MJAPI void mj_treeProfilerReset(void);
+
 
 //---------------------------------- Initialization ------------------------------------------------
 

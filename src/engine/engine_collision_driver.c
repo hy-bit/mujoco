@@ -40,6 +40,7 @@
 #include "engine/engine_util_blas.h"
 #include "engine/engine_util_errmem.h"
 #include "engine/engine_util_misc.h"
+#include "engine/tree_profiler.h"
 #include "engine/engine_util_solve.h"
 #include "engine/engine_util_spatial.h"
 
@@ -678,6 +679,7 @@ static int filterCollisionPair(const mjModel* m, mjData* d, int g1, int g2, int 
 
 // main collision function
 void mj_collision(const mjModel* m, mjData* d) {
+  PROFILE_START(mj_collision);
   TM_START1;
 
   int nexclude = m->nexclude, npair = m->npair, nbody = m->nbody;
@@ -692,6 +694,7 @@ void mj_collision(const mjModel* m, mjData* d) {
   // return if disabled
   if (mjDISABLED(mjDSBL_CONSTRAINT) || mjDISABLED(mjDSBL_CONTACT) || nbodyflex < 2) {
     TM_END1(mjTIMER_POS_COLLISION);
+    PROFILE_END();
     return;
   }
 
@@ -703,14 +706,17 @@ void mj_collision(const mjModel* m, mjData* d) {
   mj_markStack(d);
 
   // broadphase collision detector
+  PROFILE_START(broadphase);
   TM_START;
   int nmaxpairs = (nbodyflex*(nbodyflex - 1))/2;
   mjPacked32* broadphasepair = mjSTACKALLOC(d, nmaxpairs, mjPacked32);
   int nbfpair = mj_broadphase(m, d, broadphasepair, nmaxpairs);
   unsigned int last_signature = -1;
   TM_END(mjTIMER_COL_BROAD);
+  PROFILE_END();
 
   // narrowphase and midphase collision detector
+  PROFILE_START(narrowphase);
   TM_RESTART;
 
   // process bodyflex pairs returned by broadphase, merge with predefined geom pairs
@@ -946,6 +952,8 @@ void mj_collision(const mjModel* m, mjData* d) {
   // end narrowphase and midphase timer
   TM_END(mjTIMER_COL_NARROW);
   TM_END1(mjTIMER_POS_COLLISION);
+  PROFILE_END();
+  PROFILE_END();
 }
 
 
