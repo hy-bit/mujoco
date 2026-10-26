@@ -17,7 +17,7 @@ if(MSVC)
     ${CMAKE_SOURCE_DIR}/mjdata.natvis
     ${CMAKE_SOURCE_DIR}/mjmodel.natvis
     ${CMAKE_SOURCE_DIR}/mjoption.natvis
-    ${CMAKE_SOURCE_DIR}/mjCGContext.natvis
+    ${CMAKE_SOURCE_DIR}/mjPrimalContext.natvis
   )
 
   function(mujoco_target_add_natvis target)
