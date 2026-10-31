@@ -93,6 +93,17 @@ typedef enum mjtEnableBit {       // enable optional feature bitflags
 } mjtEnableBit;
 
 
+// hy-custom: debug table output in mj_step (set in C++ only, not MJCF)
+typedef enum mjtHyDebugOutputBit {
+  MJ_HY_OUT_MJ        = 1<<0,     // <stem>-mj.txt
+  MJ_HY_OUT_EFC       = 1<<1,     // <stem>-mj-efc.txt
+  MJ_HY_OUT_STAT      = 1<<2,     // <stem>-mj-stat.txt
+  MJ_HY_OUT_FULL      = 1<<3,     // <stem>-mjdata-full.txt
+
+  MJ_HY_OUT_ALL       = (1<<4) - 1
+} mjtHyDebugOutputBit;
+
+
 typedef enum mjtJoint {           // type of degree of freedom
   mjJNT_FREE          = 0,        // global position and orientation (quat)       (7)
   mjJNT_BALL,                     // orientation (quat) relative to parent        (4)

@@ -2074,7 +2074,7 @@ void mj_step(const mjModel* m, mjData* d) {
   
   
   //std::cout << "Simulate time = " << d->time << std::endl;
-  printf("Simulate time = %f\n", d->time);
+  //printf("Simulate time = %f\n", d->time);
   // common to all integrators
   mj_checkPos(m, d);
   mj_checkVel(m, d);
@@ -2089,10 +2089,21 @@ void mj_step(const mjModel* m, mjData* d) {
     mj_compareFwdInv(m, d);
   }
 
-   OutputResultForDebug(m, d);
-   OutputEfcTableForDebug(m, d);
-  //OutputStatTableForDebug(m, d);
-  //OutputDataForDebug(m, d);
+  // m->opt.hy_debug_output |= MJ_HY_OUT_MJ;
+  // m->opt.hy_debug_output = MJ_HY_OUT_ALL;
+
+  if (m->opt.hy_debug_output & MJ_HY_OUT_MJ) {
+    OutputResultForDebug(m, d);
+  }
+  if (m->opt.hy_debug_output & MJ_HY_OUT_EFC) {
+    OutputEfcTableForDebug(m, d);
+  }
+  if (m->opt.hy_debug_output & MJ_HY_OUT_STAT) {
+    OutputStatTableForDebug(m, d);
+  }
+  if (m->opt.hy_debug_output & MJ_HY_OUT_FULL) {
+    OutputDataForDebug(m, d);
+  }
 
   //if(d->time>10){mjERROR("end Time.") }
 
@@ -2306,7 +2317,7 @@ void OutputResultForDebug(const mjModel* m, mjData* d) {
     OutputQaccForDebug(fp, m, d, 0);
 
     // 广义坐标空间中的约束力(qfrc_constraint  )
-    OutputQFrcConstraintForDebug(fp, m, d, 0);
+    //OutputQFrcConstraintForDebug(fp, m, d, 0);
 
     // 
     // 

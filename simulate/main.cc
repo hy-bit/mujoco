@@ -267,6 +267,8 @@ mjModel* LoadModel(const char* file, mj::Simulate& sim) {
       mnew->xml_path[0] = '\0';
   }
 
+  mnew->opt.hy_debug_output = MJ_HY_OUT_ALL;
+
   // compiler warning: print and pause
   if (loadError[0]) {
     // mj_forward() below will print the warning message

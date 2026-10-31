@@ -88,9 +88,15 @@ target_compile_options(testspeed PUBLIC ${MUJOCO_SAMPLE_COMPILE_OPTIONS})
 target_link_libraries(testspeed Threads::Threads)
 target_link_options(testspeed PRIVATE ${MUJOCO_SAMPLE_LINK_OPTIONS})
 
+add_executable(simulationtest simulationtest.cc)
+target_compile_options(simulationtest PUBLIC ${MUJOCO_SAMPLE_COMPILE_OPTIONS})
+target_link_libraries(simulationtest Threads::Threads)
+target_link_options(simulationtest PRIVATE ${MUJOCO_SAMPLE_LINK_OPTIONS})
+
 target_link_libraries(compile mujoco::mujoco)
 target_link_libraries(dependencies mujoco::mujoco)
 target_link_libraries(testspeed mujoco::mujoco)
+target_link_libraries(simulationtest mujoco::mujoco)
 
 # Build samples that require GLFW.
 
@@ -146,6 +152,7 @@ if(APPLE AND MUJOCO_BUILD_MACOS_FRAMEWORKS)
   embed_in_bundle(dependencies simulate)
   embed_in_bundle(record simulate)
   embed_in_bundle(testspeed simulate)
+  embed_in_bundle(simulationtest simulate)
   if(MUJOCO_USE_FILAMENT AND NOT SAMPLE_STANDALONE)
     embed_in_bundle(render simulate)
   endif()
@@ -166,6 +173,7 @@ if(_INSTALL_SAMPLES)
       compile
       dependencies
       record
+      simulationtest
       testspeed
   )
   if(MUJOCO_USE_FILAMENT AND NOT SAMPLE_STANDALONE)

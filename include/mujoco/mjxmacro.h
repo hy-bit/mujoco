@@ -49,7 +49,8 @@
     X   ( int,    enableflags,       1      )  \
     X   ( int,    disableactuator,   1      )  \
     X   ( int,    sdf_initpoints,    1      )  \
-    X   ( int,    sdf_iterations,    1      )
+    X   ( int,    sdf_iterations,    1      )  \
+    X   ( int,    hy_debug_output,   1      )
 
 
 //-------------------------------- mjStatistic -----------------------------------------------------

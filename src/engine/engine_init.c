@@ -103,6 +103,8 @@ void mj_defaultOption(mjOption* opt) {
   // sdf collisions
   opt->sdf_initpoints     = 40;
   opt->sdf_iterations     = 10;
+
+  opt->hy_debug_output    = 0;
 }
 
 

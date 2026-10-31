@@ -121,6 +121,9 @@ typedef struct mjOption_ {        // physics options
   // sdf collision settings
   int sdf_initpoints;             // number of starting points for gradient descent
   int sdf_iterations;             // max number of iterations for gradient descent
+
+  // hy-custom: bitmask mjtHyDebugOutputBit; 0 = no debug tables
+  int hy_debug_output;
 } mjOption;
 
 
